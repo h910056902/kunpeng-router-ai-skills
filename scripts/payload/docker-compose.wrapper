@@ -1,0 +1,104 @@
+#!/bin/sh
+# ============================================================================
+# docker-compose（kp wrapper 版）—— 让 1Panel 应用"默认"就是 host 网络
+#
+# 安装方式（由 install-hostnet-default.sh 完成）：
+#   1. 原 /usr/bin/docker-compose  →  /usr/bin/docker-compose.real
+#   2. 本文件                      →  /usr/bin/docker-compose  (chmod +x)
+#
+# 工作原理：拦截 `-f/--file` 指定的 compose 文件（没给 -f 时，仅当子命令确实会
+#   消费 compose 文件，才在 CWD 找默认文件名），在真正执行前交给
+#   /usr/sbin/kp-compose-host 做幂等 host 化，然后原样 exec 真件。
+#
+# 为什么用 wrapper 而不是"装完再修"：这样不论 1Panel 面板、应用商店还是手工调用，
+#   走的都是 host 化后的 compose —— 是**默认行为**；而且容器由 1Panel 自己 up，
+#   所以会正常出现在面板「已安装应用」里（手工 up 的不会）。
+#
+# 设计约束：
+#   - 转换失败**只警告不阻塞**（继续原样执行），绝不把面板卡死
+#   - 每次调用记一行日志到 /tmp/kp-compose.log（保留最后 200 行），用于确认
+#     "面板到底调了什么" —— 这是排查应用装不上的关键证据
+#   - 幂等：重复安装/升级应用不会叠出重复键
+#
+# 回滚：mv -f /usr/bin/docker-compose.real /usr/bin/docker-compose
+# ============================================================================
+
+KPH=/usr/sbin/kp-compose-host
+LOG=/tmp/kp-compose.log
+
+# 找真件（兼容早期部署把 python 版改名为 docker-compose-py1.28 的情况）
+REAL=""
+for c in /usr/bin/docker-compose.real /usr/local/bin/docker-compose.real /usr/bin/docker-compose-py1.28; do
+  if [ -x "$c" ]; then REAL="$c"; break; fi
+done
+if [ -z "$REAL" ]; then
+  echo "[kp] FATAL: 找不到 docker-compose 真件（docker-compose.real）" >&2
+  echo "[kp] 回滚：install-hostnet-default.sh --restore" >&2
+  exit 127
+fi
+
+# ---- 扫描全部 -f/--file 目标（多 -f 合并时每一份都要 host 化）----
+# ⚠️ 2026-09-19 修正：旧版只记**最后一个** -f，多 -f（或 -f 主文件 + 自动加载的
+# override）时只转换一份，另一份残留的 networks:/ports: 合并进来后依然会让
+# compose 报 "uses an undefined network"。
+WANT=0
+LIST=""
+SUBCMD=""
+for a in "$@"; do
+  if [ "$WANT" = "1" ]; then
+    LIST="$LIST
+$a"
+    WANT=0
+    continue
+  fi
+  case "$a" in
+    -f|--file) WANT=1 ;;
+    --file=*)
+      LIST="$LIST
+${a#--file=}" ;;
+    -*) : ;;
+    *) if [ -z "$SUBCMD" ]; then SUBCMD="$a"; fi ;;
+  esac
+done
+
+# 没给 -f 时按 compose 的默认文件名在 CWD 找 —— 但只在子命令确实会读 compose
+# 文件时才找。否则 `docker-compose --version` / `docker-compose help` 这类调用
+# 也会去改写当前目录里的 yml（副作用，绝不能发生）。
+# 注意把 compose 会自动加载的 override 文件一并纳入。
+if [ -z "$LIST" ]; then
+  case "$SUBCMD" in
+    ""|version|help|--version|-v|--help|-h) : ;;
+    *)
+      for c in docker-compose.yml docker-compose.yaml compose.yaml compose.yml \
+               docker-compose.override.yml docker-compose.override.yaml \
+               compose.override.yml compose.override.yaml; do
+        if [ -f "$c" ]; then
+          LIST="$LIST
+$c"
+        fi
+      done
+      ;;
+  esac
+fi
+
+if [ -n "$LIST" ]; then
+  printf '%s\n' "$LIST" | while IFS= read -r f; do
+    [ -n "$f" ] || continue
+    [ -f "$f" ] || { echo "[kp] 警告：compose 文件不存在，跳过 host 化: $f" >&2; continue; }
+    if [ ! -x "$KPH" ]; then
+      echo "[kp] 警告：$KPH 不存在，本次不做 host 化（容器可能因无 veth 起不来）: $f" >&2
+    else
+      QUIET=1 "$KPH" "$f" >/dev/null 2>&1 || \
+        echo "[kp] 警告：compose host 化失败，按原样继续执行: $f" >&2
+    fi
+  done
+fi
+
+# 调用日志（失败不影响主流程）：每次调用记一行，用于确认"面板到底调了什么"
+if [ -w /tmp ]; then
+  echo "$(date '+%F %T') cwd=$(pwd) $*" >> "$LOG" 2>/dev/null || :
+  tail -n 200 "$LOG" > "$LOG.kptmp" 2>/dev/null || :
+  if [ -s "$LOG.kptmp" ]; then mv -f "$LOG.kptmp" "$LOG" 2>/dev/null || :; else rm -f "$LOG.kptmp" 2>/dev/null || :; fi
+fi
+
+exec "$REAL" "$@"
