@@ -751,7 +751,8 @@
         "确认设备是官方 NROS，而非刷过的标准 OpenWrt（该脚本明确不适用）",
         "ubus call system board 的 release.revision 形如 2.*（注意：不是 /etc/openwrt_release 的 DISTRIB_RELEASE=21.02-SNAPSHOT）",
         "C2000Ultra 机型会强制要求检测到 SD 卡（挂载点须在 /tmp/storage/* 或 /mnt/app_data），否则 die",
-        "必须在真 TTY 里跑：启动有 10 秒免责声明倒计时并等 stdin 输入 y，管道/CI 会 input cancelled"
+        "必须在真 TTY 里跑：启动有 10 秒免责声明倒计时并等 stdin 输入 y（管道喂够 y+编号其实能跑通，但绝不许替使用者选菜单项；exec_command 不喂输入会永久挂住）",
+        "运行命令不能带参数：就是 sh ssh-nradio-plugin-installer.sh；多带一个仓库 URL 会被当成菜单编号 -> ERROR 无效编号 -> 退出"
       ],
       "steps_summary": "自行备份 -> snapshot 拍补丁基线 -> 设备侧 wget 下载并对 sha256 -> sh -n 过语法 -> 真终端跑菜单 -> check（丢补丁则 --fix）。绝对不要选：卸载 Docker / 装 AGH·mosdns / 装奇游·雷神 / 重装 OpenClash 内核",
       "verify": [
