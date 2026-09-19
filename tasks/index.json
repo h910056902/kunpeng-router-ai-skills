@@ -132,6 +132,32 @@
       "rollback": "opkg remove dockerd containerd docker runc libnetwork tini libseccomp；恢复 distfeeds.conf.kp-bak；docker 数据目录保留不影响系统"
     },
     {
+      "id": "docker.purge",
+      "title": "清空 Docker 环境与容器（重装演练前置）",
+      "group": "从零装机",
+      "order": 40,
+      "risk": "destructive",
+      "playbook": "tasks/04-docker-purge.md",
+      "refs": ["references/c2000u-docker.md", "references/one-command-restore.md", "references/1panel-hostnet-default.md"],
+      "scripts": ["scripts/payload/kp-docker-purge.sh", "scripts/rtr_lib.py"],
+      "offline": [],
+      "preconditions": [
+        "SSH 可达；/mnt/storage/data 已挂载且可写（备份快照要写在这里）",
+        "已跑 dry-run 并把待删清单交给用户逐条确认（destructive 任务，含糊同意不算确认）",
+        "KEEP 中写清必须保留的容器名；卷里含唯一数据的一律先单独归档",
+        "1Panel 数据根 /mnt/storage/data/1panel 只允许改名归档，禁止删除"
+      ],
+      "steps_summary": "dry-run 盘点待删清单 -> 备份快照（containers/images/volumes/networks/docker-info/uci export dockerd/daemon.json/1Panel.db/df）-> docker stop -t 10 -> docker rm -f 全部容器 -> docker volume rm 全部卷 -> docker rmi -f 全部镜像 -> 删自定义网络（保留 host/none/bridge）-> 可选 --data-root 清 data-root 镜像层（先停 dockerd）-> 可选 --panel-apps 把 1Panel apps/ 改名归档 -> 可选 --reset-uci 复位 dockerd UCI",
+      "verify": [
+        "docker ps -aq | grep -c . = 0、docker images -q | grep -c . = 0、docker volume ls -q | grep -c . = 0",
+        "docker network ls 只剩 bridge host none 三个默认网络",
+        "pidof dockerd 有输出（清空后服务仍要能起来）",
+        "pidof clash 有输出且 :10090 仍 LISTEN（证明没误伤 OpenClash 与 1Panel 面板）",
+        "备份目录 /mnt/storage/data/kpbackup/docker-purge-<时间戳>/ 含 ≥8 个快照文件"
+      ],
+      "rollback": "容器按 containers.txt 重建（可写层不可恢复）；镜像按 images.txt 重拉；卷数据不可恢复；dockerd UCI 用 uci import dockerd < 备份文件；1Panel apps 用 mv apps.bak-<ts> apps 归位；整机兜底走 restore.all"
+    },
+    {
       "id": "panel.install",
       "title": "装 1Panel 面板",
       "group": "从零装机",

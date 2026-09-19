@@ -4,7 +4,7 @@
 
 **🤔 这是什么？**
 
-把一台**内核无 veth / bridge 不可用**的鲲鹏无限 / NRadio C2000 路由器（OpenWrt 21.02，MT7987，aarch64），不刷机调教到能跑 Docker、1Panel、OpenClash 的全部真机实测经验 —— 沉淀为 **39 个机读任务 + 离线安装素材 + 复盘文档** 的 AI Agent 技能仓库。任何 AI（WorkBuddy / Codex / Cursor / Claude Code…）读它能直接上手干活。
+把一台**内核无 veth / bridge 不可用**的鲲鹏无限 / NRadio C2000 路由器（OpenWrt 21.02，MT7987，aarch64），不刷机调教到能跑 Docker、1Panel、OpenClash 的全部真机实测经验 —— 沉淀为 **40 个机读任务 + 离线安装素材 + 复盘文档** 的 AI Agent 技能仓库。任何 AI（WorkBuddy / Codex / Cursor / Claude Code…）读它能直接上手干活。
 
 > 🔒 公开脱敏版：所有密码 / token / 入口码均已替换为 `<你的xxx>` 占位符；离线素材经 md5 校验。
 
@@ -13,7 +13,7 @@
 - 🌐 **一键任务 1**：OpenClash 安装 + Mihomo 内核拉取（离线 ipk / 在线双路径）
 - 📊 **一键任务 2**：ocspeed 自动测速插件安装（五件套落盘 + cron 重建）
 - 🐋 **一键任务 3**：Docker + 1Panel 安装（含 host 网络默认化，容器建 veth 必死的解法）
-- 📦 另有 36 个机读任务：换源救源、无 SSH 救援、TF 扩容、面板排障… 全在 `tasks/index.json`
+- 📦 另有 37 个机读任务：换源救源、无 SSH 救援、TF 扩容、面板排障、**Docker 环境清空**… 全在 `tasks/index.json`
 
 **🚀 AI 快速接入（复制即用）**
 
@@ -101,7 +101,7 @@
 |---|---|
 | [`AGENTS.md`](AGENTS.md) | Agent 约定入口：这个仓库是什么、先读什么、高危禁令、每个任务从哪进 |
 | [`llms.txt`](llms.txt) | LLM 索引清单：全部文档一句话摘要，便于检索式加载 |
-| [`tasks/index.json`](tasks/index.json) | **39 个机读任务**：每条含 id / title / risk / playbook / preconditions / verify / rollback / offline / refs 等字段 |
+| [`tasks/index.json`](tasks/index.json) | **40 个机读任务**：每条含 id / title / risk / playbook / preconditions / verify / rollback / offline / refs 等字段 |
 | [`SKILL.md`](SKILL.md) | 主技能：设备档案 + A→V 有序任务路由表（含 T1/T2/T3 任务包速查） |
 
 **最小接入方式**：让 Agent 先读 `AGENTS.md`，按 `tasks/index.json` 的任务 id 精确取用 playbook，而不是通读全库。
@@ -113,6 +113,7 @@
 | **T1 · OpenClash 安装 + 内核拉取** | [`tasks/01-openclash-install.md`](tasks/01-openclash-install.md) | `offline/openclash/luci-app-openclash_0.47.156_all.ipk`、`offline/core/mihomo-linux-arm64.gz`、6 个 stub ipk、脱敏 config 模板 |
 | **T2 · ocspeed 安装** | [`tasks/02-ocspeed-install.md`](tasks/02-ocspeed-install.md) | `offline/ocspeed/` 五件套（speedswitch.sh / ocspeed.lua / ocspeed.htm / nodetest.htm / config.ocspeed）+ 一键装脚本 `kp-ocspeed.sh` |
 | **T3 · Docker + 1Panel 安装** | [`tasks/03-docker-1panel-install.md`](tasks/03-docker-1panel-install.md) | `offline/panel/` 六脚本（install / kp-install / kp-storage-init / kp-store-lib / kp-store-check / kp-ui）+ `scripts/payload/` host 网络默认化三件套 |
+| **T4 · 清空 Docker 环境（重装前置）** | [`tasks/04-docker-purge.md`](tasks/04-docker-purge.md) | `scripts/payload/kp-docker-purge.sh`（默认 dry-run，双开关才真删，动手前自动备份快照） |
 
 每个 playbook 都包含：前置条件 → 步骤（含离线/在线两条路径）→ 验证命令 → 回滚方法 → 已知坑。
 
@@ -120,7 +121,7 @@
 
 ```
 ├── AGENTS.md / llms.txt / SKILL.md     # AI 入口与路由
-├── tasks/                              # index.json(39 任务) + 3 份 playbook
+├── tasks/                              # index.json(40 任务) + 4 份 playbook（含清空 Docker）
 ├── references/                         # 23 篇专题文档（含 id/tags/risk frontmatter）
 ├── docs/                               # 调优经验总览 · 验收清单 · 助手菜单提示词 · 仓库维护指南
 ├── assets/menu/                        # 菜单软件图标（32px PNG，jsdelivr 引用）

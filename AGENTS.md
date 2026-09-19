@@ -47,8 +47,9 @@
 | `ocspeed.install` | 装 ocspeed（OpenClash 自动测速插件） | [`tasks/02-ocspeed-install.md`](tasks/02-ocspeed-install.md) | write |
 | `docker.install` / `panel.install` | 装 Docker + 1Panel（含 host 网络默认化） | [`tasks/03-docker-1panel-install.md`](tasks/03-docker-1panel-install.md) | write |
 | `restore.all` | 一条命令全装（换卡 / overlay 丢失后） | `tasks/03-*.md` §五 → 走 `nros-panel` | destructive |
+| `docker.purge` | 清空 Docker 环境与容器（重装演练前置） | [`tasks/04-docker-purge.md`](tasks/04-docker-purge.md) | destructive |
 
-其余 34 个任务（商店补丁、AGH、NAS、面板排障、无 SSH 救援、TF 扩容…）见 `tasks/index.json`（上表 5 个 id + 其余 34 = 全量 39 个）。
+其余 34 个任务（商店补丁、AGH、NAS、面板排障、无 SSH 救援、TF 扩容…）见 `tasks/index.json`（上表 6 个 id + 其余 34 = 全量 40 个）。
 
 ## 4. 动手前必须做的 3 项检查
 
