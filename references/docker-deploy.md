@@ -1,3 +1,14 @@
+---
+id: REF-docker-deploy
+title: "Docker 面板部署 playbook"
+tags: [docker, panel, luci, deploy]
+risk: medium
+preconditions:
+  - "4 个面板文件已备（dpctl/dpapi.lua/controller/htm）"
+  - "上传时强制 CRLF→LF"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # Docker 面板部署 playbook
 
 > 完整源码在 `src/dockerpanel/`，一键部署脚本在 `src/deploy/`，

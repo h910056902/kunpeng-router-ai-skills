@@ -1,3 +1,15 @@
+---
+id: REF-1panel-hostnet
+title: "1Panel 应用「默认 host 网络」方案（C2000 U / 无 veth 内核）"
+tags: [1panel, docker, compose, host-network, no-veth, wrapper]
+risk: high
+preconditions:
+  - "设备已装 1Panel（v1.10.x）与 Docker"
+  - "内核无 veth（bridge 不可用）"
+  - "已备份 /usr/bin/docker-compose"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # 1Panel 应用「默认 host 网络」方案（C2000 U / 无 veth 内核）
 
 > 状态：**设计与脚本已就绪并通过 PC 侧自测；设备端待实测**（2026-09-19）
@@ -262,6 +274,64 @@ PC 侧   curl -k  https://<host>:8443/    → 401/200（401=要求登录，说�
 
 **顺带发现的同名坑**：同一批安装里 `siyuan`、`alist` 的库记录状态分别是 `UpErr`/`Error`，
 它们的容器已被面板清理，恢复时**同样改库 + 改 .env + up -d** 即可，流程完全一致。
+
+## 十一、一把查清「现在有哪些容器」：`kp-1panel-status.py`（只读，2026-09-19 实机验证）
+
+```bash
+python scripts/kp-1panel-status.py                 # 人类可读
+python scripts/kp-1panel-status.py --json out.json # 结构化，便于后续比对
+```
+
+凭据同其它脚本（`ROUTER_PW` 环境变量或 `~/.workbuddy/kunpeng-router.env`）。**纯只读，不 stop/start/rm 任何东西。**
+
+### 它回答的 6 个问题（每条都对应一次真实排障）
+
+| 输出段 | 回答的问题 |
+|---|---|
+| 容器清单（state / exit / **OOMKilled** / nm / restart 策略 / restarts） | "面板说运行中，为什么打不开？" |
+| 面板 `app_installs` 记账对照 | "面板记账和实际对得上吗？" |
+| 磁盘应用实例是否已 host 化（+ 是否残留 `ports:`、有无 `.bridge.bak`） | "还有漏转换的 compose 吗？" |
+| 宿主端口监听 | "host 模式下应用真的在听吗？" |
+| host 化装置是否在位（wrapper / `.real` / `kp-compose-host` / 调用日志） | "重建 overlay 之后装置还在吗？" |
+| **dmesg OOM 事件 + `task_memcg` 归属** | **"容器是被谁杀死的？"** |
+
+### ⚠️ 两个必知陷阱（都踩过）
+
+1. **面板库列名**：`app_installs` 里 **`name` 才是应用 key**（`alist`/`siyuan`…），
+   `app_id` / `app_detail_id` 是商店里的数字 id。拿 `app_id` 当标签会打印出 `3 / 47 / 214` 这种莫名其妙的数字。
+2. **本固件 busybox 的 `free -m` 不认 `-m`**，照样输出 **kB**（1GB 内存报 `1016432`）。
+   别按 MB 读，会得出"可用内存 491428 MB"这种荒唐结论 → **一律改读 `/proc/meminfo`**（单位恒为 kB）。
+
+### 🔴 1GB 设备的内存红线：DSH 被全局 OOM 杀掉，面板却仍显示"运行中"
+
+2026-09-19 实机事故（`deepseek-harness`，649MB 镜像 / `1panel/deepseek-harness:0.1.5-rc.1`）：
+
+```
+docker inspect → State=exited exit=143 oom=true finished=13:52:51
+dmesg → oom-kill:constraint=CONSTRAINT_NONE,global_oom,
+        task_memcg=/docker/0c5d76841deb…,task=MainThread,pid=12686,uid=1000
+        Out of memory: Killed process 12686 (MainThread) anon-rss:443568kB
+容器 ID 0c5d76841deb… == DSH 容器          ← 归属确凿
+面板库 app_installs → status=Running，message=「状态异常，请查看日志」
+```
+
+**判读要点**：
+- `constraint=CONSTRAINT_NONE` + `global_oom` ⇒ **是全机内存耗尽**，不是容器自身限额
+  （`.env` 里 `MEMORY_LIMIT=0`，模板的 `deploy.resources.limits` 根本没设限）；
+- `exit=143` 是 **SIGTERM**，`oom=true` 才是 docker 记下的 OOM 标记 —— 只看 143 会误判成"被手动停的"；
+- **面板 UI 会继续显示"运行中"**（库状态没跟着更新），所以"面板说在跑"完全不可信，
+  **必须 `docker ps` 或本脚本复核**；
+- 该机总内存 993 MB，DSH 单进程 RSS 443 MB + 1Panel(1.6GB 虚拟) + dockerd + clash ⇒ 余量只剩 ~477 MB，
+  **重启后大概率二次 OOM**。在 1GB 路由器上跑 649MB 级应用属于超配，不是配置问题。
+
+### 关联：面板记账 vs 实际的三类不一致（实机样本）
+
+| 应用 | 库 status | 实际情况 | 含义 |
+|---|---|---|---|
+| `deepseek-harness` | `Running` | 容器 `exited` | **库状态滞后/错误**（OOM 后没回写）——最危险的一类 |
+| `alist` | `Error` | 容器不存在 | 面板已清理容器，记录留痕 |
+| `siyuan` | `UpErr` | 容器不存在 | 残留的是**修复前**的 `undefined network` 旧错，不代表当前转换器有问题 |
+| `ai-gateway` | `Stopped` | `exited(0)` | 一致（用户手动停的） |
 
 
 

@@ -1,3 +1,14 @@
+---
+id: REF-istore
+title: "iStore 商店 / 1Panel 集成（鲲鹏 C2000 Max 实测）"
+tags: [istore, 1panel, ipk, luci]
+risk: medium
+preconditions:
+  - "iStore ipk 已下载（手动解包安装）"
+  - "与鲲鹏商店并存"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # iStore 商店 / 1Panel 集成（鲲鹏 C2000 Max 实测）
 
 ## 一、结论速览

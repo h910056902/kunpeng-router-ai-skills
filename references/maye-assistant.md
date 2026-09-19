@@ -1,3 +1,14 @@
+---
+id: REF-maye
+title: "maye 插件安装助手兼容性（nradio.mayebano.shop）"
+tags: [maye, third-party, plugin-installer, snapshot]
+risk: high
+preconditions:
+  - "改前先 snapshot"
+  - "严禁在其菜单装 AGH/mosdns（端口与 Docker AGH 冲突）"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # maye 插件安装助手兼容性（nradio.mayebano.shop）
 
 社区脚本「NRadio 官方系统插件安装助手」（作者 maye，V3.0.7 / 2026-09-07），

@@ -4,7 +4,8 @@ dpctl text eol=lf
 *.lua text eol=lf
 *.htm text eol=lf
 *.md  text eol=lf
-*.py  text eol=lf
-*.yml text eol=lf
-# 回归样本：这个 fixture 必须是 CRLF，禁止任何换行转换
-scripts/payload/fixtures/compose.crlf.yml -text
+
+# 二进制资产：禁止任何换行符转换（ipk / 内核镜像，转换即毁）
+*.ipk -text
+*.gz -text
+checksums.md5 -text

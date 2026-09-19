@@ -1,3 +1,14 @@
+---
+id: REF-no-ssh-recovery
+title: "无 SSH 时的取数与命令通道（LuCI 旁路）"
+tags: [rescue, luci, dmesg, crontab, reboot]
+risk: medium
+preconditions:
+  - "LuCI 仍可登录"
+  - "TF 卡为可插拔（掉线需物理复位）"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # 无 SSH 时的取数与命令通道（LuCI 旁路）
 
 适用：SSH 不通（防火墙 REJECT / dropbear 未起 / 存储掉线导致服务全丢），但 **80 端口 uhttpd 还活着**。

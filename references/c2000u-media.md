@@ -1,3 +1,13 @@
+---
+id: REF-c2000u-media
+title: "C2000 U（B 机）· NAS 影视墙容器实测档案（2026-09-14）"
+tags: [docker, media, alist, navidrome, archive]
+risk: low
+preconditions:
+  - "读档用途（镜像体积与内存占用实测）"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # C2000 U（B 机）· NAS 影视墙容器实测档案（2026-09-14）
 
 > 前提：**内核无 VETH（`CONFIG_VETH/MACVLAN/IPVLAN` 全 not set，厂商 `kmod-veth` 是空包）**

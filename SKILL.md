@@ -34,7 +34,7 @@ agent_created: true
 | 硬盘格式 | 内核支持 ext4/f2fs/vfat/fuseblk(NTFS via ntfs-3g)；**不支持 exFAT**（内核无驱动+无 fuse 版） |
 | 温度 | 待机 ~62°C，7x24 挂盘注意通风 |
 | GitHub 仓库 | **公开**：https://github.com/h910056902/kunpeng-router-ai-skills （本技能包，已脱敏）<br>**私有**：https://github.com/h910056902/kunpeng-router-tuning （完整档案：memory/ 日志、src/ 源码、HANDOFF/PROGRESS） |
-| 接手文档 | 公开仓库根 [`README.md`](README.md)（读法 + 目录 + TL;DR）；完整进度看板 `PROGRESS.md` 与交接文档 `HANDOFF.md` 在私有仓库 |
+| 接手文档 | 仓库根 [`AGENTS.md`](AGENTS.md)（**AI 机器可读入口，先读这个**）+ [`README.md`](README.md)；任务入口见 `tasks/index.json` |
 | 记忆归档 | 私有仓库 `memory/`：`PROJECT-MEMORY.md`（长期）+ 每日日志（公开仓库不含，含真实内网细节） |
 | 源码归档 | 私有仓库 `src/dockerpanel/`：dpctl / dpapi.lua / controller / htm 路由器端源码副本 |
 | 部署脚本 | 私有仓库 `src/deploy/`：41 个部署/验证/测试脚本 + `README.md` 部署手册 |
@@ -52,7 +52,6 @@ agent_created: true
 | `kp-areuok` 本体 | `patches/kp-areuok.sh` | 部署到 `/usr/bin/kp-areuok`（Are-u-ok .run 下载/安装/卸载） |
 | Are-u-ok 插件管理器 | `patches/areuok_plugin.py` | 11 个 .run 插件（kms/nps/openclash/mosdns/unblockneteasemusic/passwall…） |
 | **6 个 stub ipk（5.4.281-1 aarch64）** | `patches/_stubs/*.ipk` | kmod-veth/br-netfilter/ikconfig/nf-ipvs/fs-btrfs/dm —— **同内核同架构，两台机器通用** |
-| 146 应用方案 + 实测 + 6 个坑 | `docs/online-store-plan.md` | 商店增强的完整蓝图 |
 | **OpenClash 配置备份** | `ocspeed-bbydy-backup/openclash/config.openclash-uci` + `bbydy.yaml` | 装 OpenClash 时的 UCI/订阅参考 |
 | iStore 安装脚本 | `kunpeng-istore.sh` | 装 iStore + Argon（**不碰 appcenter.lua**） |
 | 网易云解锁 CBI 垫片 | `patches/unm_luci_shim.py` + `unm_luci_shim/` | NROS 不支持 menu.d → 补经典控制器 |
@@ -92,35 +91,47 @@ agent_created: true
 
 ## 任务路由表
 
-| 任务 | playbook 概要 | 详见 |
-|---|---|---|
-| A. 商店加插件/改条目/改简介/卸载 | 注册表是 `installed.list`，改第 2 列名称/第 8 列简介（split 后 f[1]/f[7]）；source=docker 条目免 opkg 校验 | `references/store-patching.md` |
-| B. 商店后端/前端打补丁 | 定位 appcenter.lua/htm → 备份 → /tmp 校验 → 落盘 → 清缓存 → grep 验证 | `references/store-patching.md` |
-| C. 安装进度显示 | 后端 `_online_install_percent()` 已内置（日志阶段加权+时间兜底），前端读 `percent` 字段 | `references/store-patching.md` |
-| D. 装/配 Docker 或容器 | 全部 host 网络（无 veth）；新依赖缺失 → 造 stub ipk（老式 tar.gz 嵌套格式） | `references/docker-porting.md` |
-| E. AGH 改端口/接管 DNS/回滚 | 只能 sed `AdGuardHome.yaml` 的 `dns.port`；切换顺序：先迁 dnsmasq → 再重启 AGH | `references/adguard-setup.md` |
-| F. 加/换去广告过滤清单 | 先 `scripts/probe_filterlists.py` 探测可达性 → `scripts/add_filterlists.py` 走 API 添加；内存 <30MB 别加大清单 | `references/adguard-setup.md` |
-| G. DNS 不通/被劫持排查 | 查链路四段：53 是否 AGH 在听 → AGH 上游 → OpenClash 7874 → dnsmasq 5354 | `references/adguard-setup.md` |
-| H. NAS 升级（挂盘/共享/下载机/媒体） | 先 `scripts/probe_nas.py` 探硬件 → 按 U 盘格式选挂载方案（exFAT 挂不了！）→ ksmbd 共享 → aria2/minidlna 原生服务 | `references/nas-upgrade.md` |
-| I. 技能包/仓库同步 | 改完 `~/.workbuddy/skills/kunpeng-router-tuning/` 后 git commit + push（推送要点见下方代码块）；**公开仓库 `kunpeng-router-ai-skills` 只放脱敏版**，真机日志/源码进私有仓库 `kunpeng-router-tuning` | 本文件下方「推送要点」 |
-| J. maye 插件助手兼容 | 跑社区脚本 `nradio.mayebano.shop/ssh-nradio-plugin-installer.sh` 前后：snapshot → 用户跑脚本 → check → 丢补丁 check --fix 重放；**禁在其菜单装 AGH/mosdns（native:554 与我们 Docker AGH:53 冲突）** | `references/maye-assistant.md` |
+### 一键任务包（面向 Agent 的机读 playbook，优先入口）
 
-| K. 装 iStore 商店 / 1Panel | iStore 框架可装（手动解包 ipk），与鲲鹏商店并存；**1Panel 已原生装成（v1.10.34-lts，端口 10090，官方包自带 procd init，二进制静态链接可跑 musl）** | `references/istore-integration.md` + `references/c2000u-1panel.md` |
-| **K2. 让 1Panel 应用"默认"走 host 网络（无 veth 内核必做）** | 1Panel 模板一律引用 bridge 外部网络 `1panel-network` → 本机装必挂在 veth pair。**正路是换 `/usr/bin/docker-compose` 为 wrapper**（真件改名 `.real`），调用前把 `-f` 的 compose 幂等 host 化 → 面板/商店/手工全生效，且容器由 1Panel 自己 up（会进「已安装应用」）。配套转换器 `kp-compose-host`（含 Redis 5.4 内核兼容参数）。⚠️ **转换器必须缩进无关**：面板 v1.10 落盘的 compose 是 **4 空格缩进 + 多一个 `deploy` 段**，商店 tarball 是 2 空格 —— 写死缩进会让面板装应用报 `Service "x" uses an undefined network`（2026-09-19 真机事故）。回归自测：`kp-compose-selftest.sh` + `fixtures/` | `references/1panel-hostnet-default.md`（§九·补 必读） |
-| **K3. 测「1Panel 能不能装容器」** | 一条命令跑完 `probe→pull→control→[授权]→hostnet-install→install→panel→panelcheck→verify`：拉 alist 真镜像、无 wrapper 对照组复现 veth 错、装 wrapper、复刻 1Panel 调用形态装起来并验 HTTP 5244。面板 API 自动化不可靠（v1.10 登录要 RSA+AES 加密）→ 会降级成"你在浏览器点一次 + 脚本自动收尾取证"，证据源是 `/tmp/kp-compose.log` | `scripts/kp-1panel-install-test.py` + `scripts/payload/kp-1panel-test.sh` + `references/1panel-hostnet-default.md` §七~九 |
-| L. Portainer 汉化 | 官方 i18n 是半成品（locales 仅 765B）；走「静态 JS 替换 + 挂载卷」，1872 处已落地；**正则必须处理 `\"` 转义否则全盘错位**；小写词（no/host/container）禁翻 | "references/portainer-i18n.md" |
-| M. Docker 面板（自建） | **读数据一律走 Lua `socket.unix` 直连 Docker HTTP API（0.03-0.3s），绝不用 docker CLI（冷态 4-9s）；`curl` 不支持 `--unix-socket` 但 LuaSocket 支持。** 禁 `docker ps --format {{.Size}}`（vfs 下 200s 不返回）；`du` 扫描必须用 `mkdir` 原子锁防轮询叠加；**bridge 网络不可用，只能用 host 模式**；加速源要写 UCI `dockerd.globals.registry_mirrors`（`/tmp/dockerd/daemon.json` 每次启动重生成） | `references/docker-panel.md` |
-| M2. **Docker 面板部署** | 4 文件上传（`dpctl`→`/usr/sbin/`、`dpapi.lua`→`/usr/lib/lua/`、controller、htm）→ 配上 UCI 加速源 → 清 LuCI 缓存。**上传必须强制 `\r\n`→`\n`**（CRLF 毁 shebang 报 `dpctl: not found`）；验证分水岭是 `lua -e 'require("dpapi").get("/version")'` 是否返回 JSON。一键脚本 `src/deploy/dp_deploy.py` | `references/docker-deploy.md` + `src/deploy/README.md` |
-| Q. **NAS 影视墙容器（B 机）** | 全部 `--network host`。实测可用：**alist:5244(129MB)**、**navidrome:4533(232MB)**、**filebrowser:8082(36MB)**；**jellyfin(867MB) 能拉但启动要求 config 分区可用空间 ≥2GiB 且 RSS 218MB**，992MB 内存机器上要权衡。脚本：`kp-docker1panel/media-pull-test.sh` | `references/c2000u-media.md` |
-| R. 省内存（B 机容器侧） | 先删 Exited 死容器，再停最重的容器（jellyfin 218MB 是典型大头）；1Panel 面板 RSS ~70MB、openclash clash ~65MB、dockerd ~40MB。巡检脚本 `kp-docker1panel/mem-report.sh`（进程 RSS Top + 自启服务） | 本表 Q + N |
-| N. 省内存 / 停插件 | 停 Docker 全家 + `mosquitto mqttagent miniupnpd telnetd wifidogx xl2tpd igmpproxy` → 可用内存 47→150MB、**swap 178→32MB**、出网 0.25→0.046s。**绝不能停** network/firewall/dnsmasq/uhttpd/dropbear。面板内可一键启停 Docker（`docker_service`） | `references/docker-panel.md` §八 |
+| ID | 任务 | 任务包 | 关键输入 |
+|---|---|---|---|
+| T1 | OpenClash 安装 + 内核拉取 | `tasks/01-openclash-install.md` | `offline/openclash/` + `offline/core/` + `offline/stubs/` |
+| T2 | ocspeed 安装 | `tasks/02-ocspeed-install.md` | `offline/ocspeed/`（五件套 + `kp-ocspeed.sh`） |
+| T3 | Docker + 1Panel 安装 | `tasks/03-docker-1panel-install.md` | `offline/panel/`（nros-panel 安装链） |
 
-| O. PC 侧工具链故障 / 编码乱码 | **Bash 工具已失效**（`dirname`/`cut`/`env` 全缺，返回 127）→ 改用 Python subprocess；PowerShell 回显中文乱码**不等于**数据损坏，核对编码必须走字节层；`Out-File -Encoding utf8` 会写 BOM | `references/pc-toolchain-limits.md` |
-| **P. 第二台设备 C2000 U 的 Docker 实装** | **已装好，复现用 `scripts/setup_docker_c2000u.py`**（6 步：换源→造 stub→装包→配 alt_config_file→开自启→冒烟）。要点：**配置必须走 `uci set dockerd.globals.alt_config_file`**（UCI 生成器不支持 storage-driver/bridge）；**装 stub 前先移走 `/var/opkg-lists`**（否则被 feed 同名包截胡）；**本机无 SFTP**，传二进制只能 `printf '\\NNN...'`；data-root 必须在 `/mnt/storage/data`（裸 f2fs）才有 overlay2，放 `/opt/docker` 只能 vfs | `references/c2000u-docker.md` |
-| **S. 无 SSH / 22 连不上 / 存储掉线** | ① `curl -v telnet://IP:22` 区分 **refused**(无监听) / **timed out**(防火墙 DROP)，并与本机 `nc 127.0.0.1 22` 对照 → 若本机通而外部 refused，就是 `firewall` 的 `config rule 'ssh'` 在拦；② LuCI 能登就**先直接 GET `/admin/status/dmesg` 与 `/admin/status/syslog`**（服务端渲染的 textarea，**零延迟、不用等 cron**，实测 1382 行/117KB），再不够用才**借 crontab 页面当命令通道**（multipart：`token`+`cbi.submit=1`+`cbid.crontab.1.crons`，输出写 `/www/*.txt` 再 HTTP 读回，收尾用**一条自清理 cron**）；③ 软重启真接口是 `POST /admin/system/reboot/call`（带 `token`，**chunked 流式 200 = 已触发**），`/admin/system/reboot` 那个 URL 是假的（渲染的是 flashops）；④ **存储是可插拔 TF 卡**，卡掉线时**软件层无法复位**（`mtk-msdc` unbind/rebind 无效、无软件可控稳压器）→ 只能物理断电 + 重插卡 | `references/no-ssh-recovery.md` |
-| T. 写/改运维脚本的终端界面 | 输出抽到独立 `kp-ui.sh`，脚本只调 `ui_*` 不写 printf。三条硬约束：busybox sh + printf（无 tput/数组）；**中文占 2 列但 `${#s}` 按字节算 → 禁止右边框和右对齐**；非 tty 自动关色。取脚本目录**禁用 `dirname`**（用 `${0%/*}`）。阶段编号只给真阶段，收尾汇总不占编号 | `references/script-ui.md` |
-| **U. 一条命令重装三大件（换卡 / 卡被重置 / overlay 丢失后）** | 仓库 **`h910056902/nros-panel`**（public、已脱敏）。入口：`wget -qO /tmp/kp.sh https://raw.githubusercontent.com/h910056902/nros-panel/main/install.sh && sh /tmp/kp.sh` —— 自动判断：存储没就绪就先分区+重启，重启后**自动续跑**装完。五条关键事实：① **出厂 6 个 opkg 源全部失效（`000`，不是 404）→ 必须整体换阿里云 21.02.7**；② 设备上 **curl 拉 raw 必失败、同一地址 wget 可以 → 下载须 curl/wget 双栈**；③ 跨重启续跑靠**预置新卡 p1 的 `upper/etc/rc.local`**（执行 rc.local 的是 `/etc/init.d/done`，`S95done` 在只读 `/rom` 里）；④ **`dockerd` 装不上报 `incompatible with the architectures configured` 是假象** —— 真因是 6 个 kmod（veth/dm/fs-btrfs/br-netfilter/ikconfig/nf-ipvs）在厂商内核上根本不存在，opkg **在"选候选包"阶段就失败，`--force-depends` 完全无效**（那开关只管"装包时"的检查）→ 必须造只声明 `Provides` 的桩包把依赖链闭合；⑤ **dockerd 配置只认 UCI**（`/etc/init.d/dockerd` 把 UCI 渲染到 `/tmp/dockerd/daemon.json`），写 `/etc/docker/daemon.json` **没人读** → 实测 Root Dir 仍是 `/opt/docker`、驱动退化 `vfs`、拉镜像 15s 超时；改 UCI 的 `data_root`/`registry_mirrors` 后立即正常（`pull hello-world` 5.1s） | `references/one-command-restore.md` |
-| **V. 系统分区（/overlay）不够大，要原地扩容** | `resize.f2fs` **拒绝对已挂载的 fs 操作**（内含硬错误串 `Not available on mounted device!`），而 `/overlay` 就是 `/` 永远挂着；`pivot_tf_overlay()` 又**硬编码 `/dev/mmcblk0p1`**（overlay 不能挪分区）→ **唯一窗口是"NOR 窗口"**：开机瞬间系统落在 `/dev/mtdblock8`（2MB jffs2）上、卡还没挂载。四步：**在线改分区表（p1 起始扇区必须保持 16）→ 把 `/mnt/mtdblock8/upper/etc/config/fstab` 的 `/overlay` 设 `enabled=0` 并预置 `kp-resize.sh`+`rc.local` → reboot → 窗口内先 umount 热插拔挂的 p1 再 `resize.f2fs` → 恢复 fstab 再 reboot**。实测 4G→16G，数据零丢失。⚠️ 最容易漏的一步是**先 umount `/tmp/storage/mmcblk0p1`**，否则 resize 照样以 mounted 拒绝 | `references/tf-partition-resize.md` |
+> 任务包内含前置检查 / 步骤 / 验证判据 / 回滚与风险点；机器索引：`tasks/index.json`（id、前置、脚本、风险、验证）。
+> 三大任务在 B 机（C2000 U）上均已实装验证；任务包兼作「从零复现」与「幂等核对」双用途。
+
+### 按场景路由（A–V）
+
+| ID | 任务 | playbook 概要 | 详见 |
+|---|---|---|---|
+| A | 商店加插件/改条目/改简介/卸载 | 注册表是 `installed.list`，改第 2 列名称/第 8 列简介（split 后 f[1]/f[7]）；source=docker 条目免 opkg 校验 | `references/store-patching.md` |
+| B | 商店后端/前端打补丁 | 定位 appcenter.lua/htm → 备份 → /tmp 校验 → 落盘 → 清缓存 → grep 验证 | `references/store-patching.md` |
+| C | 安装进度显示 | 后端 `_online_install_percent()` 已内置（日志阶段加权+时间兜底），前端读 `percent` 字段 | `references/store-patching.md` |
+| D | 装/配 Docker 或容器 | 全部 host 网络（无 veth）；新依赖缺失 → 造 stub ipk（老式 tar.gz 嵌套格式） | `references/docker-porting.md` |
+| E | AGH 改端口/接管 DNS/回滚 | 只能 sed `AdGuardHome.yaml` 的 `dns.port`；切换顺序：先迁 dnsmasq → 再重启 AGH | `references/adguard-setup.md` |
+| F | 加/换去广告过滤清单 | 先 `scripts/probe_filterlists.py` 探测可达性 → `scripts/add_filterlists.py` 走 API 添加；内存 <30MB 别加大清单 | `references/adguard-setup.md` |
+| G | DNS 不通/被劫持排查 | 查链路四段：53 是否 AGH 在听 → AGH 上游 → OpenClash 7874 → dnsmasq 5354 | `references/adguard-setup.md` |
+| H | NAS 升级（挂盘/共享/下载机/媒体） | 先 `scripts/probe_nas.py` 探硬件 → 按 U 盘格式选挂载方案（exFAT 挂不了！）→ ksmbd 共享 → aria2/minidlna 原生服务 | `references/nas-upgrade.md` |
+| I | 技能包/仓库同步 | 公开仓库 `kunpeng-router-ai-skills` 由构建脚本从私有技能包生成（脱敏）；私有仓库 `kunpeng-router-tuning` 承载完整档案（memory/、src/、HANDOFF/PROGRESS） | `AGENTS.md` |
+| J | maye 插件助手兼容 | 跑社区脚本 `nradio.mayebano.shop/ssh-nradio-plugin-installer.sh` 前后：snapshot → 用户跑脚本 → check → 丢补丁 check --fix 重放；**禁在其菜单装 AGH/mosdns（native:554 与我们 Docker AGH:53 冲突）** | `references/maye-assistant.md` |
+| K | 装 iStore 商店 / 1Panel | iStore 框架可装（手动解包 ipk），与鲲鹏商店并存；**1Panel 已原生装成（v1.10.34-lts，端口 10090，官方包自带 procd init，二进制静态链接可跑 musl）** | `references/istore-integration.md` + `references/c2000u-1panel.md` |
+| K2 | **让 1Panel 应用"默认"走 host 网络（无 veth 内核必做）** | 1Panel 模板一律引用 bridge 外部网络 `1panel-network` → 本机装必挂在 veth pair。**正路是换 `/usr/bin/docker-compose` 为 wrapper**（真件改名 `.real`），调用前把 `-f` 的 compose 幂等 host 化 → 面板/商店/手工全生效，且容器由 1Panel 自己 up（会进「已安装应用」）。配套转换器 `kp-compose-host`（含 Redis 5.4 内核兼容参数）。⚠️ **转换器必须缩进无关**：面板 v1.10 落盘的 compose 是 **4 空格缩进 + 多一个 `deploy` 段**，商店 tarball 是 2 空格 —— 写死缩进会让面板装应用报 `Service "x" uses an undefined network`（2026-09-19 真机事故）。回归自测：`kp-compose-selftest.sh` + `fixtures/` | `references/1panel-hostnet-default.md`（§九·补 必读） |
+| K3 | **测「1Panel 能不能装容器」** | 一条命令跑完 `probe→pull→control→[授权]→hostnet-install→install→panel→panelcheck→verify`：拉 alist 真镜像、无 wrapper 对照组复现 veth 错、装 wrapper、复刻 1Panel 调用形态装起来并验 HTTP 5244。面板 API 自动化不可靠（v1.10 登录要 RSA+AES 加密）→ 会降级成"你在浏览器点一次 + 脚本自动收尾取证"，证据源是 `/tmp/kp-compose.log` | `scripts/kp-1panel-install-test.py` + `scripts/payload/kp-1panel-test.sh` + `references/1panel-hostnet-default.md` §七~九 |
+| K4 | **查「现在到底有哪些 1Panel 容器」** | 一条只读命令出全景：`python kp-1panel-status.py` → 容器清单（state/exit/**OOMKilled**/nm/restart 策略）+ 面板 `app_installs` 记账对照 + 磁盘应用实例是否已 host 化 + 宿主端口监听 + host 化装置是否在位 + **dmesg OOM 归属**（`task_memcg=/docker/<id前缀>` 直接指认是哪个容器被杀）+ 内存红线判读。**两个必知陷阱**：① 面板库表 `app_installs` 里 `name` 才是应用 key，`app_id` 是数字；② 本固件 busybox `free -m` 不认 `-m`，照样吐 kB → 改读 `/proc/meminfo`。⚠️ **1GB 内存设备上 DSH 这类 649MB 镜像会被全局 OOM 杀掉，而面板仍显示「运行中」** | `scripts/kp-1panel-status.py` + `references/1panel-hostnet-default.md` §十一 |
+| L | Portainer 汉化 | 官方 i18n 是半成品（locales 仅 765B）；走「静态 JS 替换 + 挂载卷」，1872 处已落地；**正则必须处理 `\"` 转义否则全盘错位**；小写词（no/host/container）禁翻 | `references/portainer-i18n.md` |
+| M | Docker 面板（自建） | **读数据一律走 Lua `socket.unix` 直连 Docker HTTP API（0.03-0.3s），绝不用 docker CLI（冷态 4-9s）；`curl` 不支持 `--unix-socket` 但 LuaSocket 支持。** 禁 `docker ps --format {{.Size}}`（vfs 下 200s 不返回）；`du` 扫描必须用 `mkdir` 原子锁防轮询叠加；**bridge 网络不可用，只能用 host 模式**；加速源要写 UCI `dockerd.globals.registry_mirrors`（`/tmp/dockerd/daemon.json` 每次启动重生成） | `references/docker-panel.md` |
+| M2 | **Docker 面板部署** | 4 文件上传（`dpctl`→`/usr/sbin/`、`dpapi.lua`→`/usr/lib/lua/`、controller、htm）→ 配上 UCI 加速源 → 清 LuCI 缓存。**上传必须强制 `\r\n`→`\n`**（CRLF 毁 shebang 报 `dpctl: not found`）；验证分水岭是 `lua -e 'require("dpapi").get("/version")'` 是否返回 JSON。一键脚本 `src/deploy/dp_deploy.py` | `references/docker-deploy.md` + `src/deploy/README.md` |
+| N | 省内存 / 停插件 | 停 Docker 全家 + `mosquitto mqttagent miniupnpd telnetd wifidogx xl2tpd igmpproxy` → 可用内存 47→150MB、**swap 178→32MB**、出网 0.25→0.046s。**绝不能停** network/firewall/dnsmasq/uhttpd/dropbear。面板内可一键启停 Docker（`docker_service`） | `references/docker-panel.md` §八 |
+| O | PC 侧工具链故障 / 编码乱码 | **Bash 工具已失效**（`dirname`/`cut`/`env` 全缺，返回 127）→ 改用 Python subprocess；PowerShell 回显中文乱码**不等于**数据损坏，核对编码必须走字节层；`Out-File -Encoding utf8` 会写 BOM | `references/pc-toolchain-limits.md` |
+| P | **第二台设备 C2000 U 的 Docker 实装** | **已装好，复现用 `scripts/setup_docker_c2000u.py`**（6 步：换源→造 stub→装包→配 alt_config_file→开自启→冒烟）。要点：**配置必须走 `uci set dockerd.globals.alt_config_file`**（UCI 生成器不支持 storage-driver/bridge）；**装 stub 前先移走 `/var/opkg-lists`**（否则被 feed 同名包截胡）；**本机无 SFTP**，传二进制只能 `printf '\\NNN...'`；data-root 必须在 `/mnt/storage/data`（裸 f2fs）才有 overlay2，放 `/opt/docker` 只能 vfs | `references/c2000u-docker.md` |
+| Q | **NAS 影视墙容器（B 机）** | 全部 `--network host`。实测可用：**alist:5244(129MB)**、**navidrome:4533(232MB)**、**filebrowser:8082(36MB)**；**jellyfin(867MB) 能拉但启动要求 config 分区可用空间 ≥2GiB 且 RSS 218MB**，992MB 内存机器上要权衡。脚本：`kp-docker1panel/media-pull-test.sh` | `references/c2000u-media.md` |
+| R | 省内存（B 机容器侧） | 先删 Exited 死容器，再停最重的容器（jellyfin 218MB 是典型大头）；1Panel 面板 RSS ~70MB、openclash clash ~65MB、dockerd ~40MB。巡检脚本 `kp-docker1panel/mem-report.sh`（进程 RSS Top + 自启服务） | 本表 Q + N |
+| S | **无 SSH / 22 连不上 / 存储掉线** | ① `curl -v telnet://IP:22` 区分 **refused**(无监听) / **timed out**(防火墙 DROP)，并与本机 `nc 127.0.0.1 22` 对照 → 若本机通而外部 refused，就是 `firewall` 的 `config rule 'ssh'` 在拦；② LuCI 能登就**先直接 GET `/admin/status/dmesg` 与 `/admin/status/syslog`**（服务端渲染的 textarea，**零延迟、不用等 cron**，实测 1382 行/117KB），再不够用才**借 crontab 页面当命令通道**（multipart：`token`+`cbi.submit=1`+`cbid.crontab.1.crons`，输出写 `/www/*.txt` 再 HTTP 读回，收尾用**一条自清理 cron**）；③ 软重启真接口是 `POST /admin/system/reboot/call`（带 `token`，**chunked 流式 200 = 已触发**），`/admin/system/reboot` 那个 URL 是假的（渲染的是 flashops）；④ **存储是可插拔 TF 卡**，卡掉线时**软件层无法复位**（`mtk-msdc` unbind/rebind 无效、无软件可控稳压器）→ 只能物理断电 + 重插卡 | `references/no-ssh-recovery.md` |
+| T | 写/改运维脚本的终端界面 | 输出抽到独立 `kp-ui.sh`，脚本只调 `ui_*` 不写 printf。三条硬约束：busybox sh + printf（无 tput/数组）；**中文占 2 列但 `${#s}` 按字节算 → 禁止右边框和右对齐**；非 tty 自动关色。取脚本目录**禁用 `dirname`**（用 `${0%/*}`）。阶段编号只给真阶段，收尾汇总不占编号 | `references/script-ui.md` |
+| U | **一条命令重装三大件（换卡 / 卡被重置 / overlay 丢失后）** | 仓库 **`h910056902/nros-panel`**（public、已脱敏）。入口：`wget -qO /tmp/kp.sh https://raw.githubusercontent.com/h910056902/nros-panel/main/install.sh && sh /tmp/kp.sh` —— 自动判断：存储没就绪就先分区+重启，重启后**自动续跑**装完。五条关键事实：① **出厂 6 个 opkg 源全部失效（`000`，不是 404）→ 必须整体换阿里云 21.02.7**；② 设备上 **curl 拉 raw 必失败、同一地址 wget 可以 → 下载须 curl/wget 双栈**；③ 跨重启续跑靠**预置新卡 p1 的 `upper/etc/rc.local`**（执行 rc.local 的是 `/etc/init.d/done`，`S95done` 在只读 `/rom` 里）；④ **`dockerd` 装不上报 `incompatible with the architectures configured` 是假象** —— 真因是 6 个 kmod（veth/dm/fs-btrfs/br-netfilter/ikconfig/nf-ipvs）在厂商内核上根本不存在，opkg **在"选候选包"阶段就失败，`--force-depends` 完全无效**（那开关只管"装包时"的检查）→ 必须造只声明 `Provides` 的桩包把依赖链闭合；⑤ **dockerd 配置只认 UCI**（`/etc/init.d/dockerd` 把 UCI 渲染到 `/tmp/dockerd/daemon.json`），写 `/etc/docker/daemon.json` **没人读** → 实测 Root Dir 仍是 `/opt/docker`、驱动退化 `vfs`、拉镜像 15s 超时；改 UCI 的 `data_root`/`registry_mirrors` 后立即正常（`pull hello-world` 5.1s） | `references/one-command-restore.md` |
+| V | **系统分区（/overlay）不够大，要原地扩容** | `resize.f2fs` **拒绝对已挂载的 fs 操作**（内含硬错误串 `Not available on mounted device!`），而 `/overlay` 就是 `/` 永远挂着；`pivot_tf_overlay()` 又**硬编码 `/dev/mmcblk0p1`**（overlay 不能挪分区）→ **唯一窗口是"NOR 窗口"**：开机瞬间系统落在 `/dev/mtdblock8`（2MB jffs2）上、卡还没挂载。四步：**在线改分区表（p1 起始扇区必须保持 16）→ 把 `/mnt/mtdblock8/upper/etc/config/fstab` 的 `/overlay` 设 `enabled=0` 并预置 `kp-resize.sh`+`rc.local` → reboot → 窗口内先 umount 热插拔挂的 p1 再 `resize.f2fs` → 恢复 fstab 再 reboot**。实测 4G→16G，数据零丢失。⚠️ 最容易漏的一步是**先 umount `/tmp/storage/mmcblk0p1`**，否则 resize 照样以 mounted 拒绝 | `references/tf-partition-resize.md` |
 
 ## ⚠️ 高危操作禁令（血泪教训）
 

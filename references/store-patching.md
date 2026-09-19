@@ -1,3 +1,14 @@
+---
+id: REF-store-patching
+title: "在线应用商店增强"
+tags: [store, appcenter, installed-list, patch]
+risk: medium
+preconditions:
+  - "改 Lua/htm 前必备份"
+  - "改完清 LuCI 缓存"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # 在线应用商店增强
 
 官方鲲鹏商店（appcenter）被扩展为：3 个在线源聚合（iStore/Are-u-ok/opkg，147 个应用）+ 安装百分比 + 自维护「已安装注册表」（支持 opkg/areuok/docker 三种来源）+ 卡片外链一键打开。

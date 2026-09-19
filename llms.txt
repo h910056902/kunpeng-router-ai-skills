@@ -1,0 +1,66 @@
+# kunpeng-router-ai-skills
+
+> 鲲鹏无限 / NRadio 路由器（OpenWrt 21.02，aarch64，C2000 U / C2000 Max）的深度调优知识库与可执行工具集。全部结论来自真机实测。本文件是给 LLM 的低 token 索引；机器可读任务清单见 tasks/index.json。
+
+第一入口：[AGENTS.md](AGENTS.md) —— 三行硬指示、三条平台级硬约束、高危禁令、执行姿势、可直接复制的启动提示词。
+
+## Tasks（可直接执行的任务包）
+
+- [tasks/index.json](tasks/index.json): 机读任务清单。每条含 id / title / playbook / refs / scripts / offline / risk / preconditions / verify / rollback。
+- [tasks/01-openclash-install.md](tasks/01-openclash-install.md): 装 OpenClash（本地 ipk 投递 + Mihomo 内核拉取的离线与在线两条路 + UCI 收敛 + 端口与进程名验证）。
+- [tasks/02-ocspeed-install.md](tasks/02-ocspeed-install.md): 装 ocspeed（OpenClash 自动测速插件的五件套落盘、cron 重建、overlay 丢失后的恢复）。
+- [tasks/03-docker-1panel-install.md](tasks/03-docker-1panel-install.md): 装 Docker + 1Panel（换源、kmod 空桩包、只认 UCI 的 dockerd 配置、1Panel 非交互首启、host 网络默认化）。
+
+## References（23 篇专题档案，均有 risk / preconditions 元数据）
+
+- [1panel-hostnet-default.md](references/1panel-hostnet-default.md): 1Panel 应用「默认 host 网络」方案。docker-compose wrapper 拦截 + 缩进无关的 compose 转换器；含 `undefined network` 事故复盘。
+- [adguard-setup.md](references/adguard-setup.md): AdGuard Home 部署、全网接管 53、国内去广告规则与轻量清单取舍。
+- [c2000u-1panel.md](references/c2000u-1panel.md): C2000 U 上 Docker + 1Panel 的实装档案（面板目录结构、`1pctl` 明文凭据、应用商店远端地址）。
+- [c2000u-docker.md](references/c2000u-docker.md): C2000 U 的 Docker 适配与实装全记录（13 项硬门槛实测、零安装验证法、alt_config_file 机制）。
+- [c2000u-media.md](references/c2000u-media.md): NAS 影视墙容器实测（alist / navidrome / filebrowser / jellyfin 的体积与内存代价）。
+- [c2000u-openclash.md](references/c2000u-openclash.md): OpenClash + ocspeed 部署实录。「只有境外打不开」的真实机制、mihomo 免 SSH 控制 API、故障转移治本方案。
+- [docker-deploy.md](references/docker-deploy.md): 自建 Docker 面板的四文件部署与验收分水岭。
+- [docker-panel.md](references/docker-panel.md): 自建 Docker 面板完整记录。为何必须走 Lua socket.unix 直连 Docker API 而不能用 CLI。
+- [docker-porting.md](references/docker-porting.md): 缺 kmod 的官方固件上移植 Docker 的方法（stub ipk、opkg 同名包截胡）。
+- [dsh-export.md](references/dsh-export.md): 把本技能导出成 DeepSeek Harness (DSH) 技能包的格式要求。
+- [istore-integration.md](references/istore-integration.md): iStore 商店 / 1Panel 与鲲鹏原生商店并存；LuCI 崩了如何用 /rom 全量恢复。
+- [kpwebui.md](references/kpwebui.md): kp-webui 独立控制台（uhttpd 第二实例 + ash CGI，零常驻开销）。
+- [maye-assistant.md](references/maye-assistant.md): 第三方 maye 插件助手的兼容适配与禁装项。
+- [nas-upgrade.md](references/nas-upgrade.md): NAS 升级路线与文件系统边界（不支持 exFAT）。
+- [no-ssh-recovery.md](references/no-ssh-recovery.md): 22 端口连不上时的取数与命令通道（LuCI dmesg/syslog 直读、crontab 当命令通道、真重启接口）。
+- [nr-webui-reverse.md](references/nr-webui-reverse.md): 第三方 nr_webui 的完整解析与一键还原。
+- [nr-webui-service.md](references/nr-webui-service.md): nr_webui 服务档案；前端目录为空时的补拉方法。
+- [one-command-restore.md](references/one-command-restore.md): 一条命令恢复（换源、桩包、跨重启续跑、ocseed 恢复）。**装机的总纲**。
+- [pc-toolchain-limits.md](references/pc-toolchain-limits.md): PC 侧工具链限制与绕行（Bash 失效、编码乱码的正确判读方式）。
+- [portainer-i18n.md](references/portainer-i18n.md): Portainer CE 汉化（静态 JS 替换 + 挂载卷，正则转义陷阱）。
+- [script-ui.md](references/script-ui.md): 运维脚本终端界面的两条硬约束（busybox printf、中文按字节计宽）。
+- [store-patching.md](references/store-patching.md): 在线应用商店增强（后端 Lua 补丁、安装进度、已安装注册表）。
+- [tf-partition-resize.md](references/tf-partition-resize.md): TF 卡原地扩容；唯一可用的「NOR 窗口」。
+
+## Scripts（入口型工具，另有库文件与 payload 子目录）
+
+- [scripts/revtunnel_put.py](scripts/revtunnel_put.py): 大文件投递。SSH 反向端口转发 + 设备 curl 自拉 + md5 对账（设备无 SFTP 且 PC 入站被防火墙拦）。
+- [scripts/rtr_lib.py](scripts/rtr_lib.py): 远程操作公共库。heredoc 写入、超 8KB 自动分块、断线重连。
+- [scripts/gh_proxy_push.py](scripts/gh_proxy_push.py): GitHub DNS 被污染时的 push/pull 绕行。
+- [scripts/setup_docker_c2000u.py](scripts/setup_docker_c2000u.py): C2000 U 的 Docker 六步一键实装。
+- [scripts/kp-1panel-install-test.py](scripts/kp-1panel-install-test.py): 「1Panel 能不能装容器」端到端测试驱动（probe → pull → control → hostnet-install → install → panel → panelcheck → verify）。
+- [scripts/kp-1panel-status.py](scripts/kp-1panel-status.py): 只读盘点「现在有哪些 1Panel 容器」，含 OOMKilled 与 dmesg OOM 归属。
+- [scripts/healthcheck_c2000u.py](scripts/healthcheck_c2000u.py): 13 板块全量只读巡检。
+- [scripts/payload/](scripts/payload/): 设备端脚本。host 网络默认化三件套 + compose 转换器 + 回归自测与 fixtures。
+
+## Offline（版本钉死的离线素材，含内核包）
+
+- [offline/README.md](offline/README.md): 清单、md5 校验、来源与许可、两条使用路径，以及刻意未入库项的原因。
+- `offline/openclash/luci-app-openclash_0.47.156_all.ipk`: OpenClash 应用包（9.9 MB）。
+- `offline/openclash/config.openclash.template`: OpenClash 主配置 UCI 模板（已脱敏，3 处凭据待填）。
+- `offline/core/mihomo-linux-arm64.gz`: Mihomo Meta 内核 v1.19.30（16.6 MB）。
+- `offline/stubs/`: 6 个 kmod 空桩包，用于闭合 dockerd 依赖图。
+- `offline/ocspeed/`: ocspeed 五件套 + 一键安装脚本。
+- `offline/panel/`: nros-panel 一键链脚本（单步执行用）。
+
+## Docs
+
+- [docs/调优经验总览.md](docs/调优经验总览.md): 按 12 个领域重编的经验总纲，每条都是「结论 → 为什么 → 怎么验证」。
+- [docs/新会话验收清单.md](docs/新会话验收清单.md): 用空白会话验证「别的 AI 能否读懂本仓库」的提问模板与标准答案。
+- [SKILL.md](SKILL.md): 面向人类的完整技能索引（设备档案、任务路由表、踩坑速查 60+ 条）。
+- [C2000U-Docker-assessment.md](C2000U-Docker-assessment.md): C2000 U 的 Docker 适配评估与实装全记录。

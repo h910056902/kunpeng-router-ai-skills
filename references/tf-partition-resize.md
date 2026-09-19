@@ -1,3 +1,14 @@
+---
+id: REF-tf-resize
+title: "TF 卡分区扩容（系统分区装不开时）"
+tags: [partition, resize, f2fs, nor-window, tf-card]
+risk: high
+preconditions:
+  - "必须在线改分区表（p1 起始扇区保持 16）"
+  - "只在开机 NOR 窗口内可 resize"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # TF 卡分区扩容（系统分区装不开时）
 
 > 适用：鲲鹏 NRadio C2000 Max / C2000 U，OpenWrt 21.02-SNAPSHOT，kernel 5.4.281

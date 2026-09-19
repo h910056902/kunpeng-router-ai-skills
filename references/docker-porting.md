@@ -1,3 +1,14 @@
+---
+id: REF-docker-porting
+title: "Docker 移植（缺 kmod 的官方固件）"
+tags: [docker, porting, kmod, stub-ipk]
+risk: medium
+preconditions:
+  - "明确缺失的 kmod 清单"
+  - "准备造 stub ipk 闭合依赖链"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # Docker 移植（缺 kmod 的官方固件）
 
 目标固件内核 5.4.281（mt7987 定制）**缺 veth 及 kmod 系列**，且无匹配源 → 桥接网络不可用。最终方案：host 网络模式 + vfs 存储驱动，实测 Filebrowser/AdGuard Home 容器全链路可用。

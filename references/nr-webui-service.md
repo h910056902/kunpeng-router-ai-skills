@@ -1,3 +1,13 @@
+---
+id: REF-nr-webui-service
+title: "nr_webui 第三方 WebUI 服务（:10086）档案"
+tags: [nr_webui, service, port-10086]
+risk: medium
+preconditions:
+  - "明确 :10086 与 kpwebui(:10087) 的区分"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # nr_webui 第三方 WebUI 服务（:10086）档案
 
 > 2026-09-11 建档；**2026-09-12 00:15 重大更正**：建档时的根因判断是错的（见 §"故障案例"），

@@ -1,3 +1,14 @@
+---
+id: REF-nr-webui-reverse
+title: "nr_webui 解析与还原手册"
+tags: [nr_webui, reverse, ota, portal-hijack, restore]
+risk: high
+preconditions:
+  - "改前备份原件"
+  - "还原会改动系统服务与门户行为"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # nr_webui 解析与还原手册
 
 > 目标仓库：`https://github.com/h910056902/nr-webui-archive`（私有）

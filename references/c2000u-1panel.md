@@ -1,3 +1,13 @@
+---
+id: REF-c2000u-1panel
+title: "C2000 U（B 机）· Docker + 1Panel 实装档案（2026-09-13）"
+tags: [1panel, install, archive, c2000u]
+risk: low
+preconditions:
+  - "读档用途（含实装记录与踩坑）"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # C2000 U（B 机）· Docker + 1Panel 实装档案（2026-09-13）
 
 > 192.168.66.1 = B 机。本文是实测记录 + 可复用 playbook。
@@ -173,7 +183,30 @@ tini / libseccomp / iptables-mod-extra / kmod-nf-conntrack-netlink / kmod-nf-nat
    模板是标准 bridge（外部网络 `1panel-network` + `ports:`），且声明了 arm64。
 5. **`1pctl` 里有装机的全部明文**：`BASE_DIR=` / `ORIGINAL_PORT=` / `ORIGINAL_USERNAME=` /
    `ORIGINAL_PASSWORD=` / `ORIGINAL_ENTRANCE=` —— 安全入口码也能从这里读，做引导卡片时直接用。
-6. **面板 API 自动化不可靠**：v1.10 没有 API Key / 没有 `/api/v2`，只能走 `auth/login`，
-   而密码是 **RSA+AES 三段式加密**（busybox 无 openssl）+ 可能叠加安全入口码与登录验证码。
+6. **面板 API 自动化不可靠（2026-09-19 二次更正）**：v1.10 没有 API Key / 没有 `/api/v2`，只能走 `auth/login`。
+   ⚠️ **真实拦截点是「图形验证码」，不是加密**：PC 侧直连 `POST /api/v1/auth/login`
+   （明文 + `name/password/authMethod/language`）→ **HTTP 200 且无需安全入口码**，
+   但返回 `code=406 message=ErrCaptchaCode`；而加上 `ignoreCaptcha:true` 又会得到
+   `encrypted data format error`。结论：**存在一条"图形验证码"的硬阻断，纯脚本绕不过去**，
+   早期档案里"密码是 RSA+AES 三段式加密所以做不到"的说法不准确，别再据此推理。
    → 测试脚本把它做成"尽力而为 + 降级成操作卡"，**不要让面板 API 卡住整个验收**。
    真正的证据源是 `/tmp/kp-compose.log`（wrapper 记录 1Panel 到底调了什么）。
+7. **宿主端口以「容器内端口」为准**：host 化会剥掉 `ports:`，所以面板表单里的端口字段
+   要填**模板 `ports:` 冒号右边的值**（如实测 DSH：填 8443 而不是默认的 10443）；
+   判据是"宿主 netstat 里那个端口在 LISTEN"。
+
+### 2026-09-19 追加·之二：状态盘点工具 + 1GB 内存的 OOM 事故
+
+**新增只读工具** `scripts/kp-1panel-status.py` —— 一条命令回答"现在有哪些 1Panel 容器"：
+容器清单（含 `OOMKilled`/exit/nm/restart 策略）+ 面板 `app_installs` 记账对照 +
+磁盘实例是否已 host 化 + 宿主端口监听 + host 化装置是否在位 + **dmesg OOM 归属**（`task_memcg` 指认容器）。
+**纯只读**，可随时跑。用法与陷阱见 `references/1panel-hostnet-default.md` §十一。
+
+**🔴 必须记住的实机事故**：`deepseek-harness`（649MB 镜像）在 13:52 被**全局 OOM**杀掉 ——
+`exit=143 oom=true`，dmesg `global_oom` + `task_memcg=/docker/0c5d76841deb…`（正是该容器 ID）。
+**但面板 UI 仍显示「运行中」**（库状态没回写）⇒ **"面板说在跑"永远不可信，必须用 `docker ps`/本脚本复核**。
+该机总内存仅 993 MB，DSH 单进程 RSS 443 MB，重启后大概率二次 OOM —— 属超配而非配置错误。
+
+**已知残留（未处理，供后续参考）**：`ai-gateway` = `exited(0)`（用户手动停，库状态 `Stopped` 一致）；
+`alist`（库 `Error`，容器已被面板清理）、`siyuan`（库 `UpErr`，残留修复前的旧错）——
+恢复流程 = 改库 + 改 `.env` + `up -d --force-recreate`。

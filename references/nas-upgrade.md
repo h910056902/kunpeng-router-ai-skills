@@ -1,3 +1,14 @@
+---
+id: REF-nas
+title: "NAS 升级路线（C2000 Max）"
+tags: [nas, mount, ksmbd, aria2, minidlna]
+risk: medium
+preconditions:
+  - "先跑 probe_nas.py 探硬件"
+  - "U 盘格式需为 ext4/f2fs（exFAT 挂不上）"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # NAS 升级路线（C2000 Max）
 
 > 状态：**调研完成，未实施**（2026-09-08 探明硬件与软件可行性）。用户意向：不格式化 U 盘优先。

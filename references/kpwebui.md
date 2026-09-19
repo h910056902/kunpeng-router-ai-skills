@@ -1,3 +1,14 @@
+---
+id: REF-kpwebui
+title: "kp-webui —— 鲲鹏 C2000 U 的 iStoreOS 风格独立控制台（v2）"
+tags: [kpwebui, uhttpd, cgi, luci]
+risk: medium
+preconditions:
+  - "uhttpd 可起第二实例"
+  - "端口 10087 未被占用"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # kp-webui —— 鲲鹏 C2000 U 的 iStoreOS 风格独立控制台（v2）
 
 一个**不依赖厂商 LuCI、不依赖 Docker、不占内存常驻进程**的纯 shell 控制台。
