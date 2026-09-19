@@ -118,6 +118,11 @@ if [ "$APPLY" = "1" ]; then
     if [ -f "$PANEL_ROOT/db/1Panel.db" ]; then
         cp "$PANEL_ROOT/db/1Panel.db" "$BK/1Panel.db" 2>/dev/null && log "  已快照 1Panel 数据库"
     fi
+    # 面板入口路径 + 账号密码：重装会覆盖原文件，不备份就登不回旧面板
+    if [ -f /root/1panel-credentials.txt ]; then
+        cp /root/1panel-credentials.txt "$BK/1panel-credentials.txt" 2>/dev/null \
+            && log "  已快照 1Panel 入口/密码（/root/1panel-credentials.txt）"
+    fi
     for f in containers.txt images.txt volumes.txt networks.txt uci-dockerd.txt; do
         [ -s "$BK/$f" ] || warn "快照文件 $f 为空（记录可能不完整）"
     done
@@ -288,7 +293,8 @@ if [ "$APPLY" = "0" ]; then
     log "以上为 DRY-RUN 预览，未改动任何东西。确认无误后执行："
     log "  sh $0 --apply --yes                        # 只清容器/卷/镜像/网络"
     log "  sh $0 --apply --yes --backup-vols          # 再加：删卷前打包卷内容（推荐）"
-    log "  sh $0 --apply --yes --backup-vols --data-root --panel-apps   # 全量"
+    log "  sh $0 --apply --yes --backup-vols --data-root --panel-reset  # 全量（docker 环境 + 1Panel 环境）"
+    log "  sh $0 --apply --yes --backup-vols --data-root --panel-apps   # 次全量（只归档 1Panel apps/，面板本体保留）"
 else
     log "完成。备份/回滚依据：$BK"
 fi

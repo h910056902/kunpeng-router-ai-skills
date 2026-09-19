@@ -98,7 +98,8 @@ echo "--- 5 bakdir"; mkdir -p /mnt/storage/data/kpbackup && echo writable
 | `docker-info.txt` | `docker info` | 驱动 / data-root / 加速源当时的真实值 |
 | `uci-dockerd.txt` | `uci export dockerd` | **UCI 回滚依据**（配合 `--reset-uci` 用） |
 | `daemon.json` | `/etc/docker/daemon.json` 副本（存在时） | alt_config_file 内容 |
-| `1Panel.db` | 1Panel 面板数据库副本 | 面板账号/应用记录（配合 `--panel-apps` 用） |
+| `1Panel.db` | 1Panel 面板数据库副本 | 面板账号/应用记录（配合 `--panel-apps` / `--panel-reset` 用） |
+| `1panel-credentials.txt` | `/root/1panel-credentials.txt` 副本（面板入口路径 + 账号密码） | **重装会覆盖该文件**，不备份就登不回旧面板 |
 | `df.txt` / `data-root-ls.txt` | 磁盘与 data-root 现状 | 事后对比空间回收效果 |
 
 > **镜像能不能救回来？** 不能「还原」，但可以「重拉」：`images.txt` 里有完整 `REPOSITORY:TAG` 列表，
@@ -115,9 +116,12 @@ sh /tmp/kp-docker-purge.sh
 KEEP="alist" sh /tmp/kp-docker-purge.sh --apply --yes --backup-vols
 # ③ 可选：连 data-root 里的镜像层一起清（停 dockerd → 清目录 → 重启）
 sh /tmp/kp-docker-purge.sh --apply --yes --backup-vols --data-root
-# ④ 可选：1Panel 应用工作目录改名归档（**只改名不删**）
+# ④ 可选：1Panel 应用工作目录改名归档（**只改名不删**；只清 apps/，面板本体保留）
 sh /tmp/kp-docker-purge.sh --apply --yes --panel-apps
-# ⑤ 可选：复位 dockerd UCI（会丢 overlay2/加速源配置，慎用）
+# ⑤ 可选：**1Panel 环境复位**——停 1paneld + 数据根改名归档 + 面板二进制移入备份
+#    ⚠️ 要做「从零重装 1Panel」演练，要的是这一步；只给 --panel-apps 清不掉面板本体
+sh /tmp/kp-docker-purge.sh --apply --yes --panel-reset
+# ⑥ 可选：复位 dockerd UCI（会丢 overlay2/加速源配置，慎用）
 sh /tmp/kp-docker-purge.sh --apply --yes --reset-uci
 ```
 
@@ -127,7 +131,7 @@ sh /tmp/kp-docker-purge.sh --apply --yes --reset-uci
 2. **备份快照** → `$BK/`（失败即 `exit 2`，不进入删除）
 3. **停容器** → `docker stop -t 10`（优雅停，超时强杀在后面）
 4. **删容器 → 删卷 → 删镜像 → 删自定义网络**（顺序不能反：镜像被容器占用时删不掉）
-5. **按开关处理 data-root / 1Panel apps / UCI**，最后验证
+5. **按开关处理 data-root / 1Panel apps / 1Panel reset / UCI**，最后验证
 
 > **为什么不是 `docker system prune -a`？**
 > prune 不带备份、不打印待删清单、`--volumes` 会静默吞掉数据卷，且在本机这种「镜像本来就少」的场景省不了多少事。
@@ -182,6 +186,8 @@ df -k /mnt/storage/data | tail -1
 | 备份目录含 ≥8 个文件 + `panel-bin/` | 少于这个数说明备份不完整，**回滚会缺依据** |
 | `--backup-vols` 时 `volumes/<卷名>.tar.gz` 存在 | 这是卷数据唯一救回途径 |
 | `--panel-reset` 后 `ls -d /mnt/storage/data/1panel.bak-*` 有输出 | 数据根是**改名**不是删除，必须能看到归档目录 |
+| `--panel-reset` 后 `10090` 不再 LISTEN、`pidof 1panel` 为空 | **这是预期**：面板已停、二进制已移入 `$BK/panel-bin/`。别把它当故障去回滚 |
+| `--panel-reset` 后 `df` 的 used **可能不降反升** | 113 MB 面板二进制从 overlay **跨分区搬进** `$BK/panel-bin/`（跨文件系统的 `mv` = 复制 + 删源），data 分区 used +113 MB、overlay 相应减少，**总占用不变**。要回收这块得删 `$BK/panel-bin/1panel`（等于放弃面板回滚能力） |
 
 ---
 
@@ -197,6 +203,7 @@ df -k /mnt/storage/data | tail -1
 | 1Panel apps 目录 | `mv /mnt/storage/data/1panel/apps.bak-<ts> /mnt/storage/data/1panel/apps` |
 | **1Panel 整个环境** | `mv /mnt/storage/data/1panel.bak-<ts> /mnt/storage/data/1panel` → `cp $BK/panel-bin/1panel $BK/panel-bin/1pctl /usr/local/bin/` → `cp $BK/panel-bin/1paneld /etc/init.d/` → `/etc/init.d/1paneld enable && /etc/init.d/1paneld start` |
 | 1Panel 数据库 | 停 `1paneld` → `cp $BK/1Panel.db /mnt/storage/data/1panel/db/1Panel.db` → 起 |
+| 1Panel 入口/密码 | 重装会**覆盖** `/root/1panel-credentials.txt`；旧面板的入口路径与密码在 `$BK/1panel-credentials.txt`，没备份就随重装永久丢失 |
 | 整机兜底 | `restore.all`（`tasks/03 §5` 的一条命令全装） |
 
 ---
@@ -267,3 +274,19 @@ cd /tmp/kp1pt && SKIP=oc sh kp-install.sh
 >
 > ⚠️ **busybox 没有 `setsid`**：想在设备上后台跑长任务，用 `nohup ... &`（`nohup` 本机实测存在），
 > 别照搬 PC 侧的习惯。
+
+### 第二次演练（2026-09-19 21 时 · 空白会话回归）
+
+同一条命令再跑一遍，验证脚本可重复使用（这次设备上只有上一轮重装出来的全新面板，没有业务容器）：
+
+| 阶段 | 实测结果 |
+|---|---|
+| 清前现状 | 容器 0 · 镜像 1（上轮冒烟留下的 `hello-world`）· 卷 0 · 网络 4（`1panel-network` 被重装的面板又建回来了）|
+| 清理 | 容器 0→0、镜像 1→0、卷 0→0、网络 4→3（`1panel-network` 删除）|
+| data-root | 435.5 K → 296 K · dockerd 重启后 pid 25269 |
+| 1Panel 复位 | 数据根 → `1panel.bak-20260919_204243`；`1panel`(113 MB)/`1pctl`/`1paneld` → `$BK/panel-bin/`；`K151paneld`/`S951paneld` 软链清除 |
+| 未受影响 | **clash pid 16659 全程未变**（网络没断）· compose wrapper 完好 |
+| 清后冒烟 | `docker run --rm --network host hello-world` 一次通过，`overlay2 / f2fs` 正确 |
+| ⚠️ 空间账 | `df` 的 used **不降反升**（782 M → 903 M）：113 MB 面板二进制从 overlay 分区搬进了 data 分区的 `$BK/panel-bin/`。**这是预期行为，不是故障**，总占用不变 |
+
+**第 4 条实测教训**：`--panel-reset` 之后**别只看 data 分区的 `df`** —— 面板二进制跨分区搬家会让 used 上涨，容易被误判成「清空失败」。要看总账（`overlay` + `data` 一起看），或直接 `du -sh $BK`。
