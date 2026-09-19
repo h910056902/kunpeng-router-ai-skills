@@ -1,10 +1,10 @@
 # kunpeng-router-ai-skills
 
-![OpenClash](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/openclash.png) ![ocspeed](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/ocspeed.png) ![1Panel](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/1panel.png) ![Docker](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/docker.png) ![maye](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/maye.png)
+![OpenClash](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/openclash.png) ![ocspeed](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/ocspeed.png) ![1Panel](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/1panel.png) ![Docker](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/docker.png) ![maye](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/maye.png) ![常用插件](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/plugins.png) ![VPN组网](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/network.png) ![游戏加速](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/game.png) ![应用商店](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/store.png) ![设备维护](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/maint.png)
 
 **🤔 这是什么？**
 
-把一台**内核无 veth / bridge 不可用**的鲲鹏无限 / NRadio C2000 路由器（OpenWrt 21.02，MT7987，aarch64），不刷机调教到能跑 Docker、1Panel、OpenClash 的全部真机实测经验 —— 沉淀为 **41 个机读任务 + 离线安装素材 + 复盘文档** 的 AI Agent 技能仓库。任何 AI（WorkBuddy / Codex / Cursor / Claude Code…）读它能直接上手干活。
+把一台**内核无 veth / bridge 不可用**的鲲鹏无限 / NRadio C2000 路由器（OpenWrt 21.02，MT7987，aarch64），不刷机调教到能跑 Docker、1Panel、OpenClash 的全部真机实测经验 —— 沉淀为 **46 个机读任务 + 离线安装素材 + 复盘文档** 的 AI Agent 技能仓库。任何 AI（WorkBuddy / Codex / Cursor / Claude Code…）读它能直接上手干活。
 
 > 🔒 公开脱敏版：所有密码 / token / 入口码均已替换为 `<你的xxx>` 占位符；离线素材经 md5 校验。
 
@@ -13,8 +13,9 @@
 - 🌐 **一键任务 1**：OpenClash 安装 + Mihomo 内核拉取（离线 ipk / 在线双路径）
 - 📊 **一键任务 2**：ocspeed 自动测速插件安装（五件套落盘 + cron 重建）
 - 🐋 **一键任务 3**：Docker + 1Panel 安装（含 host 网络默认化，容器建 veth 必死的解法）
-- 🧩 **一键任务 4**：第三方 NROS 插件安装器（maye 助手；四条红线 + 补丁基线校验，菜单需人工按）
-- 📦 另有 37 个机读任务：换源救源、无 SSH 救援、TF 扩容、面板排障、**Docker 环境清空**… 全在 `tasks/index.json`
+- 🧩 **一键任务 4**：第三方 NROS 插件安装器（maye 助手 · **总入口**；红线 + 补丁基线校验，菜单需人工按）
+- 🧰 **任务 5 ~ 9**：maye 助手的**五个功能分类直达入口** —— 🔌 常用插件 / 🛡️ VPN 组网 / 🎮 游戏加速器 / 🎨 应用商店与页面美化 / 🔧 设备维护与检测（每个分类有自己的红线与判据，任一分类都**不是**「照 tasks/05 跑一遍」那么简单）
+- 📦 另有 34 个机读任务：换源救源、无 SSH 救援、TF 扩容、面板排障、**Docker 环境清空**… 全在 `tasks/index.json`
 
 **🚀 AI 快速接入（一段话，复制即用）**
 
@@ -22,10 +23,10 @@
 **第一条回复先弹一行软件真实图标、再在代码块里弹出菜单**，然后停下等你输编号。
 
 ```text
-你现在是「鲲鹏 C2000 U 路由器 · 安装助手」，运行在仓库 kunpeng-router-ai-skills 之上（https://github.com/h910056902/kunpeng-router-ai-skills；本地没有就先 clone 它）：先静默读该仓库的 AGENTS.md 与 tasks/index.json（读的过程中一个字都不要输出），然后严格按 AGENTS.md §8「菜单助手协议」工作 —— 第一条回复只输出协议规定的图标行和菜单代码块，别的什么都别写，然后停下等我输入编号；我输入编号后按协议执行对应功能（每个功能四关：前置 / 执行 / 验证 / 收尾），跑完回到菜单等我下一步；协议里的 10 条硬约束全程有效，其中 4) 是交互式脚本，那一步只能我自己按菜单，你必须停下等我。
+你现在是「鲲鹏 C2000 U 路由器 · 安装助手」，运行在仓库 kunpeng-router-ai-skills 之上（https://github.com/h910056902/kunpeng-router-ai-skills；本地没有就先 clone 它）：先静默读该仓库的 AGENTS.md 与 tasks/index.json（读的过程中一个字都不要输出），然后严格按 AGENTS.md §8「菜单助手协议」工作 —— 第一条回复只输出协议规定的图标行和菜单代码块，别的什么都别写，然后停下等我输入编号；我输入编号后按协议执行对应功能（每个功能四关：前置 / 执行 / 验证 / 收尾），跑完回到菜单等我下一步；协议里的 10 条硬约束全程有效，其中 4)~9) 都是那个交互式脚本，那几步只能我自己按菜单，你必须停下等我。
 ```
 
-菜单长这样（下面是**展示预览**；解析规则、四关、4) 的交互式细则、10 条硬约束全部在
+菜单长这样（下面是**展示预览**；解析规则、四关、4)~9) 的交互式细则、10 条硬约束全部在
 [`AGENTS.md`](AGENTS.md) §8「菜单助手协议」—— 那是唯一真源，随仓库走、不用你贴）：
 
 ```text
@@ -42,8 +43,25 @@
   3)  🐳 1Panel + Docker 安装（host 网络默认化）
         docker.install / panel.install
 
-  4)  🧩 第三方 NROS 插件安装器（maye 助手 · 需人工按菜单）
+  4)  🧩 第三方 NROS 插件安装器（maye 助手 · 总入口）
         nros.plugin-installer
+
+  ── 5~9 是 maye 助手的五个功能分类，跑法同 4)：AI 做前置与校验，菜单由你按 ──
+
+  5)  🔌 常用插件（swap · OpenList · DDNS-GO · WebSSH）
+        nros.plugins-common
+
+  6)  🛡️ VPN / 组网 / 路由向导（ZeroTier · EasyTier · OpenVPN）
+        nros.network-route
+
+  7)  🎮 游戏加速器（奇游 · 雷神 · 明文 HTTP 风险）
+        nros.game-accel
+
+  8)  🎨 应用商店与页面美化（美化 · 还原 · LuCI 8080）
+        nros.appcenter-polish
+
+  9)  🔧 设备维护与检测（体检 · 工具箱 · 硬件加速）
+        nros.maintenance
 
   0)  🚪 退出
 
@@ -61,12 +79,12 @@
 |---|---|
 | [`AGENTS.md`](AGENTS.md) | Agent 约定入口：这个仓库是什么、先读什么、高危禁令、每个任务从哪进 |
 | [`llms.txt`](llms.txt) | LLM 索引清单：全部文档一句话摘要，便于检索式加载 |
-| [`tasks/index.json`](tasks/index.json) | **41 个机读任务**：每条含 id / title / risk / playbook / preconditions / verify / rollback / offline / refs 等字段 |
-| [`SKILL.md`](SKILL.md) | 主技能：设备档案 + A→V 有序任务路由表（含 T1–T5 任务包速查） |
+| [`tasks/index.json`](tasks/index.json) | **46 个机读任务**：每条含 id / title / risk / playbook / preconditions / verify / rollback / offline / refs 等字段 |
+| [`SKILL.md`](SKILL.md) | 主技能：设备档案 + A→V 有序任务路由表（含 T1–T5 任务包速查 + maye 分类分册） |
 
 **最小接入方式**：让 Agent 先读 `AGENTS.md`，按 `tasks/index.json` 的任务 id 精确取用 playbook，而不是通读全库。
 
-## 任务包（T1–T5）
+## 任务包（T1–T5 + maye 分类分册）
 
 | 任务包 | Playbook | 离线素材 |
 |---|---|---|
@@ -74,18 +92,24 @@
 | **T2 · ocspeed 安装** | [`tasks/02-ocspeed-install.md`](tasks/02-ocspeed-install.md) | `offline/ocspeed/` 五件套（speedswitch.sh / ocspeed.lua / ocspeed.htm / nodetest.htm / config.ocspeed）+ 一键装脚本 `kp-ocspeed.sh` |
 | **T3 · Docker + 1Panel 安装** | [`tasks/03-docker-1panel-install.md`](tasks/03-docker-1panel-install.md) | `offline/panel/` 六脚本（install / kp-install / kp-storage-init / kp-store-lib / kp-store-check / kp-ui）+ `scripts/payload/` host 网络默认化三件套 |
 | **T4 · 清空 Docker 环境（重装前置）** | [`tasks/04-docker-purge.md`](tasks/04-docker-purge.md) | `scripts/payload/kp-docker-purge.sh`（默认 dry-run，双开关才真删，动手前自动备份快照） |
-| **T5 · 第三方 NROS 插件安装器（maye 助手）** | [`tasks/05-nros-plugin-installer.md`](tasks/05-nros-plugin-installer.md) | 无离线素材（设备侧在线下载 + sha256 校验）；适配器 `scripts/adapt_maye_assistant.py` |
+| **T5 · 第三方 NROS 插件安装器（maye 助手）· 总入口** | [`tasks/05-nros-plugin-installer.md`](tasks/05-nros-plugin-installer.md) | 无离线素材（设备侧在线下载 + sha256 校验）；适配器 `scripts/adapt_maye_assistant.py` |
+| **T5-a · 分类一 常用插件安装** | [`tasks/06-nros-plugins-common.md`](tasks/06-nros-plugins-common.md) | 同上（红线：哈基米＝装 OpenClash / AGH·MosDNS 抢 53 / ttyd 默认免登录） |
+| **T5-b · 分类二 VPN / 组网 / 路由向导** | [`tasks/07-nros-network-route.md`](tasks/07-nros-network-route.md) | 同上（destructive：写 `ip rule`，本机全网出口＝断网风险） |
+| **T5-c · 分类三 游戏加速器** | [`tasks/08-nros-game-accel.md`](tasks/08-nros-game-accel.md) | 同上（destructive：明文 HTTP 下载 root 脚本，无校验和） |
+| **T5-d · 分类四 应用商店与页面美化** | [`tasks/09-nros-appcenter-polish.md`](tasks/09-nros-appcenter-polish.md) | 同上（会覆盖商店补丁载体 `appcenter.htm` / `appcenter.lua`） |
+| **T5-e · 分类五 设备维护与检测** | [`tasks/10-nros-maintenance.md`](tasks/10-nros-maintenance.md) | 同上（红线：`5 › 11` 硬件加速会 `fw3 reload`） |
 
 每个 playbook 都包含：前置条件 → 步骤（含离线/在线两条路径）→ 验证命令 → 回滚方法 → 已知坑。
+T5 的五个分类分册另外各自带**本分类专属红线表**与**跑前/跑后对照项**。
 
 ## 目录结构
 
 ```
 ├── AGENTS.md / llms.txt / SKILL.md     # AI 入口与路由
-├── tasks/                              # index.json(41 任务) + 5 份 playbook（含清空 Docker / maye 助手）
+├── tasks/                              # index.json(46 任务) + 10 份 playbook（含清空 Docker / maye 助手 + 五个分类分册）
 ├── references/                         # 23 篇专题文档（含 id/tags/risk frontmatter）
 ├── docs/                               # 调优经验总览 · 验收清单 · 助手菜单提示词 · 仓库维护指南
-├── assets/menu/                        # 菜单软件图标（32px PNG，jsdelivr 引用）
+├── assets/menu/                        # 菜单软件图标（10 枚 32px PNG，jsdelivr 引用）
 ├── offline/                            # 离线安装素材 + checksums.md5（21 项）
 ├── scripts/                            # PC 侧驱动 + payload/（host 网络三件套、回归自测）
 └── C2000U-Docker-assessment.md         # C2000 U Docker 适配评估与实装记录
