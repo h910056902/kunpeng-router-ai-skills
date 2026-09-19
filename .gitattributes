@@ -1,0 +1,10 @@
+# 路由器端 shell / lua 源码必须以 LF 入库，否则 shebang 失效
+*.sh  text eol=lf
+dpctl text eol=lf
+*.lua text eol=lf
+*.htm text eol=lf
+*.md  text eol=lf
+*.py  text eol=lf
+*.yml text eol=lf
+# 回归样本：这个 fixture 必须是 CRLF，禁止任何换行转换
+scripts/payload/fixtures/compose.crlf.yml -text
