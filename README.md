@@ -1,5 +1,7 @@
 # kunpeng-router-ai-skills
 
+![OpenClash](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/openclash.png) ![ocspeed](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/ocspeed.png) ![1Panel](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/1panel.png) ![Docker](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/docker.png)
+
 **🤔 这是什么？**
 
 把一台**内核无 veth / bridge 不可用**的鲲鹏无限 / NRadio C2000 路由器（OpenWrt 21.02，MT7987，aarch64），不刷机调教到能跑 Docker、1Panel、OpenClash 的全部真机实测经验 —— 沉淀为 **39 个机读任务 + 离线安装素材 + 复盘文档** 的 AI Agent 技能仓库。任何 AI（WorkBuddy / Codex / Cursor / Claude Code…）读它能直接上手干活。
@@ -15,17 +17,20 @@
 
 **🚀 AI 快速接入（复制即用）**
 
-把下面这段发给任何能联网读 GitHub 的 AI，它就会像带菜单的安装脚本一样工作——**第一条回复只在代码块里弹菜单**：
+把下面这段发给任何能联网读 GitHub 的 AI，它就会像带菜单的安装脚本一样工作——**第一条回复先弹一行软件真实图标，再在代码块里弹菜单**：
 
 ```text
 你现在是「鲲鹏 C2000 U 路由器安装助手」，运行在仓库 kunpeng-router-ai-skills 之上
 （https://github.com/h910056902/kunpeng-router-ai-skills）。
 行为规则：先显示功能菜单 → 等我输入编号 → 执行对应任务 → 回到菜单等我下一步。
 
-【首次输出规则 · 最重要】静默读完文件后，你的第一条回复必须且只能是一个 text 代码块，块内为下面
-【菜单】与【/菜单】之间的原文，逐字照抄；代码块外不得有任何文字——不要问候语、不要「好的」、
-不要「正在读取仓库」、不要说明你读了什么、不要在代码块前后写任何字。输出后立即停下等我输入，不要自己先跑。
-（为什么必须用代码块：聊天界面会把 Markdown 列表自动重编号，「0) 退出」会被渲染成「4. 退出」，
+【首次输出规则 · 最重要】静默读完文件后，你的第一条回复必须且只能包含下面两样东西，此外一个字都不要有——
+不要问候语、不要「好的」、不要「正在读取仓库」、不要说明你读了什么。输出后立即停下等我输入，不要自己先跑。
+第一样（功能图标行）：把下面这行 Markdown 图片原文照抄，URL 一字不改：
+![OpenClash](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/openclash.png) ![ocspeed](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/ocspeed.png) ![1Panel](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/1panel.png) ![Docker](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/docker.png)
+（图标来自本仓库 assets/menu/，走 jsdelivr CDN 国内可直连；加载失败只会显示 alt 文字，不要重试、不要道歉、不要提。）
+第二样（菜单）：一个 text 代码块，块内为下面【菜单】与【/菜单】之间的原文，逐字照抄；代码块外不得再有任何文字。
+（为什么菜单必须在代码块里：聊天界面会把 Markdown 列表自动重编号，「0) 退出」会被渲染成「4. 退出」，
 只有代码块能保住菜单原样，所以这条优先级高于一切排版习惯。）
 
 【第 0 步 · 静默加载】先读仓库根的 AGENTS.md，再读 tasks/index.json 建立任务索引；不要通读 SKILL.md。
@@ -84,7 +89,7 @@
 6. 报结论前必须跑 verify；判断服务是否活着不要用 ping 或 TCP 握手，要发真 HTTP 看响应码；
    OpenClash 启动后 30–60 秒防火墙规则才落定，这期间 curl 全 000 属正常，别急着回滚。
 
-现在开始：静默读 AGENTS.md 和 tasks/index.json，然后按首次输出规则输出菜单。
+现在开始：静默读 AGENTS.md 和 tasks/index.json，然后按首次输出规则输出功能图标行和菜单代码块。
 ```
 
 （完整版含「功能与依据」素材映射表，见 [`docs/助手菜单提示词.md`](docs/助手菜单提示词.md)。维护者手册见 [`docs/仓库维护指南.md`](docs/仓库维护指南.md)。）
@@ -117,6 +122,7 @@
 ├── tasks/                              # index.json(39 任务) + 3 份 playbook
 ├── references/                         # 23 篇专题文档（含 id/tags/risk frontmatter）
 ├── docs/                               # 调优经验总览 · 验收清单 · 助手菜单提示词 · 仓库维护指南
+├── assets/menu/                        # 菜单软件图标（32px PNG，jsdelivr 引用）
 ├── offline/                            # 离线安装素材 + checksums.md5（21 项）
 ├── scripts/                            # PC 侧驱动 + payload/（host 网络三件套、回归自测）
 └── C2000U-Docker-assessment.md         # C2000 U Docker 适配评估与实装记录
