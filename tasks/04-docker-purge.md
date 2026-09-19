@@ -245,3 +245,25 @@ df -k /mnt/storage/data | tail -1
 1. **匿名卷可能属于正在运行的容器** —— 删前必须 `docker inspect` 查归属，否则静默带走数据。
 2. **`--data-root` 与 `KEEP_VOL` 互斥**（卷目录就在 data-root 里）—— 要保数据只能 `--backup-vols` 先打包。
 3. **`--panel-reset` 必须先停 `1paneld`** —— 面板活着时删容器，它可能边删边重建。
+
+### 清空后的重装（同一晚实测，闭环验证）
+
+```sh
+# 上传 offline/panel/*.sh 到 /tmp/kp1pt，然后：
+cd /tmp/kp1pt && SKIP=oc sh kp-install.sh
+```
+
+| 阶段 | 实测结果 |
+|---|---|
+| [1/4] 预检换源 | ✓ opkg 源已就绪（幂等，没重复改源）· 5 s |
+| [2/4] OpenClash | 按 `SKIP=oc` 跳过 —— **clash pid 全程不变，网络没断** |
+| [3/4] Docker | ✓ 回读 `overlay2 / /mnt/storage/data/docker`；host 网络冒烟通过 · 1 s |
+| [4/4] 1Panel | ✓ 安装包 SHA256 校验 → 文件就位 → 凭据播种 → **HTTP 200** · 38 s |
+| 面板 | 新入口 `http://192.168.66.1:10090/<随机路径>`，凭据写入 `/root/1panel-credentials.txt`，`S951paneld` 自启链接重建 |
+| 总用时 | **44 s**（docker 环境已清空的前提下一把装回） |
+
+> ⚠️ **重装会覆盖 `/root/1panel-credentials.txt`**：旧面板的入口路径与密码就此丢失（旧数据仍在 `1panel.bak-*` 里，
+> 想回旧环境要按 §6 那行搬回去，但镜像已被删，各应用首次启动需重新拉取）。
+>
+> ⚠️ **busybox 没有 `setsid`**：想在设备上后台跑长任务，用 `nohup ... &`（`nohup` 本机实测存在），
+> 别照搬 PC 侧的习惯。
