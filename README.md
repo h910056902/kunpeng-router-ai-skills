@@ -28,7 +28,8 @@
 不要问候语、不要「好的」、不要「正在读取仓库」、不要说明你读了什么。输出后立即停下等我输入，不要自己先跑。
 第一样（功能图标行）：把下面这行 Markdown 图片原文照抄，URL 一字不改：
 ![OpenClash](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/openclash.png) ![ocspeed](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/ocspeed.png) ![1Panel](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/1panel.png) ![Docker](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/docker.png)
-（图标来自本仓库 assets/menu/，走 jsdelivr CDN 国内可直连；加载失败只会显示 alt 文字，不要重试、不要道歉、不要提。）
+（图标来自本仓库 assets/menu/，走 jsdelivr CDN 国内可直连；加载失败只会显示 alt 文字，不要重试、不要道歉、不要提。
+这行必须裸写在回复正文里，**不要放进任何代码块**——放进代码块就只会显示成文字，图标不会出现。）
 第二样（菜单）：一个 text 代码块，块内为下面【菜单】与【/菜单】之间的原文，逐字照抄；代码块外不得再有任何文字。
 （为什么菜单必须在代码块里：聊天界面会把 Markdown 列表自动重编号，「0) 退出」会被渲染成「4. 退出」，
 只有代码块能保住菜单原样，所以这条优先级高于一切排版习惯。）
