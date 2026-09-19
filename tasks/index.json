@@ -147,15 +147,16 @@
         "KEEP 中写清必须保留的容器名；卷里含唯一数据的一律先单独归档",
         "1Panel 数据根 /mnt/storage/data/1panel 只允许改名归档，禁止删除"
       ],
-      "steps_summary": "dry-run 盘点待删清单 -> 备份快照（containers/images/volumes/networks/docker-info/uci export dockerd/daemon.json/1Panel.db/df）-> docker stop -t 10 -> docker rm -f 全部容器 -> docker volume rm 全部卷 -> docker rmi -f 全部镜像 -> 删自定义网络（保留 host/none/bridge）-> 可选 --data-root 清 data-root 镜像层（先停 dockerd）-> 可选 --panel-apps 把 1Panel apps/ 改名归档 -> 可选 --reset-uci 复位 dockerd UCI",
+      "steps_summary": "dry-run 盘点待删清单 -> 备份快照（containers/images/volumes/networks/docker-info/uci export dockerd/daemon.json/1Panel.db/df）-> 【可选 --backup-vols】删卷前先把每个卷内容 tar -czf 到备份目录（卷是唯一不可恢复项，且匿名卷可能属于正在运行的容器，须先 docker inspect 查归属）-> docker stop -t 10 -> docker rm -f 全部容器 -> docker volume rm 全部卷 -> docker rmi -f 全部镜像 -> 删自定义网络（保留 host/none/bridge）-> 可选 --data-root 清 data-root 镜像层（先停 dockerd）-> 可选 --panel-apps 把 1Panel apps/ 改名归档 -> 可选 --reset-uci 复位 dockerd UCI",
       "verify": [
         "docker ps -aq | grep -c . = 0、docker images -q | grep -c . = 0、docker volume ls -q | grep -c . = 0",
         "docker network ls 只剩 bridge host none 三个默认网络",
         "pidof dockerd 有输出（清空后服务仍要能起来）",
         "pidof clash 有输出且 :10090 仍 LISTEN（证明没误伤 OpenClash 与 1Panel 面板）",
-        "备份目录 /mnt/storage/data/kpbackup/docker-purge-<时间戳>/ 含 ≥8 个快照文件"
+        "备份目录 /mnt/storage/data/kpbackup/docker-purge-<时间戳>/ 含 ≥8 个快照文件",
+        "清空前已实测 docker pull busybox 成功（证明加速源活着，镜像删了能拉回来）"
       ],
-      "rollback": "容器按 containers.txt 重建（可写层不可恢复）；镜像按 images.txt 重拉；卷数据不可恢复；dockerd UCI 用 uci import dockerd < 备份文件；1Panel apps 用 mv apps.bak-<ts> apps 归位；整机兜底走 restore.all"
+      "rollback": "容器按 containers.txt 重建（可写层不可恢复）；镜像按 images.txt 重拉；卷用 volumes/<卷名>.tar.gz 解回（未打包则不可恢复）；dockerd UCI 用 uci import dockerd < 备份文件；1Panel apps 用 mv apps.bak-<ts> apps 归位；整机兜底走 restore.all"
     },
     {
       "id": "panel.install",
