@@ -1,12 +1,58 @@
 # kunpeng-router-ai-skills
 
-**AI Agent Skill for 鲲鹏无限 / NRadio C2000 Max / C2000 U (OpenWrt 21.02, aarch64) router deep-tuning.**
+**🤔 这是什么？**
 
-这是一个面向 AI Agent（WorkBuddy / Codex / Cursor / Claude Code 等）的技能仓库：把一台**内核无 veth、 bridge 不可用**的 MT7987 OpenWrt 路由器调教到能跑 Docker、1Panel、OpenClash、AdGuard Home、NAS 容器的全部经验，沉淀为**机器可读的任务清单 + 离线安装素材 + 复盘文档**。
+把一台**内核无 veth / bridge 不可用**的鲲鹏无限 / NRadio C2000 路由器（OpenWrt 21.02，MT7987，aarch64），不刷机调教到能跑 Docker、1Panel、OpenClash 的全部真机实测经验 —— 沉淀为 **39 个机读任务 + 离线安装素材 + 复盘文档** 的 AI Agent 技能仓库。任何 AI（WorkBuddy / Codex / Cursor / Claude Code…）读它能直接上手干活。
 
-> 安全说明：本仓库为公开脱敏版。所有密码 / token / 入口码均已替换为 `<你的xxx>` 占位符；离线素材经 md5 校验，与私有档案仓库逐字节一致。
+> 🔒 公开脱敏版：所有密码 / token / 入口码均已替换为 `<你的xxx>` 占位符；离线素材经 md5 校验。
 
----
+**💡 能干什么？**
+
+- 🌐 **一键任务 1**：OpenClash 安装 + Mihomo 内核拉取（离线 ipk / 在线双路径）
+- 📊 **一键任务 2**：ocspeed 自动测速插件安装（五件套落盘 + cron 重建）
+- 🐋 **一键任务 3**：Docker + 1Panel 安装（含 host 网络默认化，容器建 veth 必死的解法）
+- 📦 另有 36 个机读任务：换源救源、无 SSH 救援、TF 扩容、面板排障… 全在 `tasks/index.json`
+
+**🚀 AI 快速接入（复制即用）**
+
+把下面这段发给任何能联网读 GitHub 的 AI，它就会像带菜单的安装脚本一样工作：
+
+```text
+你现在是「鲲鹏 C2000 U 路由器安装助手」，运行在仓库 kunpeng-router-ai-skills 之上
+（https://github.com/h910056902/kunpeng-router-ai-skills）。
+你的行为要像一个带菜单的安装脚本：先显示功能列表 → 等我输入编号 → 执行对应任务 → 回到菜单等我下一步。
+
+【第 0 步 · 加载索引】先读仓库根的 AGENTS.md，再读 tasks/index.json 建立任务索引，
+不要通读 SKILL.md。读不到就直接告诉我，不要凭记忆猜。
+
+【第 1 步 · 显示菜单】把下面这张表原样打印出来，然后停下来等我输入，不要自己先跑：
+
+  === 鲲鹏路由器安装助手 ===
+  请选择要执行的功能（可多选，用空格或逗号分隔，例如：1 3）
+    1) OpenClash 安装 + Mihomo 内核拉取            [openclash.install → tasks/01-openclash-install.md]
+    2) ocspeed 自动测速插件安装                     [ocspeed.install → tasks/02-ocspeed-install.md]
+    3) 1Panel + Docker 安装（含 host 网络默认化）   [docker.install → tasks/03-docker-1panel-install.md]
+    0) 退出
+
+【第 2 步 · 解析我的输入】1/2/3 只跑对应功能；「1 3」或「1,3」按 1→3 固定顺序；
+all/全部 三个都跑（1→2→3）；0 结束；输入菜单外内容就重新显示菜单。没被选中的一律不碰。
+
+【第 3 步 · 执行（每个功能固定四关，失败即停）】
+① 前置——逐条实测 playbook 的 preconditions，有一条不满足就停下报告；
+② 执行——按 playbook 分步做，写操作前先备份，报错先查 SKILL.md 末尾「踩坑速查」；
+③ 验证——跑完 verify 判据，拿到期望结果才算通过，拿不到就如实说哪条没过；
+④ 收尾——报告改了什么 / 备份在哪 / 怎么回滚。
+每跑完一个功能打印一行：[OK] 1) OpenClash 安装 —— 通过（判据…） 或 [FAIL] 2) ocspeed —— 卡在 ③ cron 未建。
+
+【第 4 步 · 回到菜单】全部跑完后重新打印菜单，问我还要不要继续，只有输入 0 才结束。
+
+【硬约束】只做菜单里的 1/2/3，不做商店增强（store.*）/AdGuard/NAS 等未点名任务；
+容器只能 host 网络；凭据只从环境变量读；报结论前必须跑 verify。
+
+现在开始：读 AGENTS.md 和 tasks/index.json，然后显示菜单。
+```
+
+（完整版含执行四关与素材对应关系，见 [`docs/助手菜单提示词.md`](docs/助手菜单提示词.md)。）
 
 ## AI 接入点（机器可读）
 
@@ -14,12 +60,12 @@
 |---|---|
 | [`AGENTS.md`](AGENTS.md) | Agent 约定入口：这个仓库是什么、先读什么、高危禁令、每个任务从哪进 |
 | [`llms.txt`](llms.txt) | LLM 索引清单：全部文档一句话摘要，便于检索式加载 |
-| [`tasks/index.json`](tasks/index.json) | **39 个机读任务**：`id / title / group / risk / playbook / refs / preconditions / verify / rollback` |
+| [`tasks/index.json`](tasks/index.json) | **39 个机读任务**：每条含 id / title / risk / playbook / preconditions / verify / rollback / offline / refs 等字段 |
 | [`SKILL.md`](SKILL.md) | 主技能：设备档案 + A→V 有序任务路由表（含 T1/T2/T3 任务包速查） |
 
-**最小接入方式**：把本仓库目录投喂给 Agent，让它先读 `AGENTS.md`，按 `tasks/index.json` 的任务 id 精确取用 playbook，而不是通读全库。
+**最小接入方式**：让 Agent 先读 `AGENTS.md`，按 `tasks/index.json` 的任务 id 精确取用 playbook，而不是通读全库。
 
-## 三大任务包（本次核心交付）
+## 三大任务包
 
 | 任务包 | Playbook | 离线素材 |
 |---|---|---|
@@ -35,7 +81,7 @@
 ├── AGENTS.md / llms.txt / SKILL.md     # AI 入口与路由
 ├── tasks/                              # index.json(39 任务) + 3 份 playbook
 ├── references/                         # 23 篇专题文档（含 id/tags/risk frontmatter）
-├── docs/                               # 调优经验总览（12 领域）· 新会话验收清单
+├── docs/                               # 调优经验总览（12 领域）· 新会话验收清单 · 助手菜单提示词
 ├── offline/                            # 离线安装素材 + checksums.md5（21 项）
 ├── scripts/                            # PC 侧驱动 + payload/（host 网络三件套、回归自测）
 └── C2000U-Docker-assessment.md         # C2000 U Docker 适配评估与实装记录
