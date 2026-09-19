@@ -38,7 +38,7 @@ agent_created: true
 | 记忆归档 | 私有仓库 `memory/`：`PROJECT-MEMORY.md`（长期）+ 每日日志（公开仓库不含，含真实内网细节） |
 | 源码归档 | 私有仓库 `src/dockerpanel/`：dpctl / dpapi.lua / controller / htm 路由器端源码副本 |
 | 部署脚本 | 私有仓库 `src/deploy/`：41 个部署/验证/测试脚本 + `README.md` 部署手册 |
-| PC 侧脚本库 | `C:/Users/91005/Desktop/鲲鹏无限路由器美化/patches/`（paramiko + Python） |
+| PC 侧脚本库 | `%USERPROFILE%/Desktop/鲲鹏无限路由器美化/patches/`（paramiko + Python） |
 | **第二台设备** | 鲲鹏 **C2000 U**（产品名 `C2000-798`，板型 `HC-WT9500`，MT7987，**992MB 内存**，7.5G **TF 卡**，内核 5.4.281 同源，LuCI git-26.253）。**Docker 已实装：overlay2 + data-root `/mnt/storage/data/docker` + 开机自启**（2026-09-11）。⚠️ **2026-09-14 更正：厂商源 `kmod-veth` 是空包（装完无任何 .ko），内核 `CONFIG_VETH/MACVLAN/IPVLAN` 全部 not set → 桥接网络物理不可用，Docker 只能用 host 网络，别再指望装 kmod 解决**。**1Panel v1.10.34-lts 已原生装成**（端口 10090，procd 服务，静态二进制跑 musl，凭据在路由器 `/root/1panel-credentials.txt`）。详见 **`references/c2000u-docker.md`** 与 **`references/c2000u-1panel.md`**。
 ⚠️ 三条实测硬事实（2026-09-11）：**① `/etc/kp_store/` 不存在** —— 商店从未初始化、后端 `appcenter.lua` 是原版（474 行/15057 B，增强标记全 0），要"注册进商店"必须先建骨架+打补丁；**② `usb-storage.ko` 缺失** —— `kmod-usb-storage` 只装了 modprobe 配置没装模块，**外接盘不可用**；**③ TPROXY 与 TUN 都可加载** —— `modprobe tun`/`xt_TPROXY` 实测 OK，OpenClash 两条路都通 |
 
@@ -99,6 +99,7 @@ agent_created: true
 | T2 | ocspeed 安装 | `tasks/02-ocspeed-install.md` | `offline/ocspeed/`（五件套 + `kp-ocspeed.sh`） |
 | T3 | Docker + 1Panel 安装 | `tasks/03-docker-1panel-install.md` | `offline/panel/`（nros-panel 安装链） |
 | T4 | 清空 Docker 环境与容器；加 `--panel-reset` 可连 1Panel 环境一起复位（重装前置） | `tasks/04-docker-purge.md` | `scripts/payload/kp-docker-purge.sh`（dry-run 默认） |
+| T5 | 跑第三方 NROS 插件安装器（maye 助手）；红线：它不产生任何备份、别选卸载 Docker、别装 AGH·mosdns、别装奇游·雷神 | `tasks/05-nros-plugin-installer.md` | 跑前自行备份 + `scripts/adapt_maye_assistant.py`（snapshot / check） |
 
 > 任务包内含前置检查 / 步骤 / 验证判据 / 回滚与风险点；机器索引：`tasks/index.json`（id、前置、脚本、风险、验证）。
 > 三大任务在 B 机（C2000 U）上均已实装验证；任务包兼作「从零复现」与「幂等核对」双用途。
