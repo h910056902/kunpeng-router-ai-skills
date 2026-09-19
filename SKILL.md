@@ -98,7 +98,7 @@ agent_created: true
 | T1 | OpenClash 安装 + 内核拉取 | `tasks/01-openclash-install.md` | `offline/openclash/` + `offline/core/` + `offline/stubs/` |
 | T2 | ocspeed 安装 | `tasks/02-ocspeed-install.md` | `offline/ocspeed/`（五件套 + `kp-ocspeed.sh`） |
 | T3 | Docker + 1Panel 安装 | `tasks/03-docker-1panel-install.md` | `offline/panel/`（nros-panel 安装链） |
-| T4 | 清空 Docker 环境与容器（重装前置） | `tasks/04-docker-purge.md` | `scripts/payload/kp-docker-purge.sh`（dry-run 默认） |
+| T4 | 清空 Docker 环境与容器；加 `--panel-reset` 可连 1Panel 环境一起复位（重装前置） | `tasks/04-docker-purge.md` | `scripts/payload/kp-docker-purge.sh`（dry-run 默认） |
 
 > 任务包内含前置检查 / 步骤 / 验证判据 / 回滚与风险点；机器索引：`tasks/index.json`（id、前置、脚本、风险、验证）。
 > 三大任务在 B 机（C2000 U）上均已实装验证；任务包兼作「从零复现」与「幂等核对」双用途。
