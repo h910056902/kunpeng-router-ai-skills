@@ -100,6 +100,16 @@ agent_created: true
 | T3 | Docker + 1Panel 安装 | `tasks/03-docker-1panel-install.md` | `offline/panel/`（nros-panel 安装链） |
 | T4 | 清空 Docker 环境与容器；加 `--panel-reset` 可连 1Panel 环境一起复位（重装前置） | `tasks/04-docker-purge.md` | `scripts/payload/kp-docker-purge.sh`（dry-run 默认） |
 | T5 | 跑第三方 NROS 插件安装器（maye 助手）；红线：它不产生任何备份、别选卸载 Docker、别装 AGH·mosdns、别装奇游·雷神 | `tasks/05-nros-plugin-installer.md` | 跑前自行备份 + `scripts/adapt_maye_assistant.py`（snapshot / check） |
+| T5-a | 分类一 · 常用插件安装（换 swap / OpenList / DDNS-GO / Open-Box）；红线：上游「哈基米」＝装 OpenClash、AGH·MosDNS 抢 53、ttyd 默认免登录 | `tasks/06-nros-plugins-common.md` | 同 T5；`nros.plugins-common` |
+| T5-b | 分类二 · VPN / 组网 / 路由向导（ZeroTier · EasyTier · OpenVPN）；**destructive**：写 `ip rule`，本机全网出口靠 OpenClash，走错即断网 | `tasks/07-nros-network-route.md` | 同 T5 + 网络基线快照；`nros.network-route` |
+| T5-c | 分类三 · 游戏加速器（奇游 · 雷神）；**destructive**：明文 HTTP 下发 root 脚本、无校验和 | `tasks/08-nros-game-accel.md` | 同 T5 + 人工替代路径（自己取源码再审）；`nros.game-accel` |
+| T5-d | 分类四 · 应用商店与页面美化（美化 / 还原 / LuCI 8080）；**会覆盖三个补丁 marker 的载体文件** `appcenter.lua` / `appcenter.htm` | `tasks/09-nros-appcenter-polish.md` | 同 T5 + 补丁基线校验；`nros.appcenter-polish` |
+| T5-e | 分类五 · 设备维护与检测（体检 · 工具箱 · 硬件加速）；红线：硬件加速会 `fw3 reload` 瞬断网络，本机风扇 / eMMC 两项做不了（且维护菜单编号跳号） | `tasks/10-nros-maintenance.md` | 同 T5；`nros.maintenance` |
+
+> **T5-a ~ T5-e 是 T5 那个交互式脚本的五个功能分类直达入口**（对应助手菜单 `5)` ~ `9)`）：
+> 跑法与 T5 相同（AI 做前置与校验，菜单由用户自己按），但**每个分类有各自的红线与验证判据**，
+> 不要只读 `tasks/05` 就去跑 `5)~9)`。上游脚本真源：`ssh-nradio-plugin-installer.sh` V3.2.0（约 7 万行），
+> 各分册内含「上游菜单号 → feature → 函数 → 行号」对照表，便于下次复核。
 
 > 任务包内含前置检查 / 步骤 / 验证判据 / 回滚与风险点；机器索引：`tasks/index.json`（id、前置、脚本、风险、验证）。
 > 三大任务在 B 机（C2000 U）上均已实装验证；任务包兼作「从零复现」与「幂等核对」双用途。

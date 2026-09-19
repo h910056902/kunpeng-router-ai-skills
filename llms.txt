@@ -2,14 +2,21 @@
 
 > 鲲鹏无限 / NRadio 路由器（OpenWrt 21.02，aarch64，C2000 U / C2000 Max）的深度调优知识库与可执行工具集。全部结论来自真机实测。本文件是给 LLM 的低 token 索引；机器可读任务清单见 tasks/index.json。
 
-第一入口：[AGENTS.md](AGENTS.md) —— 三行硬指示、三条平台级硬约束、高危禁令、执行姿势、可直接复制的启动提示词。
+第一入口：[AGENTS.md](AGENTS.md) —— 三行硬指示、三条平台级硬约束、高危禁令、执行姿势、菜单助手协议（§8）与可直接复制的启动提示词。
 
 ## Tasks（可直接执行的任务包）
 
-- [tasks/index.json](tasks/index.json): 机读任务清单（全量 41 个）。每条含 id / title / risk / playbook / preconditions / verify / rollback / offline / refs 等字段。
+- [tasks/index.json](tasks/index.json): 机读任务清单（全量 46 个）。每条含 id / title / risk / playbook / preconditions / verify / rollback / offline / refs 等字段。
 - [tasks/01-openclash-install.md](tasks/01-openclash-install.md): 装 OpenClash（本地 ipk 投递 + Mihomo 内核拉取的离线与在线两条路 + UCI 收敛 + 端口与进程名验证）。
 - [tasks/02-ocspeed-install.md](tasks/02-ocspeed-install.md): 装 ocspeed（OpenClash 自动测速插件的五件套落盘、cron 重建、overlay 丢失后的恢复）。
 - [tasks/03-docker-1panel-install.md](tasks/03-docker-1panel-install.md): 装 Docker + 1Panel（换源、kmod 空桩包、只认 UCI 的 dockerd 配置、1Panel 非交互首启、host 网络默认化）。
+- [tasks/04-docker-purge.md](tasks/04-docker-purge.md): 清空 Docker 环境与容器（destructive；默认 dry-run，双开关才真删，动手前自动备份快照）。
+- [tasks/05-nros-plugin-installer.md](tasks/05-nros-plugin-installer.md): 第三方 NROS 插件安装器（maye 助手）**总入口**。版本门禁实测、三条红线、stdin 三种行为、真机可用性验证。
+- [tasks/06-nros-plugins-common.md](tasks/06-nros-plugins-common.md): maye 分类一 · 常用插件安装。红线：哈基米＝装 OpenClash、AGH/MosDNS 抢 53、ttyd 默认免登录、Docker 与 MT5700 本机选了也白选。
+- [tasks/07-nros-network-route.md](tasks/07-nros-network-route.md): maye 分类二 · VPN / 组网 / 路由向导。destructive：会写 `ip rule`（priority 60/70/196），本机全网出口＝断网风险；向导参数不许 AI 代填。
+- [tasks/08-nros-game-accel.md](tasks/08-nros-game-accel.md): maye 分类三 · 游戏加速器。destructive：明文 HTTP（含裸 IP）下载 root 脚本，只有 `grep` + `sh -n` 两句检查、无校验和。
+- [tasks/09-nros-appcenter-polish.md](tasks/09-nros-appcenter-polish.md): maye 分类四 · 应用商店与页面美化。会覆盖商店补丁载体 `appcenter.htm` / `appcenter.lua`；「还原应用商店」抹掉三个补丁 marker。
+- [tasks/10-nros-maintenance.md](tasks/10-nros-maintenance.md): maye 分类五 · 设备维护与检测。红线：`5 › 11` 硬件加速会 `fw3 reload`；本机维护菜单编号是 `0-8 / 11-12`（9、10 是空跳号）。
 
 ## References（23 篇专题档案，均有 risk / preconditions 元数据）
 
@@ -25,7 +32,7 @@
 - [dsh-export.md](references/dsh-export.md): 把本技能导出成 DeepSeek Harness (DSH) 技能包的格式要求。
 - [istore-integration.md](references/istore-integration.md): iStore 商店 / 1Panel 与鲲鹏原生商店并存；LuCI 崩了如何用 /rom 全量恢复。
 - [kpwebui.md](references/kpwebui.md): kp-webui 独立控制台（uhttpd 第二实例 + ash CGI，零常驻开销）。
-- [maye-assistant.md](references/maye-assistant.md): 第三方 maye 插件助手的兼容适配与禁装项。
+- [maye-assistant.md](references/maye-assistant.md): 第三方 maye 插件助手的兼容适配与禁装项（含 V3.2.0 门禁实测与可用性验证）。
 - [nas-upgrade.md](references/nas-upgrade.md): NAS 升级路线与文件系统边界（不支持 exFAT）。
 - [no-ssh-recovery.md](references/no-ssh-recovery.md): 22 端口连不上时的取数与命令通道（LuCI dmesg/syslog 直读、crontab 当命令通道、真重启接口）。
 - [nr-webui-reverse.md](references/nr-webui-reverse.md): 第三方 nr_webui 的完整解析与一键还原。
@@ -43,6 +50,7 @@
 - [scripts/rtr_lib.py](scripts/rtr_lib.py): 远程操作公共库。heredoc 写入、超 8KB 自动分块、断线重连。
 - [scripts/gh_proxy_push.py](scripts/gh_proxy_push.py): GitHub DNS 被污染时的 push/pull 绕行。
 - [scripts/setup_docker_c2000u.py](scripts/setup_docker_c2000u.py): C2000 U 的 Docker 六步一键实装。
+- [scripts/adapt_maye_assistant.py](scripts/adapt_maye_assistant.py): maye 助手的适配器（snapshot 拍补丁基线 / check 与 --fix 重放补丁）。
 - [scripts/kp-1panel-install-test.py](scripts/kp-1panel-install-test.py): 「1Panel 能不能装容器」端到端测试驱动（probe → pull → control → hostnet-install → install → panel → panelcheck → verify）。
 - [scripts/kp-1panel-status.py](scripts/kp-1panel-status.py): 只读盘点「现在有哪些 1Panel 容器」，含 OOMKilled 与 dmesg OOM 归属。
 - [scripts/healthcheck_c2000u.py](scripts/healthcheck_c2000u.py): 13 板块全量只读巡检。
@@ -62,8 +70,8 @@
 
 - [docs/调优经验总览.md](docs/调优经验总览.md): 按 12 个领域重编的经验总纲，每条都是「结论 → 为什么 → 怎么验证」。
 - [docs/新会话验收清单.md](docs/新会话验收清单.md): 用空白会话验证「别的 AI 能否读懂本仓库」的提问模板与标准答案。
-- [docs/助手菜单提示词.md](docs/助手菜单提示词.md): 复制即用的菜单式安装助手提示词（静默加载、首条回复弹软件图标行+代码块菜单、固定四关执行）。
-- [assets/menu/](assets/menu/): 菜单软件图标（32px PNG：openclash / ocspeed / 1panel / docker），由提示词里的 jsdelivr 链接引用。
+- [docs/助手菜单提示词.md](docs/助手菜单提示词.md): 复制即用的「一段话启动器」+ 九个功能一览 + 维护须知（菜单原文只在 AGENTS.md §8）。
+- [assets/menu/](assets/menu/): 菜单软件图标（10 枚 32px PNG：openclash / ocspeed / 1panel / docker / maye / plugins / network / game / store / maint），由提示词里的 jsdelivr 链接引用。
 - [docs/仓库维护指南.md](docs/仓库维护指南.md): 维护者手册 —— 仓库布局、常见维护场景、公开仓发布流程、发布前红线、已知坑。
 - [SKILL.md](SKILL.md): 面向人类的完整技能索引（设备档案、任务路由表、踩坑速查 60+ 条）。
 - [C2000U-Docker-assessment.md](C2000U-Docker-assessment.md): C2000 U 的 Docker 适配评估与实装全记录。

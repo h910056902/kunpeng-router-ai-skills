@@ -764,6 +764,137 @@
         "/etc/config/dockerd 仍在且含 data_root"
       ],
       "rollback": "用跑前自备的备份还原（它没有自带备份）；我们的补丁用 adapt_maye_assistant.py check --fix 重放"
+    },
+    {
+      "id": "nros.plugins-common",
+      "title": "maye 助手分类一 · 常用插件安装（助手菜单 5）",
+      "group": "运维",
+      "order": 134,
+      "risk": "write",
+      "playbook": "tasks/06-nros-plugins-common.md",
+      "refs": ["references/maye-assistant.md", "references/adguard-setup.md"],
+      "scripts": ["scripts/adapt_maye_assistant.py"],
+      "offline": [],
+      "preconditions": [
+        "通用前置（无备份 / 官方 NROS / 版本门禁 / SD 卡 / 真 TTY / 命令不带参数）见 tasks/05 §0-§3",
+        "先看清本机可用子集：8 Docker 与 9 MT5700 在本机不可用（机型白名单不含 C2000Ultra）",
+        "netstat -ltnp | grep ':53 ' 确认谁在管 53：本机是 Docker AGH 全网接管，不能再装 native DNS 类插件",
+        "装 ttyd/Web SSH 前必须知道它默认免登录（等于 LAN 上开一个 root shell）"
+      ],
+      "steps_summary": "自备备份（含 /etc/config/dhcp 与 DNS 链基线）-> snapshot -> 下载校验 -> 真终端进菜单 1 -> 只按安全项（1 swap / 5 OpenList / 7 DDNS-GO / 10 Open-Box）-> check。红线：不选 2 哈基米(=安装 OpenClash) / 4 AdGuardHome / 6 MosDNS",
+      "verify": [
+        "装的那个插件进程或服务在跑（pidof / init.d status / 默认端口 HTTP 200）",
+        "pidof clash 与跑前同值（没重装哈基米）",
+        "/etc/config/dhcp 或 dnsmasq 的 sha256 与跑前一致（没被 native DNS 抢 53）",
+        "appcenter.lua/htm 三个 marker 仍 >=1",
+        "/etc/config/dockerd 仍在且含 data_root"
+      ],
+      "rollback": "opkg remove 新装包；DNS 用 /tmp/kp-maye-bak/ 的 dhcp 备份覆盖后重启 dnsmasq；补丁用 adapt_maye_assistant.py check --fix"
+    },
+    {
+      "id": "nros.network-route",
+      "title": "maye 助手分类二 · VPN / 组网 / 路由向导（助手菜单 6）",
+      "group": "运维",
+      "order": 135,
+      "risk": "destructive",
+      "playbook": "tasks/07-nros-network-route.md",
+      "refs": ["references/maye-assistant.md", "references/no-ssh-recovery.md"],
+      "scripts": ["scripts/adapt_maye_assistant.py"],
+      "offline": [],
+      "preconditions": [
+        "必须先存网络基线：pidof clash / ip -4 rule / ip -4 route show default / 真 HTTP 200",
+        "本机 OpenClash 是全网出口（TUN + fake-ip 198.18.0.0/16），改动网络平面 = 可能直接断网",
+        "向导里的本地 LAN / 远端子网 / 接口名必须使用者本人回答，AI 不许代填",
+        "只做装包（菜单 1/2/3），不做向导（4/5/6）；真要做必须单独一次、网络空闲时做"
+      ],
+      "steps_summary": "备份 network/firewall/dhcp/mwan3 + 存 ip rule/route -> 真终端进菜单 2 -> 只按 1/2/3 -> 回来先看网还在不在（真 HTTP），再 diff ip rule，最后才 check",
+      "verify": [
+        "pidof clash 与跑前同值（本机 16659）",
+        "curl -m 8 http://www.baidu.com 返回 200（不要用 ping/TCP 判断）",
+        "ip -4 route show default 与跑前一致",
+        "ip -4 rule 差异 = 只有主动做向导才会变",
+        "对应的 VPN 服务进程在跑"
+      ],
+      "rollback": "删掉上游加的 ip rule（priority 60/70/196）；network/firewall 用备份覆盖后 reload；EasyTier 开机重放脚本必须一并删掉否则重启复发；SSH 也断了走 references/no-ssh-recovery.md"
+    },
+    {
+      "id": "nros.game-accel",
+      "title": "maye 助手分类三 · 游戏加速器（助手菜单 7）",
+      "group": "运维",
+      "order": 136,
+      "risk": "destructive",
+      "playbook": "tasks/08-nros-game-accel.md",
+      "refs": ["references/maye-assistant.md"],
+      "scripts": ["scripts/adapt_maye_assistant.py"],
+      "offline": [],
+      "preconditions": [
+        "默认不做：两条安装链路都是明文 HTTP 下载 root 脚本，其中雷神是裸 IP http://119.3.40.126/...",
+        "执行前只有 grep 一个字符串 + sh -n 两句检查，无校验和/签名（上游 V2.9.5 起主动撤除了 MD5/SHA256 门禁）",
+        "推荐走人工替代路径：自己 wget + 记 sha256 + 人工过目脚本内容后再执行",
+        "会写应用商店条目与 LuCI 文件，跑前必须 snapshot 拍补丁基线"
+      ],
+      "steps_summary": "备份 /etc/qy 相关与 appcenter 两文件 + 网络基线 -> wget 脚本并记 sha256 -> 人工审源码 -> 真终端执行 -> check",
+      "verify": [
+        "自己的 sha256 记录与执行前一致",
+        "/etc/qy/qy_acc.sh（奇游）或雷神对应文件存在",
+        "商店里能看到对应卡片（接入成功）",
+        "appcenter.lua/htm 三个 marker 仍 >=1",
+        "pidof clash 与跑前同值且真 HTTP 200"
+      ],
+      "rollback": "走上游卸载链（雷神带残留清理）；手动删 /etc/qy 与 qiyou.lua 等写入件；补丁 check --fix；网络看 tasks/07 §6"
+    },
+    {
+      "id": "nros.appcenter-polish",
+      "title": "maye 助手分类四 · 应用商店与页面美化（助手菜单 8）",
+      "group": "运维",
+      "order": 137,
+      "risk": "write",
+      "playbook": "tasks/09-nros-appcenter-polish.md",
+      "refs": ["references/maye-assistant.md", "references/store-patching.md"],
+      "scripts": ["scripts/adapt_maye_assistant.py"],
+      "offline": [],
+      "preconditions": [
+        "先 snapshot：本分类改的 appcenter.htm / appcenter.lua 正是三个补丁 marker 的载体",
+        "备份两文件 + /etc/config/appcenter + /usr/libexec/nradio-ai-compat.sh（上游明说不创建任何备份）",
+        "确认 /rom 里存在原厂 appcenter.htm 与 appcenter.lua（上游 write_original_* 依赖它）",
+        "只做第 3 项 OpenWrt 原版 LuCI（8080）时先查 netstat :8080 未被占"
+      ],
+      "steps_summary": "备份两文件与商店相关件 -> snapshot -> 真终端进菜单 4 -> 建议只按 3 -> 回来后对账三个 marker -> check / check --fix -> 清 /tmp/luci-indexcache*",
+      "verify": [
+        "/etc/init.d/appcenter status 与 infocd status 均 running",
+        "只按 3 时三个 marker 与跑前同值；按 1 或 2 时 check 报丢失且 check --fix 后全恢复",
+        "80 端口仍监听且实现未变",
+        "按了 3 则 8080 可访问（curl 8080 有响应）",
+        "pidof clash 与真 HTTP 均未被影响"
+      ],
+      "rollback": "补丁被抹用 check --fix；整店回原厂用上游菜单 4>2 或手动 cp /rom 副本；8080 用上游 4>3>2 卸载；商店崩了看 references/istore-integration.md"
+    },
+    {
+      "id": "nros.maintenance",
+      "title": "maye 助手分类五 · 设备维护与检测（助手菜单 9）",
+      "group": "运维",
+      "order": 138,
+      "risk": "write",
+      "playbook": "tasks/10-nros-maintenance.md",
+      "refs": ["references/maye-assistant.md", "references/c2000u-openclash.md"],
+      "scripts": ["scripts/adapt_maye_assistant.py"],
+      "offline": [],
+      "preconditions": [
+        "本分类不触发环境门禁（主菜单选 5 不检查），feature 33/34 额外豁免",
+        "本机维护菜单编号是 0-8 / 11-12：9 与 10 是空的跳号（5G 聚合与 5G 监听两项本机不打印）",
+        "2 风扇控制与 4 eMMC 存储扩展在本机机型不在白名单，一个只提示不支持、一个直接 die",
+        "11 硬件加速管理会 uci set firewall flow_offloading + fw3 reload 重建 nat 链：本机全网上网靠 OpenClash，做它必须挑网络空闲时",
+        "3 哈基米傻瓜分流助手会改正在运行的 OpenClash 订阅 YAML，做之前必须备份该文件"
+      ],
+      "steps_summary": "备份 firewall/mtkhnat/OpenClash YAML/admin_status + 网络基线 -> snapshot -> 真终端进菜单 5 -> 建议只按 1（统一体检）与 6（封版工具箱，只读）-> 回来复验 clash pid + 真 HTTP",
+      "verify": [
+        "体检输出有完整 PASS/WARN/FAIL/SKIP 汇总",
+        "pidof clash 与跑前同值（做了 3 或 11 时尤其要盯）",
+        "curl -m 8 http://www.baidu.com 返回 200",
+        "OpenClash YAML 与备份一致（除非在 3 里主动改了分流）",
+        "appcenter 三个 marker 仍 >=1 且 /etc/config/dockerd 仍在"
+      ],
+      "rollback": "硬件加速用 HWACCEL_BACKUP 或 /tmp/kp-maye-bak/maint 的 firewall 还原后 fw3 reload + mtkhnat restart；分流 YAML 覆盖后 openclash restart；页面改动用它自己的移除入口"
     }
   ]
 }
