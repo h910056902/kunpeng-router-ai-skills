@@ -1,3 +1,15 @@
+---
+id: REF-adguard
+title: "AdGuard Home：部署、全网接管、国内去广告规则"
+tags: [dns, adguard, adblock, dnsmasq, port-move]
+risk: high
+preconditions:
+  - "AdGuard Home 已装"
+  - "清楚 dnsmasq 与 AGH 的端口分工（53/5354）"
+  - "改端口前记录回滚路径"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # AdGuard Home：部署、全网接管、国内去广告规则
 
 ## 当前 DNS 链路

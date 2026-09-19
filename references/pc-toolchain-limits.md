@@ -1,3 +1,13 @@
+---
+id: REF-pc-toolchain
+title: "本机（PC 侧）工具链限制与绕行方案"
+tags: [pc-side, toolchain, powershell, encoding, sandbox]
+risk: low
+preconditions:
+  - "读档用途（PC 侧工具链限制与绕行）"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # 本机（PC 侧）工具链限制与绕行方案
 
 > 适用：Windows + WorkBuddy 桌面版。**本文件里的限制会随环境变化，任务开始时先快速探一次。**

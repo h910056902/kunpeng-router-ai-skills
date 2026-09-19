@@ -1,3 +1,13 @@
+---
+id: REF-script-ui
+title: "路由器运维脚本的终端界面（kp-ui.sh）"
+tags: [scripting, busybox, printf, ui]
+risk: low
+preconditions:
+  - "写运维脚本时遵循（无 tput/数组、禁右边框）"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # 路由器运维脚本的终端界面（kp-ui.sh）
 
 **什么时候用**：给设备写/改运维脚本，用户要求「界面要好看、要能维护」时。

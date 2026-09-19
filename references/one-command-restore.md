@@ -1,3 +1,14 @@
+---
+id: REF-one-command-restore
+title: "一条命令恢复（nros-panel）"
+tags: [restore, nros-panel, partition, overlay, reboot]
+risk: high
+preconditions:
+  - "换卡/卡被重置/overlay 丢失后使用"
+  - "明确会分区并自动重启"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # 一条命令恢复（nros-panel）
 
 > 2026-09-15 建立。适用 B 机（C2000 U，TF 卡存储）。

@@ -1,3 +1,15 @@
+---
+id: REF-c2000u-docker
+title: "第二台设备：鲲鹏 C2000 U（C2000-798 / WT9500）Docker 适配与实装"
+tags: [docker, install, opkg, stub-ipk, c2000u]
+risk: high
+preconditions:
+  - "设备为 C2000 U / OpenWrt 21.02.7"
+  - "出厂 opkg 源已失效需换阿里云"
+  - "data-root 指向 /mnt/storage/data"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # 第二台设备：鲲鹏 C2000 U（C2000-798 / WT9500）Docker 适配与实装
 
 > 状态：**✅ 已安装并全链路实测通过**（2026-09-11 10:13 GMT+8）

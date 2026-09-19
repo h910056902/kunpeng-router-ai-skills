@@ -1,3 +1,14 @@
+---
+id: REF-portainer-i18n
+title: "Portainer CE 汉化（鲲鹏 C2000 Max 实测）"
+tags: [portainer, i18n, zh-cn, static-js]
+risk: low
+preconditions:
+  - "Portainer 镜像已拉取"
+  - "汉化走静态 JS 替换 + 挂载卷"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # Portainer CE 汉化（鲲鹏 C2000 Max 实测）
 
 ## 一、结论速览

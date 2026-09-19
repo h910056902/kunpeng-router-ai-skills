@@ -1,3 +1,13 @@
+---
+id: REF-docker-panel
+title: "Docker 面板（自建 LuCI 集成）· 完整记录"
+tags: [docker, panel, luci, unix-socket, archive]
+risk: medium
+preconditions:
+  - "读档用途（自建面板实现与 200s 超时坑）"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # Docker 面板（自建 LuCI 集成）· 完整记录
 
 状态：**已部署可用**。入口 `/cgi-bin/luci/nradioadv/system/dockerpanel`

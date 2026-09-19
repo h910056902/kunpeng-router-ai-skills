@@ -1,3 +1,13 @@
+---
+id: REF-dsh-export
+title: "把 WorkBuddy 技能导出成 DeepSeek Harness (DSH) 技能"
+tags: [dsh, deepseek-harness, skill-export]
+risk: low
+preconditions:
+  - "本机已装 DSH（npm 全局 @deepseek-ai/dsh）"
+verified: 2026-09-19
+source: kunpeng-router-tuning
+---
 # 把 WorkBuddy 技能导出成 DeepSeek Harness (DSH) 技能
 
 > 2026-09-12 实测落地。用途：把本技能包（以及其它 WorkBuddy 技能）搬到 DSH 里复用。
