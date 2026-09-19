@@ -6,7 +6,7 @@
 
 ## Tasks（可直接执行的任务包）
 
-- [tasks/index.json](tasks/index.json): 机读任务清单。每条含 id / title / playbook / refs / scripts / offline / risk / preconditions / verify / rollback。
+- [tasks/index.json](tasks/index.json): 机读任务清单（全量 39 个）。每条含 id / title / risk / playbook / preconditions / verify / rollback / offline / refs 等字段。
 - [tasks/01-openclash-install.md](tasks/01-openclash-install.md): 装 OpenClash（本地 ipk 投递 + Mihomo 内核拉取的离线与在线两条路 + UCI 收敛 + 端口与进程名验证）。
 - [tasks/02-ocspeed-install.md](tasks/02-ocspeed-install.md): 装 ocspeed（OpenClash 自动测速插件的五件套落盘、cron 重建、overlay 丢失后的恢复）。
 - [tasks/03-docker-1panel-install.md](tasks/03-docker-1panel-install.md): 装 Docker + 1Panel（换源、kmod 空桩包、只认 UCI 的 dockerd 配置、1Panel 非交互首启、host 网络默认化）。

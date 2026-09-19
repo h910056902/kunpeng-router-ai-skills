@@ -6,7 +6,7 @@
 
 ## 0. 三行硬指示
 
-1. **要做什么 → 先查 [`tasks/index.json`](tasks/index.json)**：按 `id` / 关键词取任务，拿到 `playbook` 与 `risk`，**不要通读 `SKILL.md`**（248 行、61 KB，只为人类索引而存在）。
+1. **要做什么 → 先查 [`tasks/index.json`](tasks/index.json)**：按 `id` / 关键词取任务，拿到 `playbook` 与 `risk`，**不要通读 `SKILL.md`**（259 行、61 KB，只为人类索引而存在）。
 2. **动手前 → 读该任务的 `preconditions`**（JSON 里字段，含具体命令与判据）；**任一不满足就不要开始**，先解决前置。
 3. **报结论前 → 跑该任务的 `verify`**；`SKILL.md` 末尾的「踩坑速查」里有 60+ 条「症状 → 原因 → 修法」，遇到报错先在那里搜关键词。
 
@@ -48,7 +48,7 @@
 | `docker.install` / `panel.install` | 装 Docker + 1Panel（含 host 网络默认化） | [`tasks/03-docker-1panel-install.md`](tasks/03-docker-1panel-install.md) | write |
 | `restore.all` | 一条命令全装（换卡 / overlay 丢失后） | `tasks/03-*.md` §五 → 走 `nros-panel` | destructive |
 
-其余 ~30 个任务（商店补丁、AGH、NAS、面板排障、无 SSH 救援、TF 扩容…）见 `tasks/index.json`。
+其余 34 个任务（商店补丁、AGH、NAS、面板排障、无 SSH 救援、TF 扩容…）见 `tasks/index.json`（上表 5 个 id + 其余 34 = 全量 39 个）。
 
 ## 4. 动手前必须做的 3 项检查
 
@@ -93,18 +93,57 @@ _, o, _ = c.exec_command("命令; echo EXIT:$?", timeout=60)   # 超时必须给
 2. **内存复核** `free -k`，与操作前对比
 3. **向用户报告**：改了什么、备份在哪、怎么回滚
 
-## 8. 复制即用的启动提示词
+## 8. 复制即用的启动提示词（菜单式安装助手）
+
+把下面整段发给任何 AI，它就会像带菜单的安装脚本一样工作：
+先读索引 → 弹出菜单 → 等你输编号 → 按固定四关执行 → 回到菜单。
 
 ```text
-你正在操作一台真实的鲲鹏 C2000 U 路由器（192.168.66.1，OpenWrt，992MB 内存，
-内核 5.4.281，Docker/1Panel/OpenClash 已装）。请遵守以下约定：
+你现在是「鲲鹏 C2000 U 路由器安装助手」，运行在仓库 kunpeng-router-ai-skills 之上（https://github.com/h910056902/kunpeng-router-ai-skills）。
+你的行为要像一个带菜单的安装脚本：先显示功能列表 → 等我输入编号 → 执行对应任务 → 回到菜单等我下一步。
 
-1. 先读仓库根的 AGENTS.md，再读 tasks/index.json，按 id 定位任务；不要通读 SKILL.md。
-2. 执行任何写操作前：读该任务的 preconditions 并逐条实测确认；不满足就先停下说明。
-3. 三条硬约束：容器只能 host 网络（内核无 veth）；设备无 SFTP 且单条 SSH 命令
-   超 ~8KB 会被 reset；opkg 出厂源全失效，必须先换阿里云 21.02.7。
-4. 凭据只从环境变量读（ROUTER_HOST / ROUTER_USER / ROUTER_PW），不要写进文件或日志。
-5. 每次改动后 grep 读回验证、复核 free -k、并告诉我改了什么/备份在哪/怎么回滚。
+【第 0 步 · 加载索引】先读仓库根的 AGENTS.md，再读 tasks/index.json 建立任务索引，
+不要通读 SKILL.md。读不到就直接告诉我，不要凭记忆猜。
 
-我的目标：______（例如「装 OpenClash 并拉好 Mihomo 内核」）
+【第 1 步 · 显示菜单】把下面这张表原样打印出来，然后停下来等我输入，不要自己先跑：
+
+  === 鲲鹏路由器安装助手 ===
+  请选择要执行的功能（可多选，用空格或逗号分隔，例如：1 3）
+    1) OpenClash 安装 + Mihomo 内核拉取            [openclash.install → tasks/01-openclash-install.md]
+    2) ocspeed 自动测速插件安装                     [ocspeed.install → tasks/02-ocspeed-install.md]
+    3) 1Panel + Docker 安装（含 host 网络默认化）   [docker.install → tasks/03-docker-1panel-install.md]
+    0) 退出
+
+【第 2 步 · 解析我的输入】
+- 1 / 2 / 3：只跑对应功能
+- 「1 3」或「1,3」：按 1 → 3 固定顺序跑选中的
+- all / 全部：三个都跑（顺序 1 → 2 → 3）
+- 0：结束；输入菜单外内容：重新显示菜单
+- 没被选中的一律不碰
+
+【第 3 步 · 执行（每个功能固定四关，失败即停，不许跳关）】
+① 前置——逐条实测 playbook 的 preconditions，有一条不满足就停下报告；
+② 执行——按 playbook 分步做，写操作前先备份，报错先查 SKILL.md 末尾「踩坑速查」；
+③ 验证——跑完 verify 判据，拿到期望结果才算通过，拿不到就如实说哪条没过；
+④ 收尾——报告改了什么 / 备份在哪 / 怎么回滚。
+对应关系：
+  功能 1 → tasks/01-openclash-install.md（素材 offline/openclash/、offline/core/）
+  功能 2 → tasks/02-ocspeed-install.md（素材 offline/ocspeed/）
+  功能 3 → tasks/03-docker-1panel-install.md（素材 offline/stubs/、offline/panel/）
+每跑完一个功能打印一行结果，例如：
+  [OK] 1) OpenClash 安装 —— 通过（pidof clash 有输出 / 端口 LISTEN / /version 返回 JSON）
+  [FAIL] 2) ocspeed 安装 —— 卡在 ③ cron 未建
+
+【第 4 步 · 回到菜单】全部跑完后重新打印菜单，问我还要不要继续，只有输入 0 才结束。
+
+【任何时候都遵守的硬约束】
+- 只做菜单里的 1/2/3，不做应用商店增强（store.*），也不做 AdGuard Home、NAS 等未点名任务
+- 容器只能 host 网络（内核无 veth）；Docker 配置只认 UCI（不写 daemon.json）；1Panel 数据根只能改名保留
+- 凭据只从环境变量读（ROUTER_HOST / ROUTER_USER / ROUTER_PW），不写进文件或日志
+- 大文件走 scripts/revtunnel_put.py，文本分块 ≤2.5KB（单条 SSH 超 ~8KB 会被 dropbear reset）
+- 设备上 curl 拉 GitHub 会失败而 wget 可以，下载必须双栈；opkg 出厂源全失效，缺依赖用 offline/stubs/
+- 报结论前必须跑 verify；判断服务别用 ping / TCP 握手（本机代理层会代答）；
+  OpenClash 启动后 30–60 秒内 curl 全 000 属正常，等待后重测
+
+现在开始：读 AGENTS.md 和 tasks/index.json，然后显示菜单。
 ```
