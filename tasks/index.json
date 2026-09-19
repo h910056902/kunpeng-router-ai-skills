@@ -607,10 +607,14 @@
       "refs": ["references/maye-assistant.md"],
       "scripts": ["scripts/adapt_maye_assistant.py"],
       "offline": [],
-      "preconditions": ["运行前先 snapshot"],
-      "steps_summary": "snapshot -> 用户跑社区脚本 -> check -> 丢补丁 check --fix 重放。禁在其菜单里装 AGH / mosdns（native:554 与本机 AGH 冲突）",
-      "verify": ["check 输出全部 ✓", "本机原有补丁仍在位"],
-      "rollback": "用 snapshot 恢复"
+      "preconditions": [
+        "运行前先 snapshot",
+        "[必须] maye 助手不产生任何备份，跑前须自行备份 appcenter.htm/lua 等目标文件",
+        "禁在其菜单里装 AGH/mosdns；禁选卸载 Docker；禁装奇游/雷神（明文 HTTP 下载后直接 root 执行）"
+      ],
+      "steps_summary": "自行备份 -> snapshot -> 用户跑社区脚本 -> check -> 丢补丁 check --fix 重放。三条红线：它不备份 / 别选卸载 Docker（会 rm -f /etc/config/dockerd）/ 别装 AGH·mosdns（native:554 与本机 AGH 冲突）。完整流程见 tasks/05-nros-plugin-installer.md",
+      "verify": ["check 输出全部 ✓", "本机原有补丁仍在位", "/etc/config/dockerd 仍在且含 data_root"],
+      "rollback": "注意：snapshot 只记录 marker 指纹与 sha256，**不存文件内容，无法用于恢复**。回滚须用跑前自备的备份，或从 /rom 取原厂副本"
     },
     {
       "id": "portainer.i18n",
@@ -731,6 +735,34 @@
       "steps_summary": "python scripts/healthcheck_c2000u.py（13 板块）",
       "verify": ["服务判活一律用 pidof，不要用 pgrep -c（busybox 不支持，会全部误报 NOT RUNNING）"],
       "rollback": "无需回滚"
+    },
+    {
+      "id": "nros.plugin-installer",
+      "title": "跑第三方 NROS 插件安装器（maye 助手）",
+      "group": "运维",
+      "order": 133,
+      "risk": "write",
+      "playbook": "tasks/05-nros-plugin-installer.md",
+      "refs": ["references/maye-assistant.md"],
+      "scripts": ["scripts/adapt_maye_assistant.py"],
+      "offline": [],
+      "preconditions": [
+        "[必须] 该脚本不产生任何备份（upstream backup_file() 是空实现，BACKUP_DIR 是死路径），跑前必须自行备份目标文件",
+        "确认设备是官方 NROS，而非刷过的标准 OpenWrt（该脚本明确不适用）",
+        "ubus call system board 的 release.revision 形如 2.*（注意：不是 /etc/openwrt_release 的 DISTRIB_RELEASE=21.02-SNAPSHOT）",
+        "C2000Ultra 机型会强制要求检测到 SD 卡（挂载点须在 /tmp/storage/* 或 /mnt/app_data），否则 die",
+        "必须在真 TTY 里跑：启动有 10 秒免责声明倒计时并等 stdin 输入 y，管道/CI 会 input cancelled"
+      ],
+      "steps_summary": "自行备份 -> snapshot 拍补丁基线 -> 设备侧 wget 下载并对 sha256 -> sh -n 过语法 -> 真终端跑菜单 -> check（丢补丁则 --fix）。绝对不要选：卸载 Docker / 装 AGH·mosdns / 装奇游·雷神 / 重装 OpenClash 内核",
+      "verify": [
+        "sha256 = 62f248a924e7b05ccb5c1053ddc800835e075f3697d9221196eac1a0993c8ed8",
+        "菜单显示 NRadio_C2000Ultra，不报环境检测失败",
+        "/etc/opkg/distfeeds.conf 仍是 3 条阿里云 21.02.7 源（守卫命中会原样保留）",
+        "appcenter.lua/htm 的三个 marker 仍 >=1，否则 check --fix",
+        "pidof clash 有输出且 /etc/init.d/openclash status = running",
+        "/etc/config/dockerd 仍在且含 data_root"
+      ],
+      "rollback": "用跑前自备的备份还原（它没有自带备份）；我们的补丁用 adapt_maye_assistant.py check --fix 重放"
     }
   ]
 }

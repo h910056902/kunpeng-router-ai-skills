@@ -1,11 +1,13 @@
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
 """
-与社区脚本「NRadio 官方系统插件安装助手」(maye, nradio.mayebano.shop V3.x) 的兼容适配器。
+与社区脚本「NRadio 官方系统插件安装助手」(maye V3.x) 的兼容适配器。
+上游仓库: https://github.com/561410590/ssh-nradio-plugin-installer
+社区镜像页: https://nradio.mayebano.shop/
 
 该脚本会修改 /usr/lib/lua/luci/controller/nradio_adv/appcenter.lua 和
-appcenter.htm（备份到 /root/nradio-plugin-fix 后做增量/整替），可能冲掉
-我们自己的商店补丁。用法两步：
+appcenter.htm（直接整替/增量改写，**不产生任何备份** —— 上游 backup_file() 是
+空实现，见 MAYE_BACKUP_DIR 处注释），可能冲掉我们自己的商店补丁。用法两步：
 
   python adapt_maye_assistant.py snapshot   # 跑 maye 脚本【之前】拍基线
   python adapt_maye_assistant.py check      # 跑完【之后】检测补丁丢失情况
@@ -17,14 +19,21 @@ import os, sys, json, hashlib, time, subprocess, paramiko
 
 HOST = os.environ.get('ROUTER_HOST', '192.168.66.1')
 PW = os.environ.get('ROUTER_PW', '')
+# 默认取「本脚本所在 scripts/ 的上级目录」下的 patches/，绝不硬编码本机绝对路径
+# （本文件会同步进公开仓库）。需要指向别处时用环境变量 KP_PATCHES_DIR 覆盖。
 LOCAL_PATCHES = os.environ.get(
     'KP_PATCHES_DIR',
-    'C:/Users/91005/Desktop/鲲鹏无限路由器美化/patches')
+    os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+                 'patches'))
 BASELINE_LOCAL = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               'maye-baseline.json')
 BASELINE_ROUTER = '/etc/kp_store/patch-baseline.json'
 
 MAYE_STATE_DIR = '/root/.nradio-plugin-menu'      # maye 脚本安装后存在
+# ⚠️ 死路径（保留仅为说明上游意图）：上游 backup_file() 是空实现（return 0，注释称
+#    「所有安装、修复和页面操作直接写入，不在路由器上生成持久备份」），BACKUP_DIR
+#    只在脚本里定义、全脚本没有任何 mkdir/cp 落到它上面。实测该目录**从不创建**、
+#    也**从不产生任何备份**（设备上 `ls -ld /root/nradio-plugin-fix` → No such file）。
 MAYE_BACKUP_DIR = '/root/nradio-plugin-fix'
 
 # 文件 → [(marker, 补丁名, 用于重放的本地脚本), ...]
@@ -56,11 +65,20 @@ def connect():
 
 
 def read_file(c, path):
-    try:
-        with c.open_sftp().open(path, 'r') as f:
-            return f.read().decode('utf-8', 'replace')
-    except IOError:
+    """读远端文本；**文件不存在返回 None**。
+
+    ⚠️ 不能用 open_sftp()：鲲鹏精简固件没有 sftp-server 子系统，paramiko 会直接抛
+    `SSHException: EOF during negotiation`（同 rtr_lib.py 开头记录的是同一个坑）。
+    固件也没有 base64/openssl/xxd，所以唯一可靠通道是 exec_command + cat。
+
+    存在性判定用 `[ -f ]` 的退出码，而不是去捕获 cat 的报错：busybox 各版本 cat 失败
+    时的 stderr 文案不固定（`No such file or directory` / `can't open` 等），按文案匹配
+    不可靠；`[ -f ]` 的退出码语义是 POSIX 固定的。
+    """
+    probe = c.exec_command('[ -f %s ] && echo yes || echo no' % path)[1]
+    if probe.read().decode('utf-8', 'replace').strip() != 'yes':
         return None
+    return c.exec_command('cat %s' % path)[1].read().decode('utf-8', 'replace')
 
 
 def snapshot():
@@ -79,9 +97,13 @@ def snapshot():
     c.close()
     json.dump(base, open(BASELINE_LOCAL, 'w'), ensure_ascii=False, indent=2)
     # 基线同时存路由器一份，防止换电脑后丢
+    # ⚠️ 同样不能用 open_sftp()（设备无 sftp-server）；heredoc 前先 mkdir -p —— 该目录
+    #    不能假定存在（当前设备上 /etc/kp_store 只有 routes.list，是新商店自己建的）。
     c = connect()
-    with c.open_sftp().open(BASELINE_ROUTER, 'w') as f:
-        f.write(json.dumps(base, ensure_ascii=False))
+    payload = json.dumps(base, ensure_ascii=False)
+    # json.dumps 会把真实换行转义成 \n 两字符，故正文里不可能出现行首 KPEOF，heredoc 安全
+    c.exec_command("mkdir -p /etc/kp_store\ncat > %s << 'KPEOF'\n%s\nKPEOF\n"
+                   % (BASELINE_ROUTER, payload))[1].read()
     c.close()
     print('基线已保存:', BASELINE_LOCAL, '和', BASELINE_ROUTER)
     for path, info in base['files'].items():
@@ -99,8 +121,9 @@ def check(fix=False):
     print('== maye 脚本状态 ==')
     maye = c.exec_command('[ -d %s ] && echo yes || echo no' % MAYE_STATE_DIR
                           )[1].read().decode().strip() == 'yes'
-    print('maye 助手 %s (备份目录 %s)' % (
-        '已安装' if maye else '未安装', MAYE_BACKUP_DIR))
+    print('maye 助手 %s' % ('已安装' if maye else '未安装'))
+    print('⚠ maye 助手【不产生任何备份】：%s 从不创建、从不写入。' % MAYE_BACKUP_DIR)
+    print('  改动前请自行备份目标文件, 否则冲掉的补丁只能靠本地 patches 重放。')
     missing = []
     for path, marks in MARKERS.items():
         body = read_file(c, path)
@@ -126,6 +149,14 @@ def check(fix=False):
         c.close()
         return
     # 自动重放: 各 patches 脚本自身幂等(marker 检查后才插入)
+    if not os.path.isdir(LOCAL_PATCHES):
+        # 默认值只是「脚本上级目录下找 patches/」的约定；补丁脚本集与技能包仓库
+        # 不是同一棵树（通常放在用户自己的私有项目里），找不到是常态而非故障。
+        print('! patches 目录不存在: %s' % LOCAL_PATCHES)
+        print('  无法自动重放 —— 上面这些指纹请手动修复, 或把 patches 目录指过来后再跑 --fix:')
+        print('    cmd:        set KP_PATCHES_DIR=<你的 patches 目录>')
+        print("    PowerShell: $env:KP_PATCHES_DIR='<你的 patches 目录>'")
+        print('  说明: 补丁脚本与技能包仓库不是同一棵树, 默认值仅约定为「脚本上级目录下的 patches/」。')
     to_run = sorted({s for _, _, s in missing})
     for script in to_run:
         p = os.path.join(LOCAL_PATCHES, script)

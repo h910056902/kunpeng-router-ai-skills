@@ -48,8 +48,9 @@
 | `docker.install` / `panel.install` | 装 Docker + 1Panel（含 host 网络默认化） | [`tasks/03-docker-1panel-install.md`](tasks/03-docker-1panel-install.md) | write |
 | `restore.all` | 一条命令全装（换卡 / overlay 丢失后） | `tasks/03-*.md` §五 → 走 `nros-panel` | destructive |
 | `docker.purge` | 清空 Docker 环境与容器；加 `--panel-reset` 可连 1Panel 环境一起复位（重装演练前置） | [`tasks/04-docker-purge.md`](tasks/04-docker-purge.md) | destructive |
+| `nros.plugin-installer` | 跑第三方 NROS 插件安装器（maye 助手）；三条红线：它不产生任何备份 / 别选「卸载 Docker」/ 别装 AGH·mosdns | [`tasks/05-nros-plugin-installer.md`](tasks/05-nros-plugin-installer.md) | write |
 
-其余 34 个任务（商店补丁、AGH、NAS、面板排障、无 SSH 救援、TF 扩容…）见 `tasks/index.json`（上表 6 个 id + 其余 34 = 全量 40 个）。
+其余 34 个任务（商店补丁、AGH、NAS、面板排障、无 SSH 救援、TF 扩容…）见 `tasks/index.json`（上表 7 个 id + 其余 34 = 全量 41 个）。
 
 ## 4. 动手前必须做的 3 项检查
 

@@ -59,7 +59,7 @@ Bash 工具缺命令、PowerShell 起 shell 会被沙箱拦（`Spawning a non-Po
 
 ```js
 const { execFileSync } = require('child_process');
-const BASH = 'C:/Users/91005/.workbuddy/binaries/PortableGit/versions/1.2.0/bin/bash.exe';
+const BASH = '%USERPROFILE%/.workbuddy/binaries/PortableGit/versions/1.2.0/bin/bash.exe';
 // 语法检查
 execFileSync(BASH, ['-n', 'kp-install.sh'], { stdio: 'pipe' });
 // 试跑（必须显式 export PATH，否则 date/dirname/cat 全找不到）

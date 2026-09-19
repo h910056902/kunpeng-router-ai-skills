@@ -19,7 +19,7 @@ compose 模板**一律**引用外部 bridge 网络 1panel-network + ports:，所
 
 凭据：只从环境变量或本地凭据文件读，**绝不落盘、绝不进报告**。
     环境变量优先：ROUTER_HOST / ROUTER_USER / ROUTER_PW
-    凭据文件默认：C:\\Users\\91005\\.workbuddy\\kunpeng-router.env（KEY=VALUE 一行一条）
+    凭据文件默认：%USERPROFILE%\\.workbuddy\\kunpeng-router.env（KEY=VALUE 一行一条）
 
 阶段：probe pull control hostnet-install hostnet-restore install panel panelcheck verify uninstall
 """
