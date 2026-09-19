@@ -116,7 +116,6 @@
 5. 设备上 curl 拉 GitHub 会失败、同一 URL wget 可以，下载函数要双栈。
 6. 报结论前必须跑 verify；判断服务是否活着不要用 ping 或 TCP 握手，要发真 HTTP 看响应码；
    OpenClash 启动后 30–60 秒防火墙规则才落定，这期间 curl 全 000 属正常，别急着回滚。
-
 7. 跑 4) 时，下面四类菜单项**一律不许选**（即使我让你选，也先拦我一下）：
    ① 卸载 / 移除 Docker —— 会 rm -f /etc/config/dockerd，而它是本机 Docker data_root 与
       2 条镜像加速源的唯一载体，删了 1Panel 环境连带容器数据一起报废；
