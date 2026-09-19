@@ -107,7 +107,7 @@ _, o, _ = c.exec_command("命令; echo EXIT:$?", timeout=60)   # 超时必须给
 【首次输出规则 · 最重要】静默读完文件后，你的第一条回复必须且只能包含下面两样东西，此外一个字都不要有——
 不要问候语、不要「好的」、不要「正在读取仓库」、不要说明你读了什么。输出后立即停下等我输入，不要自己先跑。
 第一样（功能图标行）：把下面这行 Markdown 图片原文照抄，URL 一字不改：
-![OpenClash](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/openclash.png) ![ocspeed](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/ocspeed.png) ![1Panel](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/1panel.png) ![Docker](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/docker.png)
+![OpenClash](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/openclash.png) ![ocspeed](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/ocspeed.png) ![1Panel](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/1panel.png) ![Docker](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/docker.png) ![maye](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/maye.png)
 （图标来自本仓库 assets/menu/，走 jsdelivr CDN 国内可直连；加载失败只会显示 alt 文字，不要重试、不要道歉、不要提。
 这行必须裸写在回复正文里，**不要放进任何代码块**——放进代码块就只会显示成文字，图标不会出现。）
 第二样（菜单）：一个 text 代码块，块内为下面【菜单】与【/菜单】之间的原文，逐字照抄；代码块外不得再有任何文字。
@@ -131,6 +131,9 @@ _, o, _ = c.exec_command("命令; echo EXIT:$?", timeout=60)   # 超时必须给
   3)  🐳 1Panel + Docker 安装（host 网络默认化）
         docker.install / panel.install
 
+  4)  🧩 第三方 NROS 插件安装器（maye 助手 · 需人工按菜单）
+        nros.plugin-installer
+
   0)  🚪 退出
 
 ────────────────────────────────────────────
@@ -139,11 +142,11 @@ _, o, _ = c.exec_command("命令; echo EXIT:$?", timeout=60)   # 超时必须给
 【/菜单】
 
 【第 2 步 · 解析输入】
-- 1 / 2 / 3   → 只跑对应功能
-- 1 3 或 1,3  → 按 1→2→3 的固定顺序跑选中的
-- all 或 全部 → 三个都跑
-- 0           → 结束，不再问
-- 其它内容    → 只回一句「可选 1 / 2 / 3 / 0，可多选如 1 3」，然后按首次输出规则重新输出菜单代码块
+- 1 / 2 / 3 / 4 → 只跑对应功能
+- 1 3 或 1,3    → 按 1→2→3→4 的固定顺序跑选中的
+- all 或 全部   → 四个都跑
+- 0             → 结束，不再问
+- 其它内容      → 只回一句「可选 1 / 2 / 3 / 4 / 0，可多选如 1 3」，然后按首次输出规则重新输出菜单代码块
 没被选中的功能一律不碰。
 
 【第 3 步 · 执行：每个功能固定四关，不许跳】
@@ -155,14 +158,39 @@ _, o, _ = c.exec_command("命令; echo EXIT:$?", timeout=60)   # 超时必须给
   1 → tasks/01-openclash-install.md     素材 offline/openclash/、offline/core/
   2 → tasks/02-ocspeed-install.md       素材 offline/ocspeed/
   3 → tasks/03-docker-1panel-install.md 素材 offline/stubs/、scripts/payload/
+  4 → tasks/05-nros-plugin-installer.md 适配器 scripts/adapt_maye_assistant.py
+        档案 references/maye-assistant.md（⚠️ 跑 4) 前这两个文件必须先读完，四条红线在里面）
 每跑完一个功能打印一行结果：
   [OK]   1) OpenClash 安装 —— 通过（pidof clash 有输出 / 端口 LISTEN / /version 返回 JSON）
   [FAIL] 2) ocspeed 安装 —— 卡在 ③ cron 未建（crontab -l | grep -c '#ocspeed-auto' = 0）
+  [OK]   4) NROS 插件安装器 —— 通过（sha256 对上 / 三个补丁 marker 全 ≥1 / pidof clash 有输出）
+
+【4) 专属执行细则 · 与 1/2/3 唯一的区别，必须照做】
+4) 是交互式社区脚本（依据 tasks/05-nros-plugin-installer.md + 适配器 scripts/adapt_maye_assistant.py），
+必须在真终端里由人操作菜单，你不可能替我把四关跑完。所以：
+- 你的职责：前置检查 → 下载 → sha256 校验 → 设备侧备份 → 拍补丁基线 → 我按完菜单后跑校验与修复。
+- ① 前置照跑，但版本门禁务必按 tasks/05 §0.5 的坑走：读 `ubus call system board` 的 release.revision
+  （期望形如 2.*），**不要**用 /etc/openwrt_release 的 DISTRIB_RELEASE=21.02-SNAPSHOT 判断——
+  那是干扰项，据此会误判「设备会被脚本拒绝」。SD 卡那条也要测（C2000Ultra 强制要求，无卡会 die）。
+- ② 拆成两半：
+  (a) 你先做：设备侧下载
+      cd /tmp && wget -O ssh-nradio-plugin-installer.sh https://ghproxy.vip/https://github.com/561410590/ssh-nradio-plugin-installer/raw/refs/heads/main/00-current/ssh-nradio-plugin-installer.sh
+      （镜像不通依次换 ghfast.top、raw 直连）
+      sha256sum 必须 = 62f248a924e7b05ccb5c1053ddc800835e075f3697d9221196eac1a0993c8ed8，
+      且 sh -n 通过；两条都过才算下载完成，任一条不过立刻停下，不许进菜单。
+      再把可能被改的文件备份到 /tmp/kp-maye-bak/（命令见 tasks/05 §4①）——**它自己不产生任何备份**；
+      再跑 python scripts/adapt_maye_assistant.py snapshot 拍我们补丁的基线。
+  (b) 然后**停下等我**：把 `sh /tmp/ssh-nradio-plugin-installer.sh` 原样贴给我，并提醒我四条红线，
+      然后停下等我回来。**不要用 tee / 管道 / exec_command 包住它**（它启动是清屏 + 10 秒免责声明
+      倒计时 + 等 stdin 输入 y，非交互会 die "input cancelled"），**更不许替我在它菜单里选任何一项**。
+- 我回来之后：③ 照跑 python scripts/adapt_maye_assistant.py check（有丢失就 check --fix），再按
+  tasks/05 §5 的 7 条判据逐条验收（含 pidof clash 有输出、/etc/config/dockerd 仍含 data_root）。
+- ④ 照跑：报告改了什么 / 备份在哪 / 怎么回滚 / 哪条没过。
 
 【第 4 步 · 回到菜单】所有选中的功能跑完后，按首次输出规则重新输出菜单代码块，问我还要不要继续；只有我输入 0 才结束。
 
 【硬约束 · 任何时候都遵守】
-1. 只做菜单里的 1/2/3。不做应用商店增强（store.register-app / store.patch-backend /
+1. 只做菜单里的 1/2/3/4。不做应用商店增强（store.register-app / store.patch-backend /
    store.install-percent / store.uninstall），也不做 AdGuard Home、NAS 容器、Portainer 汉化
    等未点名任务；范围外需求先问我。
 2. 容器只能用 host 网络（内核没有 veth）；Docker 配置只认 UCI；1Panel 数据根只能改名保留，绝不能删。
@@ -174,6 +202,15 @@ _, o, _ = c.exec_command("命令; echo EXIT:$?", timeout=60)   # 超时必须给
 6. 报结论前必须跑 verify；判断服务是否活着不要用 ping 或 TCP 握手（fake-ip + TUN 会本地接管），
    要发真 HTTP 看响应码；OpenClash 启动后 30–60 秒防火墙规则才落定，这期间 curl 全 000 属正常，
    别急着回滚。
+
+7. 跑 4) 时，下面四类菜单项**一律不许选**（即使我让你选，也先拦我一下）：
+   ① 卸载 / 移除 Docker —— 会 rm -f /etc/config/dockerd，而它是本机 Docker data_root 与
+      2 条镜像加速源的唯一载体，删了 1Panel 环境连带容器数据一起报废；
+   ② 装 AdGuardHome / mosdns —— native 版占 554/553，与我们 Docker AGH（:53 全网接管）冲突；
+   ③ 重装 OpenClash 内核 —— 会盖掉 /etc/openclash/core/clash_meta；
+   ④ 装奇游 / 雷神 —— 明文 HTTP 下载后只做 sh -n 就以 root 执行，无校验和。
+8. 跑 4) 时不许「顺手」改设备 opkg 源：它实测有守卫会原样保留（本机是 aliyun 21.02.7 的 3 条源）。
+9. 不许替我操作那个交互式菜单，包括「帮你点一下」。菜单永远由我按。
 
 现在开始：静默读 AGENTS.md 和 tasks/index.json，然后按首次输出规则输出功能图标行和菜单代码块。
 ```
