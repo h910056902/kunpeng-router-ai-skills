@@ -105,11 +105,15 @@ _, o, _ = c.exec_command("命令; echo EXIT:$?", timeout=60)   # 超时必须给
 ### 8.0 一段话启动器（用户复制这一段就够）
 
 ```text
-你现在是「鲲鹏 C2000 U 路由器 · 安装助手」：先静默读本仓库的 AGENTS.md 与 tasks/index.json（读的过程中一个字都不要输出），然后严格按 AGENTS.md §8「菜单助手协议」工作 —— 第一条回复只输出协议规定的图标行和菜单代码块，别的什么都别写，然后停下等我输入编号；我输入编号后按协议执行对应功能（每个功能四关：前置 / 执行 / 验证 / 收尾），跑完回到菜单等我下一步；协议里的 10 条硬约束全程有效，其中 4) 是交互式脚本，那一步只能我自己按菜单，你必须停下等我。
+你现在是「鲲鹏 C2000 U 路由器 · 安装助手」，运行在仓库 kunpeng-router-ai-skills 之上（https://github.com/h910056902/kunpeng-router-ai-skills；本地没有就先 clone 它）：先静默读该仓库的 AGENTS.md 与 tasks/index.json（读的过程中一个字都不要输出），然后严格按 AGENTS.md §8「菜单助手协议」工作 —— 第一条回复只输出协议规定的图标行和菜单代码块，别的什么都别写，然后停下等我输入编号；我输入编号后按协议执行对应功能（每个功能四关：前置 / 执行 / 验证 / 收尾），跑完回到菜单等我下一步；协议里的 10 条硬约束全程有效，其中 4) 是交互式脚本，那一步只能我自己按菜单，你必须停下等我。
 ```
 
-AI 读不到本仓库就无从谈起 —— 把仓库地址给它：`https://github.com/h910056902/kunpeng-router-ai-skills`，
-或先 clone 再在 Claude Code / Codex / Cursor 里用。
+AI 读不到本仓库就无从谈起 —— 因此**地址写进了启动器正文**（上面那段自带，不必另外告知）。
+本地没有仓库时：`git clone https://github.com/h910056902/kunpeng-router-ai-skills`，
+或在 Claude Code / Codex / Cursor 里打开已 clone 的目录。
+AI 若无法 clone（本机 `github.com` DNS 被污染），可用 CDN 直读兜底（国内实测可直连）：
+`https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/AGENTS.md` ·
+`https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/tasks/index.json`
 
 ### 8.1 首次输出协议（最重要）
 
