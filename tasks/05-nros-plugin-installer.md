@@ -44,6 +44,12 @@
    它给的是 native 版（DNS 端口 554/553 + uci 配置），与本机 Docker AGH（`:53` 全网接管）端口冲突。
    去广告继续用我们现成的方案（见 `references/adguard-setup.md`）。
 
+> 📌 **用法更正（2026-09-19 真终端实测）**：运行命令**不能带任何参数**。
+> 上游 README 的官方写法就是 `sh ssh-nradio-plugin-installer.sh`。若把仓库地址当参数传进去
+> （`sh ssh-nradio-plugin-installer.sh https://github.com/561410590/ssh-nradio-plugin-installer`），
+> 脚本会把它当作「**菜单编号**」→ 直接 `ERROR: 无效编号：https://github.com/…` 退出，进不了菜单。
+> 合法的位置参数只有 `0`~`5`（= 直接进入某个功能分类）。
+
 ---
 
 ## 0.5 环境门禁：逐关卡实测结论（2026-09-19 真机）
@@ -164,7 +170,7 @@
 | 5 | **SD 卡在场** | `awk '$1 ~ /^\/dev\/mmcblk/ && $2 ~ /^\/tmp\/storage/' /proc/mounts` | 有输出 | C2000Ultra 强制要求，无卡会 `die "未检测到 SD 存储卡"` |
 | 6 | wget 可用 | `wget --version \| head -1` | 有输出（本机是 **GNU Wget 1.19.2**，非 busybox） | 走 `uclient-fetch` |
 | 7 | 镜像可达 | 见下方 | `MIRROR_OK` | 换 `ghfast.top` 或 raw 直连（本机四条链路全通） |
-| 8 | 交互式终端 | —— | 有**真 TTY** | ⚠️ 见下方「不能自动化」 |
+| 8 | 交互式终端 | —— | 有**真 TTY**（推荐；非 TTY 的三种行为见下方实测表） | —— |
 | 9 | 内存 >100MB | `free -k` | `MemAvailable` > 100000（本机约 531 MB） | 别跑大插件 |
 | 10 | **已自行备份** | 见 §4 第 ① 步 | 备份文件在本地 | 🔴 **它自己不备份**，必须你先做 |
 | 11 | 已拍补丁基线 | `python scripts/adapt_maye_assistant.py snapshot` | 基线写入 | 先 snapshot 再跑 |
@@ -180,11 +186,23 @@ echo "--- 7 mirror"; wget -q -T 10 -O /dev/null "https://ghproxy.vip/https://git
 echo "--- 9 mem"; free -k | head -2
 ```
 
-> 🔴 **它不能在自动化管道里跑**：脚本第 1015 行前后是启动免责声明流程 ——
-> 清屏 → `run_startup_disclaimer_countdown 10`（**10 秒倒计时**）→ 等 stdin 输入 `y`。
-> 非交互（`sh x.sh | tee log`、CI、`exec_command`）会 `die "input cancelled"` 或挂住。
-> **必须在真终端里由人跑**；同意一次后会写
-> `/root/.nradio-plugin-menu/disclaimer_accepted_<版本>.flag`，之后不再问。
+> **启动流程（脚本第 999-1024 行）**：清屏 → 打印免责声明（顶部显示识别到的机型）→
+> `run_startup_disclaimer_countdown 10`（**10 秒倒计时**，真终端下逐秒刷新）→ 提示
+> `同意并继续 [y/N，回车退出]:` → 读 stdin。输入 `y` 才 `mkdir -p $STATE_DIR` 并写
+> `/root/.nradio-plugin-menu/disclaimer_accepted_20260615-v260-model-disclaimer-c2000pro-risk-v1.flag`
+> （27 B，内容 `accepted V3.2.0 2026-09-14`）；**回车或其它字符 = `exit 0`，完全不写盘**。
+>
+> **stdin 的三种行为（2026-09-19 真机实测，别记错）**：
+>
+> | 喂法 | 实测结果 |
+> |---|---|
+> | `sh …sh < /dev/null`（stdin 关闭） | 打印完免责声明后 `die "input cancelled"`，rc=1，耗时 10.3 s |
+> | `exec_command` 直接跑、**不喂数据也不关**（AI 的默认写法） | **永久挂住**在 `read`（实测 14 s 后进程仍在；客户端挂满 3.8 min 才被手动终止）—— 比报错更糟 |
+> | `printf 'y\n0\n' \| sh …sh`（管道喂够数据） | **能跑通**「同意 → 菜单 → 退出」，rc=0 |
+>
+> 也就是说：**技术上传管道可以自动化它**（旧稿写的「非交互必然失败」不准确，已按实测更正）；
+> 但 🔴 **绝不许替使用者在它菜单里选任何一项** —— 它菜单里有「卸载 Docker」这类毁设备选项。
+> 正确姿势仍是：AI 把命令贴出来，交给人在真终端里按。
 > （实测：`mkdir -p $STATE_DIR` 只在**输入 y 之后**执行 → 菜单出现前**不写盘**。）
 
 ---
@@ -216,6 +234,8 @@ sh -n /tmp/ssh-nradio-plugin-installer.sh && echo SYNTAX_OK
 
 # ⑤ 在真终端里跑（人工操作菜单；进菜单前不要选 Docker/AGH/mosdns/奇游/雷神）
 sh /tmp/ssh-nradio-plugin-installer.sh
+#   ⚠️ 结尾**不要**再跟任何参数！上游官方写法就是不带参数。
+#      多带一个仓库 URL 会被当成菜单编号 → `ERROR: 无效编号：https://…` → 直接退出。
 
 # ⑥ 跑完立刻校验我们的补丁有没有被冲掉
 python scripts/adapt_maye_assistant.py check
@@ -255,6 +275,8 @@ grep -nE 'data_root|registry_mirrors' /etc/config/dockerd
 
 # ⑦ 它自己的状态目录（注意：**没有** nradio-plugin-fix，因为它不备份）
 ls -la /root/.nradio-plugin-menu/ 2>&1 | head
+#   实测内容：disclaimer_accepted_20260615-v260-model-disclaimer-c2000pro-risk-v1.flag
+#   （27 B，内容 `accepted V3.2.0 2026-09-14`）
 ls -ld /root/nradio-plugin-fix 2>&1   # 预期 No such file or directory
 ```
 
@@ -288,7 +310,9 @@ ls -ld /root/nradio-plugin-fix 2>&1   # 预期 No such file or directory
 
 | 症状 | 原因 | 修法 |
 |---|---|---|
-| `input cancelled` 直接退出 | 在非交互环境跑，读不到 stdin | 到真终端里跑 |
+| `input cancelled` 直接退出 | stdin 被关闭（`< /dev/null`、管道已 EOF） | 到真终端里跑（它会先打印完整免责声明再报错） |
+| 命令发出后**一直没反应也不报错** | `exec_command` 跑但没喂 stdin → 永久阻塞在 `read` | 别用 `exec_command` 跑它；到真终端里跑 |
+| `无效编号：https://github.com/…` | 运行命令**多带了参数**（脚本把 `$1` 当菜单编号） | 去掉参数：`sh /tmp/ssh-nradio-plugin-installer.sh` |
 | 卡在 10 秒倒计时 | 免责声明流程，属正常 | 等倒计时结束，输入 `y` |
 | `环境检测失败：当前设备不在支持列表内` | 机型不被识别 | 确认是官方 NROS；本机应为 `HC-WT9500` |
 | ~~`当前系统不是受支持的 NROS 1.9/2.x`~~ | ⚠️ **本机不会出现**（实测 PASS）。若真出现，**先查 `ubus call system board` 的 `release.revision`**，别看 `DISTRIB_RELEASE` | 见 §0.5 |
@@ -303,7 +327,8 @@ ls -ld /root/nradio-plugin-fix 2>&1   # 预期 No such file or directory
 
 ## 8. 实战记录（2026-09-19 · C2000 U）
 
-**本次只做了「只读验证 + 门禁逐关卡实测」，没有进入菜单**（避免在无人值守时误触菜单项）。
+**第一轮**只做了「只读验证 + 门禁逐关卡实测」（未进菜单）；**第二轮**补做了「真终端完整走通菜单」
+的可用性验证 —— 见 §8.4 / §8.5。
 
 ### 8.1 下载与完整性
 
@@ -348,6 +373,88 @@ storage_mount=[/tmp/storage/mmcblk0p1]   avail=15438 MiB
 | Docker | `pidof dockerd` = 25269，`/etc/config/dockerd` = 304 B（含 `data_root` + 2 条镜像加速源） |
 | 启动写盘 | 免责声明流程里 `mkdir -p $STATE_DIR` 只在**输入 y 之后**执行 → **菜单出现前不写盘** |
 
-**结论**：链路、机型、版本门禁、SD 卡前置、商店环境**全部就绪，功能可用**。
+### 8.4 可用性验证：真终端完整走通（第二轮 · PTY 会话）
+
+用 PTY 伪终端按**正确用法**（不带参数）跑了一遍，全程只浏览菜单、不选任何功能项：
+
+```
+① 免责声明 [y/N] -> 输入 y
+② 主菜单渲染   -> 输入 1
+③ 子菜单渲染   -> 输入 0 返回
+④ 回到主菜单   -> 输入 0 退出 -> 回到 root@nradio:~#
+```
+
+菜单顶部（**脚本自己打印的**，不是我方复刻）：
+
+```
+--------------------------------
+  NRadio 官方系统插件安装助手
+--------------------------------
+  版本  V3.2.0  /  2026-09-14
+  设备  NRadio_C2000Ultra          <-- 机型识别正确
+  系统  NROS 2.3.0.n0.c1           <-- 版本识别正确
+  作者  maye
+--------------------------------
+  功能分类
+--------------------------------
+   1. 常用插件安装
+   2. VPN / 组网 / 路由向导
+   3. 游戏加速器
+   4. 应用商店与页面美化
+   5. 设备维护与检测
+   0. 退出
+
+选择 [0-5]:
+```
+
+选 `1` 后打印 **`环境检测: 已检测到 NRadio 应用商店`**（= `require_nradio_menu_environment` 实跑通过），
+然后渲染子菜单：
+
+```
+  1 / 常用插件
+   1. swap 虚拟内存（C2000MAX / C2000Ultra）
+   2. 哈基米
+   3. ttyd / Web SSH
+   4. AdGuardHome
+   5. OpenList
+   6. MosDNS
+   7. DDNS-GO
+   8. Docker（C5800 系列 / C8-688）
+   9. MT5700 WebUI V3.0.0
+  10. Open-Box
+   0. 返回功能分类
+```
+
+**跑后复核（与跑前基线逐项对比，全部一致）**：
+
+| 项 | 跑前 | 跑后 |
+|---|---|---|
+| `pidof clash` | 16659 | 16659（未变） |
+| `pidof dockerd` | 25269 | 25269 |
+| `/etc/config/dockerd` sha256 | `ec346b56…1924` | 同左 |
+| `appcenter.lua` sha256 | `68e919c3…4b47` | 同左 |
+| `appcenter.htm` sha256 | `34880d1a…5bbc` | 同左 |
+| appcenter 三个 marker | 0 / 0 / 0 | 0 / 0 / 0 |
+| `/etc/opkg/distfeeds.conf` sha256 | `aa8c4df3…cc93` | 同左 |
+| `curl -m 8 http://www.baidu.com` | 200 | 200 |
+
+**零残留**：`/etc/config`、`/usr/lib/lua/luci`、`/etc/kp_store` 无任何新增或改动；`/var/run` 无残留锁；
+测试创建的 `/root/.nradio-plugin-menu/` 已删除（回到测试前状态）。
+唯一新增是 `/root/.ash_history`（PTY 会话记录的命令历史，无害）。
+
+### 8.5 stdin 三种行为实测（决定「能不能自动化」）
+
+| 喂法 | rc | 耗时 | 结果 |
+|---|---|---|---|
+| `sh …sh < /dev/null` | 1 | 10.3 s | 打印完免责声明 → `ERROR: input cancelled` |
+| `exec_command` 不喂不关 | — | — | **永久挂住**在 `read`（进程 14 s 后仍驻留；客户端挂满 3.8 min 才被手动终止） |
+| `printf 'y\n0\n' \| sh …sh` | **0** | 10.3 s | **完整跑通**「同意 → 菜单 → 退出」 |
+| `printf '0\n' \| sh …sh`（flag 已存在） | **0** | 0.3 s | 跳过免责声明，直接菜单 → 退出 |
+
+→ **技术上传管道能自动化它**（旧稿「非交互必然失败」的说法不准确，已更正）；
+但**流程上仍然不许 AI 替使用者选菜单项** —— 它菜单里有「卸载 Docker」等毁设备选项。
+
+**结论**：链路、机型、版本门禁、SD 卡前置、商店环境**全部就绪**；
+真终端下**已完整走通菜单并正常退出** —— **脚本在本机可用**。
 剩余风险集中在四条红线/风险上（无备份、别卸 Docker、别装 AGH/mosdns、别装奇游/雷神），
 按上面 §0 与 §2 规避即可。

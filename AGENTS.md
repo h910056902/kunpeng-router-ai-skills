@@ -200,7 +200,9 @@ AI 若无法 clone（本机 `github.com` DNS 被污染），可用 CDN 直读兜
 ### 8.6 4) 专属执行细则（与 1/2/3 唯一的区别，必须照做）
 
 4) 是**交互式社区脚本**（依据 `tasks/05-nros-plugin-installer.md` + 适配器 `scripts/adapt_maye_assistant.py`），
-必须在真终端里由人操作菜单 —— AI 不可能替使用者把四关跑完。所以：
+必须在真终端里由人操作菜单 —— 🔴 **不许用管道 / `exec_command` 包住它、更不许替使用者在它菜单里
+选任何一项**（技术上传管道喂输入确实能跑通，但那等于替人做选择，而它菜单里有「卸载 Docker」这类
+毁设备选项）。所以：
 
 - **AI 的职责**：前置检查 → 下载 → sha256 校验 → 设备侧备份 → 拍补丁基线 → 使用者按完菜单后跑校验与修复。
 - **① 前置照跑**，另外三件必须做到：
@@ -222,9 +224,12 @@ AI 若无法 clone（本机 `github.com` DNS 被污染），可用 CDN 直读兜
     - 拍基线：`python scripts/adapt_maye_assistant.py snapshot`（PC 侧跑，需 python3 + paramiko；设备无
       sftp-server，适配器走 `exec_command`。若之后 `check --fix` 报「patches 目录不存在」，那是**正常**的 ——
       补丁脚本集不在本仓，按提示设 `KP_PATCHES_DIR` 即可，不要为此改仓库。）
-  - **(b) 然后停下等使用者**：把 `sh /tmp/ssh-nradio-plugin-installer.sh` 原样贴出来，提醒 §8.7 第 7 条的
-    五类禁选项，然后停下等。**不要用 `tee` / 管道 / `exec_command` 包住它**（它启动是清屏 + 10 秒免责声明
-    倒计时 + 等 stdin 输入 `y`，非交互会 `die "input cancelled"`），**更不许替使用者在它菜单里选任何一项**。
+  - **(b) 然后停下等使用者**：把 `sh /tmp/ssh-nradio-plugin-installer.sh` 原样贴出来 ——
+    ⚠️ **结尾不许跟任何参数**（带上仓库 URL 会被当成菜单编号 → `ERROR: 无效编号` → 直接退出）；
+    由使用者贴进**真终端**跑，同时提醒 §8.7 第 7 条的五类禁选项，然后停下等。
+    它启动是清屏 + 10 秒免责声明倒计时 + 等 stdin 输入 `y`，三种喂法实测结果不同
+    （`< /dev/null` → `die "input cancelled"`；`exec_command` 不喂不关 → **永久挂住**；管道喂够 → 能跑通），
+    所以**不要用 `tee` / 管道 / `exec_command` 包住它**，**更不许替使用者在它菜单里选任何一项**。
 - **使用者回来后 ③**：跑 `python scripts/adapt_maye_assistant.py check`（有丢失就 `check --fix`，再复跑
   `check` 确认全 ✓）；按 tasks/05 §5 的 7 条判据逐条验收，其中必备三条 —— `pidof clash` 与跑前同值 ·
   `/etc/config/dockerd` 仍在且含 `data_root` · `distfeeds` 仍是 3 条阿里云 21.02.7 源；并**发一次真 HTTP

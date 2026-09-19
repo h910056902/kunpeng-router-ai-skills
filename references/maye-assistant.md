@@ -56,6 +56,25 @@ source: kunpeng-router-tuning
 ⚠️ **门禁触发时机**：主菜单选分类 `1/2/3/4` 才检查（第 72416 行），
 选分类 `5`（设备维护与检测）不检查；`run_menu_feature` 里 feature `33|34` 豁免（第 69922 行）。
 
+## 可用性实测：真终端已跑通（2026-09-19 晚）
+
+PTY 真终端按**正确用法**（**不带参数**）完整走通：
+免责声明 → 主菜单 → `1)` 常用插件子菜单 → 返回 → `0` 退出。
+菜单顶部是**脚本自己打印**的 `设备 NRadio_C2000Ultra` / `系统 NROS 2.3.0.n0.c1`（与我方探针结论一致）；
+选 `1` 时打印 `环境检测: 已检测到 NRadio 应用商店`。
+跑后 `pidof clash`（16659）、`/etc/config/dockerd`、`appcenter.lua` / `appcenter.htm`、`distfeeds.conf`
+的 sha256 **全部与跑前一致**；`/etc/config`、`/usr/lib/lua/luci`、`/etc/kp_store` 零改动。
+
+⚠️ **运行命令不能带参数**：上游 README 的写法是 `sh ssh-nradio-plugin-installer.sh`。
+带仓库 URL 会被当作菜单编号 → `ERROR: 无效编号：https://…` → 退出。合法位置参数只有 `0`~`5`。
+
+⚠️ **状态目录**：`/root/.nradio-plugin-menu/`，内含
+`disclaimer_accepted_20260615-v260-model-disclaimer-c2000pro-risk-v1.flag`（27 B，`accepted V3.2.0 2026-09-14`）。
+同意一次后不再询问；删掉它下次会重新问。**它不是备份**（见红线 1）。
+
+⚠️ **stdin 三种行为**：`< /dev/null` → `die "input cancelled"`；`exec_command` 不喂不关 → **永久挂住**；
+管道喂够 `y`+编号 → 能跑通（rc=0）。**技术可自动化，但流程上必须人工选菜单项**。
+
 ## 它改什么（legacy_appcenter 模式，即本机当前画像）
 
 - appcenter.htm：加卸载按钮入口、图标缓存刷新、MaYe 产权标识（增量）
