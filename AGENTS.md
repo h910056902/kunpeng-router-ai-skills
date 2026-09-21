@@ -54,11 +54,14 @@
 | `nros.game-accel` | maye 助手分类三 · 游戏加速器（助手菜单 7） | [`tasks/08-nros-game-accel.md`](tasks/08-nros-game-accel.md) | **destructive** |
 | `nros.appcenter-polish` | maye 助手分类四 · 应用商店与页面美化（助手菜单 8） | [`tasks/09-nros-appcenter-polish.md`](tasks/09-nros-appcenter-polish.md) | write |
 | `nros.maintenance` | maye 助手分类五 · 设备维护与检测（助手菜单 9） | [`tasks/10-nros-maintenance.md`](tasks/10-nros-maintenance.md) | write |
+| `device.selftest` | 设备状态与环境自检（助手菜单 11 · 纯只读） | [`tasks/11-device-selftest.md`](tasks/11-device-selftest.md) | read |
 
-> 上表 **12 个 id** 是最常走的；`nros.plugins-common` … `nros.maintenance` 五项是同一个上游脚本的五个分类，
+> 上表 **13 个 id** 是最常走的；`nros.plugins-common` … `nros.maintenance` 五项是同一个上游脚本的五个分类，
 > 各自有独立的红线与判据 —— **不要只读 tasks/05 就动手**。
+> `device.selftest`（助手菜单 11）**不是 maye 分类**，是本仓自研的纯只读采集器：只报不修、零写盘、
+> 不用真终端、不套 §8.6 的两关拆解。菜单里的 `10` 预留给「清除 / 卸载」引擎，尚未开放。
 
-其余 34 个任务（商店补丁、AGH、NAS、面板排障、无 SSH 救援、TF 扩容…）见 `tasks/index.json`（上表 12 个 id + 其余 34 = 全量 46 个）。
+其余 34 个任务（商店补丁、AGH、NAS、面板排障、无 SSH 救援、TF 扩容…）见 `tasks/index.json`（上表 13 个 id + 其余 34 = 全量 47 个）。
 
 ## 4. 动手前必须做的 3 项检查
 
@@ -134,10 +137,10 @@ AI 若无法 clone（本机 `github.com` DNS 被污染），可用 CDN 直读兜
 
 **第一样 · 功能图标行**：把下面这行 Markdown 原文照抄，URL 一字不改：
 
-![OpenClash](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/openclash.png) ![ocspeed](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/ocspeed.png) ![1Panel](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/1panel.png) ![Docker](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/docker.png) ![maye](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/maye.png) ![常用插件](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/plugins.png) ![VPN组网](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/network.png) ![游戏加速](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/game.png) ![应用商店](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/store.png) ![设备维护](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/maint.png)
+![OpenClash](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/openclash.png) ![ocspeed](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/ocspeed.png) ![1Panel](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/1panel.png) ![Docker](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/docker.png) ![maye](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/maye.png) ![常用插件](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/plugins.png) ![VPN组网](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/network.png) ![游戏加速](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/game.png) ![应用商店](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/store.png) ![设备维护](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/maint.png) ![设备自检](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/selftest.png)
 
-（10 枚图标实测在 `assets/menu/`，走 jsdelivr CDN、国内可直连；加载失败只会显示 alt 文字 ——
-不要重试、不要道歉、不要提。前 5 枚对应 1)~4)，后 5 枚对应 5)~9)。）
+（11 枚图标实测在 `assets/menu/`，走 jsdelivr CDN、国内可直连；加载失败只会显示 alt 文字 ——
+不要重试、不要道歉、不要提。前 5 枚对应 1)~4)，第 6~10 枚对应 5)~9)，第 11 枚对应 11)。）
 这行必须**裸写在回复正文里，不要放进任何代码块** —— 放进代码块就只会显示成文字，图标不会出现。
 
 **第二样 · 一句人话（问候 + 用法）**：图标行下面，把下面这句话**一字不改**地输出 ——
@@ -189,6 +192,11 @@ AI 若无法 clone（本机 `github.com` DNS 被污染），可用 CDN 直读兜
   9)  🔧 设备维护与检测（体检 · 工具箱 · 硬件加速）
         nros.maintenance
 
+  ── 10 预留给「清除 / 卸载」引擎（尚未开放），本表从 11 续号 ──
+
+  11)  🩺 设备状态与环境自检（资源 · 容器 · 5G · 服务 · 装载余量）
+        device.selftest
+
   0)  🚪 退出
 
 ────────────────────────────────────────────
@@ -201,14 +209,19 @@ AI 若无法 clone（本机 `github.com` DNS 被污染），可用 CDN 直读兜
 > 4) 与 5)~9) 是**同一个交互式脚本**：`4)` 走它自己的主菜单（你自己选分类），
 > `5)~9)` 是「已指定分类」的直达入口 —— 两者 AI 的职责完全相同，区别只在于**该分类专属的红线与判据**
 > （见 `tasks/06`~`tasks/10`）。**不要只读 tasks/05 就去跑 5)~9)**。
+>
+> `11)` 与它们**不是一类**：不走那个交互式脚本、不需要真终端、**四关照跑**，AI 全自动完成；
+> 它与 §8.6 的「第②关拆两半」无关，也不进 §8.6.1 的「五个分类」表。菜单里的 `10` 是预留给
+> 「清除 / 卸载」引擎的号段，尚未开放。
 
 ### 8.3 解析输入
 
-- `1` ~ `9` → 只跑对应功能
-- `1 3` 或 `1,3` → 按 1→2→3→4→5→6→7→8→9 的固定顺序跑选中的
-- `all` 或 `全部` → 九个都跑（**跑到 4)~9) 时同样要停在②关等用户按菜单**，不许因为「选了 all」就想办法自动化掉）
+- `1` ~ `9` / `11` → 只跑对应功能（`10` 未开放）
+- `1 3` 或 `1,3` → 按 1→2→3→4→5→6→7→8→9→11 的固定顺序跑选中的
+- `all` 或 `全部` → 十个都跑（1~9 与 11；**`10` 未开放，不触发**）（**跑到 4)~9) 时同样要停在②关等用户按菜单**，
+  不许因为「选了 all」就想办法自动化掉）—— 但 `11)` 不在此列：它是纯只读、非交互的，照常全自动跑完
 - `0` → 结束，不再问
-- 其它内容 → 只回一句「可选 1 / 2 / 3 / 4 / 5 / 6 / 7 / 8 / 9 / 0，可多选如 1 3」，然后按 §8.1 重新输出菜单代码块
+- 其它内容 → 只回一句「可选 1 / 2 / 3 / 4 / 5 / 6 / 7 / 8 / 9 / 11 / 0（10 未开放），可多选如 1 3」，然后按 §8.1 重新输出菜单代码块
 
 没被选中的功能一律不碰。
 
@@ -238,6 +251,7 @@ AI 若无法 clone（本机 `github.com` DNS 被污染），可用 CDN 直读兜
 | 7 | `tasks/08-nros-game-accel.md` | 同上（上游主菜单 `3. 游戏加速器`） |
 | 8 | `tasks/09-nros-appcenter-polish.md` | 同上（上游主菜单 `4. 应用商店与页面美化`） |
 | 9 | `tasks/10-nros-maintenance.md` | 同上（上游主菜单 `5. 设备维护与检测`） |
+| 11 | `tasks/11-device-selftest.md` | 自研只读采集器：`scripts/device-selftest.py` + `scripts/payload/kp-selftest.sh`（无 offline 素材） |
 
 > ⚠️ 跑 4)~9) 前，**对应的 playbook 与 `references/maye-assistant.md` 必须先读完** ——
 > 红线与门禁结论在里面；5)~9) 的分类专属红线只在各自的 `tasks/06`~`tasks/10`。
@@ -306,10 +320,14 @@ AI 若无法 clone（本机 `github.com` DNS 被污染），可用 CDN 直读兜
 
 > 9) 的维护菜单在本机是 **`0-8 / 11-12`**：`9` 与 `10` 是空的跳号（5G 聚合与 5G 监听两项本机不打印）。
 > 「按顺序数第 9 项」会按到不存在的编号 —— 这是「菜单永远由使用者按」的最直观例子。
+>
+> ⚠️ 本表是**五个分类**的「按下之前的差异速查」，`11)` **不在其中**（它不是分类）：
+> 11) 不用真终端、没有可选项、也不需要「按下之前的额外准备」；它的约束是 §0 那三条只读红线，
+> 见 `tasks/11-device-selftest.md`。
 
 ### 8.7 硬约束（10 条，任何时候都遵守）
 
-1. 只做菜单里的 1~9。不做应用商店增强（`store.register-app` / `store.patch-backend` /
+1. 只做菜单里的 1~9 与 11（`10` 未开放）。不做应用商店增强（`store.register-app` / `store.patch-backend` /
    `store.install-percent` / `store.uninstall`），也不做 AdGuard Home、NAS 容器、Portainer 汉化等
    未点名任务；范围外需求先问使用者。
 2. 容器只能用 host 网络（内核没有 veth）；Docker 配置只认 UCI；1Panel 数据根只能改名保留，**绝不能删**。
@@ -338,6 +356,7 @@ AI 若无法 clone（本机 `github.com` DNS 被污染），可用 CDN 直读兜
    - ⑦ **VPN / 组网里的三个路由向导（`2 › 4/5/6`）** —— 会写 `ip rule`（priority 60/70/196，
      上游第 39448-39452 行），本机全网上网靠 OpenClash，改策略路由＝断网风险；使用者明确要求时才做，
      且必须按 `tasks/07` 走「存基线 → 做 → 立刻复验」。
+   （`11)` 设备状态与环境自检属**纯只读**，不适用本条 —— 它没有任何可选项，也不会改任何配置。）
 8. 跑 4)~9) 时不许「顺手」改设备 opkg 源：它实测有守卫会原样保留（本机是 aliyun 21.02.7 的 3 条源）。
 9. 不许替使用者操作那个交互式菜单，包括「帮你点一下」。菜单永远由使用者按；
    6) 的向导参数（LAN 子网 / 远端子网 / 接口名）也必须由使用者回答，AI 不许代填。

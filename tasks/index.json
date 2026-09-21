@@ -732,7 +732,7 @@
       "scripts": ["scripts/healthcheck_c2000u.py", "scripts/healthcheck_c2000u_r2.py", "scripts/check_status.py"],
       "offline": [],
       "preconditions": [],
-      "steps_summary": "python scripts/healthcheck_c2000u.py（13 板块）",
+      "steps_summary": "python scripts/healthcheck_c2000u.py（13 板块）（历史：巡检职责已被 device.selftest 收拢，脚本保留作参考）",
       "verify": ["服务判活一律用 pidof，不要用 pgrep -c（busybox 不支持，会全部误报 NOT RUNNING）"],
       "rollback": "无需回滚"
     },
@@ -895,6 +895,33 @@
         "appcenter 三个 marker 仍 >=1 且 /etc/config/dockerd 仍在"
       ],
       "rollback": "硬件加速用 HWACCEL_BACKUP 或 /tmp/kp-maye-bak/maint 的 firewall 还原后 fw3 reload + mtkhnat restart；分流 YAML 覆盖后 openclash restart；页面改动用它自己的移除入口"
+    },
+    {
+      "id": "device.selftest",
+      "title": "设备状态与环境自检（助手菜单 11 · 纯只读）",
+      "group": "验证",
+      "order": 139,
+      "risk": "read",
+      "playbook": "tasks/11-device-selftest.md",
+      "refs": ["references/store-patching.md", "references/script-ui.md", "references/pc-toolchain-limits.md"],
+      "scripts": ["scripts/device-selftest.py", "scripts/payload/kp-selftest.sh"],
+      "offline": [],
+      "preconditions": [
+        "ROUTER_PW 环境变量已设（或 --pw / --cred-file 传入）；凭据不写进任何文件或日志",
+        "设备可达：SSH root@192.168.66.1:22（见 AGENTS.md §1 设备档案）",
+        "设备侧语法门禁必须过：sh -n /tmp/kps/kp-selftest.sh 输出 SYNTAX_OK，未过不许往下走",
+        "版本判据读 ubus call system board 的 release.revision（期望 2.*），不是 /etc/openwrt_release 的 DISTRIB_RELEASE=21.02-SNAPSHOT"
+      ],
+      "steps_summary": "PC 侧推送 scripts/payload/kp-selftest.sh 到 /tmp/kps/ -> 设备侧 sh -n 语法门禁 -> 单次采集五大板块（系统资源与环境 / 容器梳理 / 网络与信号含 5G·CPE / 服务与补丁状态 / 装载余量与可装性对照）-> PC 侧解析 TSV 并按阈值渲染 [ OK ]/[WARN]/[FAIL]/[ SKIP ]。设备侧零写盘、不启停服务、不发 AT；PC 侧不落盘任何报告",
+      "verify": [
+        "输出含 5 个 S 记录与末行哨兵（Z 记录 + 制表符 + END）；缺哨兵＝输出被 dropbear 截断，判 FAIL 且不许报成功",
+        "汇总行 FAIL = 0 才算通过（WARN / SKIP 允许）",
+        "退出码：0 = 无 FAIL；1 = 存在 FAIL；2 = 环境错误（缺凭据 / 连不上 / 推送失败 / 语法门禁未过 / 输出截断）",
+        "docker 未装时第 2 板块输出 [ SKIP ] 而不是 [FAIL]",
+        "本机走有线 WAN 导致 5G/CPE 无数据时，对应项输出 [ SKIP ] 而不是 [FAIL]",
+        "跑前后零副作用：设备无新增文件（/tmp/kps 除外）、关键服务 pid 不变（本任务不产生回滚对象）"
+      ],
+      "rollback": "无需回滚：设备侧脚本只落在 /tmp/kps/（tmpfs，重启即失），不写任何设备文件、不启停任何服务；PC 侧不落盘。可选清理 rm -rf /tmp/kps"
     }
   ]
 }

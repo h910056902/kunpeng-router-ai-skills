@@ -6,7 +6,7 @@
 
 ## Tasks（可直接执行的任务包）
 
-- [tasks/index.json](tasks/index.json): 机读任务清单（全量 46 个）。每条含 id / title / risk / playbook / preconditions / verify / rollback / offline / refs 等字段。
+- [tasks/index.json](tasks/index.json): 机读任务清单（全量 47 个）。每条含 id / title / risk / playbook / preconditions / verify / rollback / offline / refs 等字段。
 - [tasks/01-openclash-install.md](tasks/01-openclash-install.md): 装 OpenClash（本地 ipk 投递 + Mihomo 内核拉取的离线与在线两条路 + UCI 收敛 + 端口与进程名验证）。
 - [tasks/02-ocspeed-install.md](tasks/02-ocspeed-install.md): 装 ocspeed（OpenClash 自动测速插件的五件套落盘、cron 重建、overlay 丢失后的恢复）。
 - [tasks/03-docker-1panel-install.md](tasks/03-docker-1panel-install.md): 装 Docker + 1Panel（换源、kmod 空桩包、只认 UCI 的 dockerd 配置、1Panel 非交互首启、host 网络默认化）。
@@ -17,6 +17,7 @@
 - [tasks/08-nros-game-accel.md](tasks/08-nros-game-accel.md): maye 分类三 · 游戏加速器。destructive：明文 HTTP（含裸 IP）下载 root 脚本，只有 `grep` + `sh -n` 两句检查、无校验和。
 - [tasks/09-nros-appcenter-polish.md](tasks/09-nros-appcenter-polish.md): maye 分类四 · 应用商店与页面美化。会覆盖商店补丁载体 `appcenter.htm` / `appcenter.lua`；「还原应用商店」抹掉三个补丁 marker。
 - [tasks/10-nros-maintenance.md](tasks/10-nros-maintenance.md): maye 分类五 · 设备维护与检测。红线：`5 › 11` 硬件加速会 `fw3 reload`；本机维护菜单编号是 `0-8 / 11-12`（9、10 是空跳号）。
+- [tasks/11-device-selftest.md](tasks/11-device-selftest.md): 设备状态与环境自检（助手菜单 11 · **纯只读**）。一条命令跑完系统资源与环境 / 容器梳理 / 网络与信号含 5G·CPE / 服务与补丁状态 / 装载余量与可装性对照；只报不修、零写盘、不用真终端。
 
 ## References（23 篇专题档案，均有 risk / preconditions 元数据）
 
@@ -52,9 +53,10 @@
 - [scripts/setup_docker_c2000u.py](scripts/setup_docker_c2000u.py): C2000 U 的 Docker 六步一键实装。
 - [scripts/adapt_maye_assistant.py](scripts/adapt_maye_assistant.py): maye 助手的适配器（snapshot 拍补丁基线 / check 与 --fix 重放补丁）。
 - [scripts/kp-1panel-install-test.py](scripts/kp-1panel-install-test.py): 「1Panel 能不能装容器」端到端测试驱动（probe → pull → control → hostnet-install → install → panel → panelcheck → verify）。
-- [scripts/kp-1panel-status.py](scripts/kp-1panel-status.py): 只读盘点「现在有哪些 1Panel 容器」，含 OOMKilled 与 dmesg OOM 归属。
-- [scripts/healthcheck_c2000u.py](scripts/healthcheck_c2000u.py): 13 板块全量只读巡检。
-- [scripts/payload/](scripts/payload/): 设备端脚本。host 网络默认化三件套 + compose 转换器 + 回归自测与 fixtures。
+- [scripts/kp-1panel-status.py](scripts/kp-1panel-status.py): 只读盘点「现在有哪些 1Panel 容器」，含 OOMKilled 与 dmesg OOM 归属（历史：容器盘点已并入 `device-selftest.py`；「面板库 app_installs 对账」这段独有能力仍用它）。
+- [scripts/healthcheck_c2000u.py](scripts/healthcheck_c2000u.py): 13 板块全量只读巡检（历史：巡检职责已被 `device-selftest.py` 收拢，脚本保留作参考）。
+- [scripts/device-selftest.py](scripts/device-selftest.py): 设备状态与环境自检（助手菜单 11）PC 侧唯一入口。推送采集器 → 设备侧语法门禁 → 解析 TSV → 四态渲染；不落盘任何报告。
+- [scripts/payload/](scripts/payload/): 设备端脚本。host 网络默认化三件套 + compose 转换器 + 回归自测与 fixtures + `kp-selftest.sh`（助手菜单 11 的设备侧只读采集器，零写盘）。
 
 ## Offline（版本钉死的离线素材，含内核包）
 
@@ -70,8 +72,8 @@
 
 - [docs/调优经验总览.md](docs/调优经验总览.md): 按 12 个领域重编的经验总纲，每条都是「结论 → 为什么 → 怎么验证」。
 - [docs/新会话验收清单.md](docs/新会话验收清单.md): 用空白会话验证「别的 AI 能否读懂本仓库」的提问模板与标准答案。
-- [docs/助手菜单提示词.md](docs/助手菜单提示词.md): 复制即用的「一段话启动器」+ 九个功能一览 + 维护须知（菜单原文只在 AGENTS.md §8）。
-- [assets/menu/](assets/menu/): 菜单软件图标（10 枚 32px PNG：openclash / ocspeed / 1panel / docker / maye / plugins / network / game / store / maint），由提示词里的 jsdelivr 链接引用。
+- [docs/助手菜单提示词.md](docs/助手菜单提示词.md): 复制即用的「一段话启动器」+ 菜单功能一览（1~9 与 11；10 未开放）+ 维护须知（菜单原文只在 AGENTS.md §8）。
+- [assets/menu/](assets/menu/): 菜单软件图标（11 枚 32px PNG：openclash / ocspeed / 1panel / docker / maye / plugins / network / game / store / maint / selftest），由提示词里的 jsdelivr 链接引用。
 - [docs/仓库维护指南.md](docs/仓库维护指南.md): 维护者手册 —— 仓库布局、常见维护场景、公开仓发布流程、发布前红线、已知坑。
 - [SKILL.md](SKILL.md): 面向人类的完整技能索引（设备档案、任务路由表、踩坑速查 60+ 条）。
 - [C2000U-Docker-assessment.md](C2000U-Docker-assessment.md): C2000 U 的 Docker 适配评估与实装全记录。
