@@ -19,7 +19,7 @@
 
 | 项 | 值 |
 |---|---|
-| 地址 | `192.168.66.1`（LAN）· SSH `root@192.168.66.1:22` |
+| 地址 | `192.168.66.1`（LAN）· SSH `root@192.168.66.1:22`，**密码 `admin`**（2026-09-21 按用户决定写入本文件，便于任何 AI 直读即连；纯内网设备，外网不可达） |
 | 型号 | 鲲鹏 C2000 U（产品名 `C2000-798`，板型 `HC-WT9500`，MT7987，aarch64_cortex-a53） |
 | 资源 | 内存 **992 MB**（**无 swap**）· 存储 = **可插拔 TF 卡**：p1→`/overlay`、p2→`/mnt/storage/data` |
 | 内核 | **5.4.281** · OpenWrt 21.02-SNAPSHOT · LuCI git-26.253 |
@@ -79,8 +79,11 @@ uci -q get openclash.config.cn_port \
 3. **不要写 `/etc/docker/daemon.json` 然后指望它生效** —— dockerd 读的是 `/tmp/dockerd/daemon.json`
    （由 init 从 **UCI** 渲染）。要自定义全文只能 `uci set dockerd.globals.alt_config_file=...`。
 4. **不要删 `$BASE_DIR/1panel`**（1Panel 数据根，含 `db/1Panel.db` = 面板全部状态）。重装要**改名保留**，不是删除。
-5. **不要把真实凭据写进任何文件**：SSH / AGH / 面板密码只走环境变量
+5. **不要把凭据写进代码与日志**：AGH / 1Panel 等密码只走环境变量
    （`ROUTER_HOST` `ROUTER_USER` `ROUTER_PW` `AGH_USER` `AGH_PASS`）。
+   **例外（2026-09-21 用户决定）**：SSH 密码按用户明确要求写进 §1 设备档案 —— 该设备是
+   纯内网地址，用户选择「任何 AI 读仓库即可直连」的可用性优先；若日后把路由器暴露到
+   WAN，必须先改密码并把本条恢复为「凭据不落盘」。
    `offline/openclash/config.openclash.template` 里所有 `<...>` 都是**待填占位符**，不是真值。
 
 ## 6. 执行姿势（所有远程操作）
@@ -113,10 +116,8 @@ _, o, _ = c.exec_command("命令; echo EXIT:$?", timeout=60)   # 超时必须给
 ### 8.0 一段话启动器（用户复制这一段就够）
 
 ```text
-你现在是「鲲鹏 C2000 U 路由器 · 安装助手」，一切行为只依据仓库 kunpeng-router-ai-skills（https://github.com/h910056902/kunpeng-router-ai-skills；本地没有就先 clone 它；GitHub 访问不了就改用 CDN 直读 https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/AGENTS.md 和 https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/tasks/index.json）。
-先静默读完仓库里的 AGENTS.md 与 tasks/index.json，读完前一个字都不要输出；之后严格按 AGENTS.md §8「菜单助手协议」工作，协议里已写明的内容（首屏输出、输入解析、四关流程、硬约束等）全部以仓库为准，不要复述、不要重新解释。
-连接设备：SSH root@192.168.66.1:22，密码 <SSH密码>（发提示词前把 <SSH密码> 替换成真实密码；没替换就先向我索要，不要猜）；连接方式照 AGENTS.md §6（python3 + paramiko，禁用 open_sftp，传文件用 scripts/rtr_lib.py）；凭据只在本会话内存里使用，不写进任何文件、日志或回复。
-连上后先按 AGENTS.md §4 做三项只读检查再动手；然后一直停在菜单等我输入编号；4)~9) 是交互式脚本，到那几步停下等我本人按菜单。
+你现在是「鲲鹏 C2000 U 路由器 · 安装助手」，先静默读完仓库 kunpeng-router-ai-skills（https://github.com/h910056902/kunpeng-router-ai-skills；GitHub 访问不了就改用 CDN 直读 https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/AGENTS.md 和 https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/tasks/index.json）里的 AGENTS.md 与 tasks/index.json，读完前不要输出任何内容。
+之后一切都按仓库 AGENTS.md 的指引来：怎么 SSH 登录路由器（§1 设备档案）、怎么连接与传文件（§6）、怎么弹菜单、怎么执行每个功能、哪些事不能做，仓库里都写清楚了，照做即可；做完回到菜单等我下一步。
 ```
 
 AI 读不到本仓库就无从谈起 —— 因此**地址写进了启动器正文**（上面那段自带，不必另外告知）。
