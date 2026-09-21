@@ -29,12 +29,38 @@ BASELINE_LOCAL = os.path.join(os.path.dirname(os.path.abspath(__file__)),
                               'maye-baseline.json')
 BASELINE_ROUTER = '/etc/kp_store/patch-baseline.json'
 
-MAYE_STATE_DIR = '/root/.nradio-plugin-menu'      # maye 脚本安装后存在
+MAYE_STATE_DIR = '/root/.nradio-plugin-menu'      # 跑过 maye（接受免责声明）就会创建
+MAYE_PATCH_MARKER = 'Design By MaYe'              # 它给 appcenter.htm 加的产权标识
+MAYE_PATCH_TARGET = '/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm'
 # ⚠️ 死路径（保留仅为说明上游意图）：上游 backup_file() 是空实现（return 0，注释称
 #    「所有安装、修复和页面操作直接写入，不在路由器上生成持久备份」），BACKUP_DIR
 #    只在脚本里定义、全脚本没有任何 mkdir/cp 落到它上面。实测该目录**从不创建**、
 #    也**从不产生任何备份**（设备上 `ls -ld /root/nradio-plugin-fix` → No such file）。
 MAYE_BACKUP_DIR = '/root/nradio-plugin-fix'
+
+
+def maye_footprint(c):
+    """返回 dict(state_dir, patched, note) —— 两个**互不相同**的事实。
+
+    为什么必须分开：`/root/.nradio-plugin-menu/` 在**输入 y 接受免责声明**时就创建，
+    跟「装没装插件」无关（2026-09-20 真机实测：只进了 5 个子菜单、一个功能项都没选，
+    该目录就出现了，里面只有 27 字节的 disclaimer flag）。
+
+    旧版把「目录存在」直接当「maye 已安装」→ 用户只要在菜单里按过一次 y，
+    适配器就报「已安装」，是误判。真正的装过痕迹是它往 appcenter.htm 注入的产权标识。
+    """
+    st = c.exec_command('[ -d %s ] && echo yes || echo no' % MAYE_STATE_DIR
+                        )[1].read().decode('utf-8', 'replace').strip() == 'yes'
+    body = read_file(c, MAYE_PATCH_TARGET)
+    patched = body is not None and MAYE_PATCH_MARKER in body
+    if patched:
+        note = '已装过插件（appcenter.htm 有它的产权标识）'
+    elif st:
+        note = '跑过但未装插件（只有免责声明 flag，页面未被它改过）'
+    else:
+        note = '从未跑过'
+    return {'state_dir': st, 'patched': patched, 'note': note}
+
 
 # 文件 → [(marker, 补丁名, 用于重放的本地脚本), ...]
 MARKERS = {
@@ -93,7 +119,11 @@ def snapshot():
         }
     maye_installed = c.exec_command(
         '[ -d %s ] && echo yes || echo no' % MAYE_STATE_DIR)[1].read().decode().strip()
+    base['maye_state_dir_exists'] = maye_installed == 'yes'
+    # 旧字段名保留（历史基线兼容），语义已改为「状态目录存在」而非「已装插件」
     base['maye_installed_at_snapshot'] = maye_installed == 'yes'
+    foot = maye_footprint(c)
+    base['maye_footprint'] = foot
     c.close()
     json.dump(base, open(BASELINE_LOCAL, 'w'), ensure_ascii=False, indent=2)
     # 基线同时存路由器一份，防止换电脑后丢
@@ -119,10 +149,12 @@ def check(fix=False):
     base = json.load(open(BASELINE_LOCAL))
     c = connect()
     print('== maye 脚本状态 ==')
-    maye = c.exec_command('[ -d %s ] && echo yes || echo no' % MAYE_STATE_DIR
-                          )[1].read().decode().strip() == 'yes'
-    print('maye 助手 %s' % ('已安装' if maye else '未安装'))
+    foot = maye_footprint(c)
+    print('maye 助手: %s' % foot['note'])
+    print('   状态目录 %s（只代表「跑过并接受免责声明」，不等于装过插件）'
+          % MAYE_STATE_DIR)
     print('⚠ maye 助手【不产生任何备份】：%s 从不创建、从不写入。' % MAYE_BACKUP_DIR)
+
     print('  改动前请自行备份目标文件, 否则冲掉的补丁只能靠本地 patches 重放。')
     missing = []
     for path, marks in MARKERS.items():
