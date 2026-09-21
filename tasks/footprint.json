@@ -19,8 +19,8 @@
   "var_literals": 466,
   "features": 41,
   "features_read_only": 3,
-  "features_with_post_condition": 38,
-  "features_without_post_condition_and_writable": 0,
+  "features_with_post_condition": 36,
+  "features_without_post_condition_and_writable": 2,
   "features_resolved_by_upstream_uninstall": 29,
   "menus": 12,
   "menu_items": 90,
@@ -2926,7 +2926,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/overlay"
+     "/overlay/swapfile"
     ],
     "store": [],
     "net": [],
@@ -2940,7 +2940,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/overlay"
+     "/overlay/swapfile"
     ]
    },
    "writes_unique": {
@@ -2952,7 +2952,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/overlay"
+     "/overlay/swapfile"
     ],
     "store": [],
     "net": [],
@@ -2966,7 +2966,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/overlay"
+     "/overlay/swapfile"
     ]
    },
    "writes_shared": {
@@ -2985,7 +2985,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/overlay"
+     "/overlay/swapfile"
     ],
     "store": [],
     "net": [],
@@ -2999,7 +2999,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/overlay"
+     "/overlay/swapfile"
     ]
    },
    "cleanup": {
@@ -3008,7 +3008,7 @@
     "safety_reason": "只有文件/注册项层面的增删（或写盘全在共用设施里）",
     "read_only": false,
     "readonly_refs": [
-     "/overlay"
+     "/overlay/swapfile"
     ],
     "remove_packages": [],
     "stop_services": [],
@@ -3022,9 +3022,7 @@
     "upstream_assert_absent": [],
     "generated_uninstall_helpers": [],
     "upstream_uninstall_funcs": [],
-    "forbidden": [
-     "/overlay"
-    ],
+    "forbidden": [],
     "keep_shared": [
      "uci -q delete fstab.\"$sec\" >/dev/null 2>&1 || true",
      "uci -q add fstab swap 2>/dev/null || true)\"",
@@ -3032,15 +3030,12 @@
      "uci -q set fstab.\"$first\".enabled='1' >/dev/null 2>&1 || true",
      "uci -q set fstab.\"$first\".label='swapfile' >/dev/null 2>&1 || true",
      "uci -q commit fstab >/dev/null 2>&1 || true",
-     "/overlay",
      "/overlay/swapfile"
     ],
-    "post_condition": [
-     "matches_baseline:/etc/config/fstab"
-    ],
+    "post_condition": [],
     "needs_manual": [
-     "★曾命中系统关键路径，已剔除并需人工裁定: ['/overlay']",
-     "弱证据（变量指向，未必真写入）: /overlay/swapfile"
+     "弱证据（变量指向，未必真写入）: /overlay/swapfile",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/fstab"
     ]
    },
    "upstream_cleanup": [],
@@ -3299,13 +3294,21 @@
     ],
     "dirs": [
      "/etc/openclash",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay"
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ],
     "store": [
      "plugin_uninstall",
@@ -3363,12 +3366,12 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/rc.d/S",
      "/etc/init.d/openvpn",
      "/etc/init.d/openclash",
      "/etc/init.d/AdGuardHome",
-     "/overlay"
+     "/overlay/swapfile"
     ]
    },
    "writes_unique": {
@@ -3526,14 +3529,22 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay"
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ],
     "store": [
      "plugin_uninstall",
@@ -3578,9 +3589,9 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/rc.d/S",
-     "/overlay"
+     "/overlay/swapfile"
     ]
    },
    "cleanup": {
@@ -3708,14 +3719,22 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -3728,9 +3747,7 @@
      "/www/luci-static/nradio/images/icon",
      "/etc/config/appcenter",
      "/usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
-     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
-     "/usr/libexec/nradio-ai-compat.sh",
-     "/overlay/swapfile"
+     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm"
     ],
     "post_condition": [
      "absent:/etc/openclash",
@@ -3753,11 +3770,8 @@
      "no_store_entry:plugin_uninstall",
      "matches_baseline:/etc/opkg/distfeeds.conf",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall",
-     "matches_baseline:/etc/config/fstab",
      "keeps_service:uhttpd"
     ],
     "needs_manual": [
@@ -3773,7 +3787,10 @@
      "uci 行未解析出配置键: uci commit appcenter",
      "uci 行未解析出配置键: uci commit openclash >/dev/null 2>&1 || true",
      "应用商店注册项: appcenter",
-     "应用商店注册项: plugin_uninstall"
+     "应用商店注册项: plugin_uninstall",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/fstab"
     ]
    },
    "upstream_cleanup": [
@@ -4738,13 +4755,21 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "plugin_uninstall",
@@ -4784,7 +4809,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "writes_unique": {
@@ -4915,13 +4940,21 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "plugin_uninstall",
@@ -4961,7 +4994,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "cleanup": {
@@ -5070,13 +5103,21 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -5088,8 +5129,7 @@
      "/www/luci-static/nradio/images/icon",
      "/etc/config/appcenter",
      "/usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
-     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
-     "/usr/libexec/nradio-ai-compat.sh"
+     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm"
     ],
     "post_condition": [
      "not_running:ttyd",
@@ -5104,9 +5144,7 @@
      "no_store_entry:appcenter",
      "no_store_entry:plugin_uninstall",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall",
      "keeps_service:infocd",
      "keeps_service:appcenter",
@@ -5120,7 +5158,9 @@
      "uci 行未解析出配置键: uci -q delete ttyd.default.password || true",
      "uci 行未解析出配置键: uci -q commit ttyd || die \"提交 ttyd 配置失败\"",
      "应用商店注册项: appcenter",
-     "应用商店注册项: plugin_uninstall"
+     "应用商店注册项: plugin_uninstall",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn"
     ]
    },
    "upstream_cleanup": [
@@ -6146,14 +6186,22 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay"
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ],
     "store": [
      "plugin_uninstall",
@@ -6205,13 +6253,13 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/rc.d/S",
      "/etc/openclash",
      "/etc/init.d/openclash",
      "/etc/init.d/openvpn",
      "/etc/init.d/AdGuardHome",
-     "/overlay"
+     "/overlay/swapfile"
     ]
    },
    "writes_unique": {
@@ -6373,14 +6421,22 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay"
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ],
     "store": [
      "plugin_uninstall",
@@ -6422,9 +6478,9 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/rc.d/S",
-     "/overlay"
+     "/overlay/swapfile"
     ]
    },
    "cleanup": {
@@ -6558,14 +6614,22 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -6577,9 +6641,7 @@
      "/www/luci-static/nradio/images/icon",
      "/etc/config/appcenter",
      "/usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
-     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
-     "/usr/libexec/nradio-ai-compat.sh",
-     "/overlay/swapfile"
+     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm"
     ],
     "post_condition": [
      "absent:/usr/lib/lua/luci/controller/AdGuardHome.lua",
@@ -6605,11 +6667,8 @@
      "no_store_entry:appcenter",
      "no_store_entry:plugin_uninstall",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall",
-     "matches_baseline:/etc/config/fstab",
      "keeps_service:dnsmasq"
     ],
     "needs_manual": [
@@ -6626,7 +6685,10 @@
      "uci 行未解析出配置键: uci commit AdGuardHome >/dev/null 2>&1 || true",
      "uci 行未解析出配置键: uci commit appcenter",
      "应用商店注册项: appcenter",
-     "应用商店注册项: plugin_uninstall"
+     "应用商店注册项: plugin_uninstall",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/fstab"
     ]
    },
    "upstream_cleanup": [
@@ -7835,14 +7897,23 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/overlay",
-     "/usr/libexec",
+     "/overlay/app_data",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ],
     "store": [
      "plugin_uninstall",
@@ -7909,9 +7980,9 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/rc.d/S",
-     "/overlay"
+     "/overlay/swapfile"
     ]
    },
    "writes_unique": {
@@ -7940,8 +8011,8 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/overlay",
-     "/usr/libexec"
+     "/overlay/app_data",
+     "/usr/libexec/openlist-sync-config"
     ],
     "store": [
      "appcenter",
@@ -8073,14 +8144,22 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay"
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ],
     "store": [
      "plugin_uninstall",
@@ -8122,9 +8201,9 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/rc.d/S",
-     "/overlay"
+     "/overlay/swapfile"
     ]
    },
    "cleanup": {
@@ -8152,6 +8231,7 @@
      "openlist.main.jwt_secret"
     ],
     "remove_paths": [
+     "/overlay/app_data",
      "/etc/config/openlist"
     ],
     "restore_baseline": [],
@@ -8166,7 +8246,6 @@
      "delete_appcenter_sections"
     ],
     "forbidden": [
-     "/overlay",
      "service:uhttpd"
     ],
     "keep_shared": [
@@ -8245,14 +8324,22 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -8264,11 +8351,10 @@
      "/www/luci-static/nradio/images/icon",
      "/etc/config/appcenter",
      "/usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
-     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
-     "/usr/libexec/nradio-ai-compat.sh",
-     "/overlay/swapfile"
+     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm"
     ],
     "post_condition": [
+     "absent:/overlay/app_data",
      "lacks_section:/etc/config/openlist",
      "not_running:openlist",
      "lacks_key:openlist.main",
@@ -8285,16 +8371,12 @@
      "no_store_entry:appcenter",
      "no_store_entry:plugin_uninstall",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall",
-     "matches_baseline:/etc/config/fstab",
      "keeps_service:uhttpd"
     ],
     "needs_manual": [
-     "★曾命中系统关键路径，已剔除并需人工裁定: ['/overlay', 'service:uhttpd']",
-     "只知目录前缀、不知具体文件（norm_dir 归一所致，删它等于删固件），须回原文核: /usr/libexec",
+     "★曾命中系统关键路径，已剔除并需人工裁定: ['service:uhttpd']",
      "弱证据（变量指向，未必真写入）: /usr/libexec/openlist-sync-config",
      "弱证据（变量指向，未必真写入）: /etc/init.d/openlist",
      "弱证据（变量指向，未必真写入）: /usr/lib/lua/luci/controller/nradio_adv/openlist.lua",
@@ -8307,7 +8389,10 @@
      "uci 行未解析出配置键: uci -q commit openlist >/dev/null 2>&1 || true",
      "uci 行未解析出配置键: uci commit appcenter",
      "应用商店注册项: appcenter",
-     "应用商店注册项: plugin_uninstall"
+     "应用商店注册项: plugin_uninstall",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/fstab"
     ]
    },
    "upstream_cleanup": [
@@ -9370,14 +9455,22 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay"
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ],
     "store": [
      "plugin_uninstall",
@@ -9432,8 +9525,8 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
-     "/overlay"
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ]
    },
    "writes_unique": {
@@ -9572,14 +9665,22 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay"
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ],
     "store": [
      "plugin_uninstall",
@@ -9624,8 +9725,8 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
-     "/overlay"
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ]
    },
    "cleanup": {
@@ -9734,14 +9835,22 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -9754,9 +9863,7 @@
      "/www/luci-static/nradio/images/icon",
      "/etc/config/appcenter",
      "/usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
-     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
-     "/usr/libexec/nradio-ai-compat.sh",
-     "/overlay/swapfile"
+     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm"
     ],
     "post_condition": [
      "lacks_section:/etc/config/zerotier",
@@ -9765,11 +9872,8 @@
      "no_store_entry:plugin_uninstall",
      "matches_baseline:/etc/opkg/distfeeds.conf",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall",
-     "matches_baseline:/etc/config/fstab",
      "keeps_service:uhttpd"
     ],
     "needs_manual": [
@@ -9784,7 +9888,10 @@
      "uci 键含变量（可能是共用注册项）: uci -q set \"appcenter.$zerotier_pkg_sec.open=0\" >/dev/null 2>&1 || true",
      "uci 行未解析出配置键: uci commit appcenter",
      "应用商店注册项: appcenter",
-     "应用商店注册项: plugin_uninstall"
+     "应用商店注册项: plugin_uninstall",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/fstab"
     ]
    },
    "upstream_cleanup": [
@@ -10789,14 +10896,22 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay"
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ],
     "store": [
      "plugin_uninstall",
@@ -10850,8 +10965,8 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
-     "/overlay"
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ]
    },
    "writes_unique": {
@@ -10993,14 +11108,22 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay"
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ],
     "store": [
      "plugin_uninstall",
@@ -11045,8 +11168,8 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
-     "/overlay"
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ]
    },
    "cleanup": {
@@ -11160,14 +11283,22 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -11180,9 +11311,7 @@
      "/www/luci-static/nradio/images/icon",
      "/etc/config/appcenter",
      "/usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
-     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
-     "/usr/libexec/nradio-ai-compat.sh",
-     "/overlay/swapfile"
+     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm"
     ],
     "post_condition": [
      "lacks_section:/etc/config/easytier",
@@ -11194,11 +11323,8 @@
      "no_store_entry:plugin_uninstall",
      "matches_baseline:/etc/opkg/distfeeds.conf",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall",
-     "matches_baseline:/etc/config/fstab",
      "keeps_service:uhttpd"
     ],
     "needs_manual": [
@@ -11213,7 +11339,10 @@
      "uci 键含变量（可能是共用注册项）: uci -q set \"appcenter.$easytier_pkg_sec.open=1\" >/dev/null 2>&1 || true",
      "uci 行未解析出配置键: uci commit appcenter",
      "应用商店注册项: appcenter",
-     "应用商店注册项: plugin_uninstall"
+     "应用商店注册项: plugin_uninstall",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/fstab"
     ]
    },
    "upstream_cleanup": [
@@ -12255,14 +12384,22 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay"
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ],
     "store": [
      "plugin_uninstall",
@@ -12318,8 +12455,8 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
-     "/overlay"
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ]
    },
    "writes_unique": {
@@ -12458,14 +12595,22 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay"
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ],
     "store": [
      "plugin_uninstall",
@@ -12510,8 +12655,8 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
-     "/overlay"
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ]
    },
    "cleanup": {
@@ -12631,14 +12776,22 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -12651,9 +12804,7 @@
      "/www/luci-static/nradio/images/icon",
      "/etc/config/appcenter",
      "/usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
-     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
-     "/usr/libexec/nradio-ai-compat.sh",
-     "/overlay/swapfile"
+     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm"
     ],
     "post_condition": [
      "absent:/usr/lib/lua/luci/controller/nradio_adv/openvpn_full.lua",
@@ -12673,11 +12824,8 @@
      "no_store_entry:plugin_uninstall",
      "matches_baseline:/etc/opkg/distfeeds.conf",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall",
-     "matches_baseline:/etc/config/fstab",
      "keeps_service:uhttpd"
     ],
     "needs_manual": [
@@ -12687,7 +12835,10 @@
      "包名含变量，需人工确认: opkg install \"$openvpn_core_fixed_ipk\" --force-depends >\"$WORKDIR/openvpn-core-install.log\" 2>&1 || {   # 含变量，需人工确认包名",
      "uci 行未解析出配置键: uci commit appcenter",
      "应用商店注册项: appcenter",
-     "应用商店注册项: plugin_uninstall"
+     "应用商店注册项: plugin_uninstall",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/fstab"
     ]
    },
    "upstream_cleanup": [
@@ -14227,10 +14378,7 @@
     "keep_shared": [
      "/root/.nradio-plugin-menu"
     ],
-    "post_condition": [
-     "matches_baseline:/proc/sys/net/ipv4/conf/all/proxy_arp",
-     "matches_baseline:/proc/sys/net/ipv4/conf/$LAN_IF/proxy_arp"
-    ],
+    "post_condition": [],
     "needs_manual": [
      "★曾命中系统关键路径，已剔除并需人工裁定: ['/proc/sys/net/ipv4/conf/all/proxy_arp', '/proc/sys/net/ipv4/conf/$LAN_IF/proxy_arp']",
      "弱证据（变量指向，未必真写入）: /etc/hotplug.d/openvpn/99-openvpn-route",
@@ -14239,7 +14387,9 @@
      "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: ip route del",
      "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: ip route add",
      "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: ip route replace",
-     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: ip rule add"
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: ip rule add",
+     "禁区路径但 /rom 无原件，比对基线必假 → 人工核对: /proc/sys/net/ipv4/conf/all/proxy_arp",
+     "禁区路径但 /rom 无原件，比对基线必假 → 人工核对: /proc/sys/net/ipv4/conf/$LAN_IF/proxy_arp"
     ]
    },
    "upstream_cleanup": [
@@ -14916,7 +15066,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/overlay"
+     "/overlay/app_data"
     ],
     "store": [
      "routes.list",
@@ -14947,7 +15097,7 @@
      "/etc/init.d/openclash",
      "/etc/init.d/ttyd",
      "/etc/init.d/openlist",
-     "/usr/libexec",
+     "/usr/libexec/openlist-sync-config",
      "/etc/init.d/zerotier",
      "/etc/init.d/easytier",
      "/etc/init.d/AdGuardHome",
@@ -14970,7 +15120,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/overlay"
+     "/overlay/app_data"
     ],
     "store": [
      "routes.list",
@@ -14999,7 +15149,7 @@
      "/etc/init.d/openclash",
      "/etc/init.d/ttyd",
      "/etc/init.d/openlist",
-     "/usr/libexec",
+     "/usr/libexec/openlist-sync-config",
      "/etc/init.d/zerotier",
      "/etc/init.d/easytier",
      "/etc/init.d/AdGuardHome",
@@ -15044,7 +15194,7 @@
      "/etc/init.d/openclash",
      "/etc/init.d/ttyd",
      "/etc/init.d/openlist",
-     "/usr/libexec",
+     "/usr/libexec/openlist-sync-config",
      "/etc/init.d/zerotier",
      "/etc/init.d/easytier",
      "/etc/init.d/AdGuardHome",
@@ -15059,7 +15209,9 @@
     ],
     "disable_rc": [],
     "uci_reset": [],
-    "remove_paths": [],
+    "remove_paths": [
+     "/overlay/app_data"
+    ],
     "restore_baseline": [],
     "inject_markers": [],
     "keeps": [],
@@ -15067,21 +15219,19 @@
     "upstream_assert_absent": [],
     "generated_uninstall_helpers": [],
     "upstream_uninstall_funcs": [],
-    "forbidden": [
-     "/overlay"
-    ],
+    "forbidden": [],
     "keep_shared": [
      "/root/.nradio-plugin-menu",
      "/etc/openvpn/client.ovpn"
     ],
     "post_condition": [
+     "absent:/overlay/app_data",
      "not_running:AdGuardHome",
      "not_running:openvpn",
      "no_store_entry:routes.list",
      "no_store_entry:appcenter"
     ],
     "needs_manual": [
-     "★曾命中系统关键路径，已剔除并需人工裁定: ['/overlay']",
      "弱证据（变量指向，未必真写入）: /usr/bin/openlist",
      "弱证据（变量指向，未必真写入）: /mnt/app_data",
      "弱证据（变量指向，未必真写入）: /usr/sbin/openvpn",
@@ -15297,7 +15447,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "appcenter",
@@ -15331,7 +15481,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/rc.d/S"
     ]
    },
@@ -15403,7 +15553,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "appcenter",
@@ -15431,7 +15581,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/rc.d/S"
     ]
    },
@@ -15485,13 +15635,12 @@
      "/etc/init.d/uhttpd",
      "/etc/init.d/infocd",
      "/etc/init.d/appcenter",
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "appcenter",
      "plugin_uninstall",
      "/etc/config/appcenter",
      "/usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
-     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
-     "/usr/libexec/nradio-ai-compat.sh"
+     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm"
     ],
     "post_condition": [
      "lacks_key:fanctrl.fanctrl",
@@ -15903,13 +16052,21 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "appcenter",
@@ -15949,7 +16106,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "writes_unique": {
@@ -15963,7 +16120,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "appcenter",
@@ -16046,13 +16203,21 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "plugin_uninstall",
@@ -16092,20 +16257,22 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "cleanup": {
     "status": "draft-需真机对账",
-    "safety": "low",
-    "safety_reason": "只有文件/注册项层面的增删（或写盘全在共用设施里）",
+    "safety": "medium",
+    "safety_reason": "动服务或写配置；断开自身管理通道的风险存在",
     "read_only": false,
     "readonly_refs": [],
     "remove_packages": [],
     "stop_services": [],
     "disable_rc": [],
     "uci_reset": [],
-    "remove_paths": [],
+    "remove_paths": [
+     "/usr/libexec/nradio-ai-compat.sh"
+    ],
     "restore_baseline": [],
     "inject_markers": [],
     "keeps": [],
@@ -16163,13 +16330,21 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -16181,26 +16356,25 @@
      "/www/luci-static/nradio/images/icon",
      "/etc/config/appcenter",
      "/usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
-     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
-     "/usr/libexec/nradio-ai-compat.sh"
+     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm"
     ],
     "post_condition": [
+     "absent:/usr/libexec/nradio-ai-compat.sh",
      "no_store_entry:appcenter",
      "no_store_entry:plugin_uninstall",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall",
      "keeps_service:uhttpd"
     ],
     "needs_manual": [
      "★曾命中系统关键路径，已剔除并需人工裁定: ['service:uhttpd']",
-     "只知目录前缀、不知具体文件（norm_dir 归一所致，删它等于删固件），须回原文核: /usr/libexec",
      "弱证据（变量指向，未必真写入）: /usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
      "弱证据（变量指向，未必真写入）: /usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
      "应用商店注册项: appcenter",
-     "应用商店注册项: plugin_uninstall"
+     "应用商店注册项: plugin_uninstall",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn"
     ]
    },
    "upstream_cleanup": [],
@@ -16953,7 +17127,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "appcenter",
@@ -16981,7 +17155,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "writes_unique": {
@@ -16995,7 +17169,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "appcenter"
@@ -17027,7 +17201,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "appcenter",
@@ -17055,7 +17229,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "cleanup": {
@@ -17092,13 +17266,12 @@
      "/etc/init.d/uhttpd",
      "/etc/init.d/infocd",
      "/etc/init.d/appcenter",
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "appcenter",
      "plugin_uninstall",
      "/etc/config/appcenter",
      "/usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
-     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
-     "/usr/libexec/nradio-ai-compat.sh"
+     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm"
     ],
     "post_condition": [
      "absent:/usr/libexec/nradio-ai-compat.sh",
@@ -17108,7 +17281,6 @@
     ],
     "needs_manual": [
      "★曾命中系统关键路径，已剔除并需人工裁定: ['service:uhttpd']",
-     "只知目录前缀、不知具体文件（norm_dir 归一所致，删它等于删固件），须回原文核: /usr/libexec",
      "应用商店注册项: appcenter"
     ]
    },
@@ -17504,13 +17676,21 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "plugin_uninstall",
@@ -17556,7 +17736,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/rc.d/S"
     ]
    },
@@ -17573,7 +17753,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec"
+     "/usr/libexec/mosdns-sync-config"
     ],
     "store": [
      "appcenter",
@@ -17680,13 +17860,21 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "plugin_uninstall",
@@ -17727,21 +17915,23 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/rc.d/S"
     ]
    },
    "cleanup": {
     "status": "draft-需真机对账",
-    "safety": "low",
-    "safety_reason": "只有文件/注册项层面的增删（或写盘全在共用设施里）",
+    "safety": "medium",
+    "safety_reason": "动服务或写配置；断开自身管理通道的风险存在",
     "read_only": false,
     "readonly_refs": [],
     "remove_packages": [],
     "stop_services": [],
     "disable_rc": [],
     "uci_reset": [],
-    "remove_paths": [],
+    "remove_paths": [
+     "/usr/libexec/mosdns-sync-config"
+    ],
     "restore_baseline": [],
     "inject_markers": [],
     "keeps": [],
@@ -17827,13 +18017,21 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -17845,28 +18043,27 @@
      "/etc/opkg/distfeeds.conf",
      "/etc/config/appcenter",
      "/usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
-     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
-     "/usr/libexec/nradio-ai-compat.sh"
+     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm"
     ],
     "post_condition": [
+     "absent:/usr/libexec/mosdns-sync-config",
      "no_store_entry:appcenter",
      "no_store_entry:plugin_uninstall",
      "matches_baseline:/etc/opkg/distfeeds.conf",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall",
      "keeps_service:uhttpd"
     ],
     "needs_manual": [
      "★曾命中系统关键路径，已剔除并需人工裁定: ['service:uhttpd']",
-     "只知目录前缀、不知具体文件（norm_dir 归一所致，删它等于删固件），须回原文核: /usr/libexec",
      "弱证据（变量指向，未必真写入）: /usr/lib/lua/luci/view/nradio_adv/mosdns_polish.htm",
      "弱证据（变量指向，未必真写入）: /www/luci-static/nradio/images/icon",
      "uci 行未解析出配置键: uci commit appcenter || die \"MosDNS 应用商店配置提交失败\"",
      "应用商店注册项: appcenter",
-     "应用商店注册项: plugin_uninstall"
+     "应用商店注册项: plugin_uninstall",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn"
     ]
    },
    "upstream_cleanup": [
@@ -18821,14 +19018,22 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay"
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ],
     "store": [
      "plugin_uninstall",
@@ -18879,9 +19084,9 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/rc.d/S",
-     "/overlay"
+     "/overlay/swapfile"
     ]
    },
    "writes_unique": {
@@ -19029,14 +19234,22 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay"
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile"
     ],
     "store": [
      "plugin_uninstall",
@@ -19081,9 +19294,9 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/rc.d/S",
-     "/overlay"
+     "/overlay/swapfile"
     ]
    },
    "cleanup": {
@@ -19174,14 +19387,22 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
-     "/overlay",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/overlay/swapfile",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -19194,9 +19415,7 @@
      "/www/luci-static/nradio/images/icon",
      "/etc/config/appcenter",
      "/usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
-     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
-     "/usr/libexec/nradio-ai-compat.sh",
-     "/overlay/swapfile"
+     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm"
     ],
     "post_condition": [
      "lacks_key:ddns-go.config",
@@ -19209,11 +19428,8 @@
      "no_store_entry:plugin_uninstall",
      "matches_baseline:/etc/opkg/distfeeds.conf",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall",
-     "matches_baseline:/etc/config/fstab",
      "keeps_service:uhttpd"
     ],
     "needs_manual": [
@@ -19257,7 +19473,10 @@
      "uci 行未解析出配置键: uci -q commit ddns-go >/dev/null 2>&1 || true",
      "uci 行未解析出配置键: uci commit appcenter",
      "应用商店注册项: appcenter",
-     "应用商店注册项: plugin_uninstall"
+     "应用商店注册项: plugin_uninstall",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/fstab"
     ]
    },
    "upstream_cleanup": [
@@ -21044,7 +21263,8 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-multiwan.new",
+     "/usr/libexec/nradio-multiwan"
     ],
     "store": [],
     "net": [
@@ -21069,7 +21289,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-multiwan",
      "/etc/init.d/openclash",
      "/etc/init.d/AdGuardHome",
      "/etc/init.d/qos",
@@ -21112,7 +21332,8 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-multiwan.new",
+     "/usr/libexec/nradio-multiwan"
     ],
     "store": [],
     "net": [
@@ -21135,7 +21356,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-multiwan",
      "/etc/init.d/openclash",
      "/etc/init.d/AdGuardHome",
      "/etc/init.d/qos",
@@ -21170,7 +21391,7 @@
     "safety_reason": "动服务或写配置；断开自身管理通道的风险存在",
     "read_only": false,
     "readonly_refs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-multiwan",
      "/etc/init.d/openclash",
      "/etc/init.d/AdGuardHome",
      "/etc/init.d/qos",
@@ -21194,6 +21415,7 @@
     ],
     "remove_paths": [
      "/usr/libexec/nradio-multiwan.new",
+     "/usr/libexec/nradio-multiwan",
      "/etc/init.d/nradio-multiwan.new",
      "/etc/config/nradio_multiwan"
     ],
@@ -21213,6 +21435,7 @@
     ],
     "post_condition": [
      "absent:/usr/libexec/nradio-multiwan.new",
+     "absent:/usr/libexec/nradio-multiwan",
      "absent:/etc/init.d/nradio-multiwan.new",
      "lacks_section:/etc/config/nradio_multiwan",
      "not_running:mwan3",
@@ -21230,7 +21453,6 @@
     ],
     "needs_manual": [
      "★曾命中系统关键路径，已剔除并需人工裁定: ['service:mtkhnat', 'service:odhcpd']",
-     "只知目录前缀、不知具体文件（norm_dir 归一所致，删它等于删固件），须回原文核: /usr/libexec",
      "弱证据（变量指向，未必真写入）: /root/nradio-plugin-fix",
      "uci 键含变量（可能是共用注册项）: uci set \"nradio_multiwan.l_$mwui_iface=line\" || return 1",
      "uci 键含变量（可能是共用注册项）: uci set \"nradio_multiwan.l_$mwui_iface.weight=$mwui_weight\" || return 1",
@@ -21481,13 +21703,21 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "plugin_uninstall",
@@ -21536,7 +21766,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/init.d/dockerd",
      "/etc/docker"
     ]
@@ -21680,13 +21910,21 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "plugin_uninstall",
@@ -21721,7 +21959,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "cleanup": {
@@ -21829,13 +22067,21 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -21845,8 +22091,7 @@
      "/usr/lib/lua/luci/controller/nradio_adv/webssh.lua",
      "/etc/opkg/distfeeds.conf",
      "/www/luci-static/nradio/images/icon",
-     "/etc/config/appcenter",
-     "/usr/libexec/nradio-ai-compat.sh"
+     "/etc/config/appcenter"
     ],
     "post_condition": [
      "absent:/etc/docker",
@@ -21862,9 +22107,7 @@
      "no_store_entry:plugin_uninstall",
      "matches_baseline:/etc/opkg/distfeeds.conf",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall",
      "keeps_service:uhttpd"
     ],
@@ -21880,7 +22123,9 @@
      "uci 行未解析出配置键: uci -q commit dockerd >/dev/null 2>&1 || true",
      "应用商店注册项: appcenter",
      "应用商店注册项: plugin_uninstall",
-     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: iptables"
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: iptables",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn"
     ]
    },
    "upstream_cleanup": [
@@ -24199,7 +24444,7 @@
     ],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-cpe-monitor.lua"
     ],
     "store": [],
     "net": [],
@@ -24254,7 +24499,7 @@
     ],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-cpe-monitor.lua"
     ],
     "store": [],
     "net": [],
@@ -24320,12 +24565,12 @@
      "cpesel.sim.cur"
     ],
     "remove_paths": [
+     "/usr/libexec/nradio-cpe-monitor.lua",
      "/etc/init.d/nradio-cpe-monitor",
      "/var/run/nradio-smart-band/band_state",
      "/var/run/nradio-smart-band/preference_state_v2",
      "/tmp/nradio_band_preference_state",
      "/var/run/nradio-smart-band/runtime.log",
-     "/usr/libexec/nradio-cpe-monitor.lua",
      "/etc/nradio-cpe-monitor/events.log",
      "/var/run/nradio-cpe-monitor/status",
      "/var/log/nradio-cpe-dial.log",
@@ -24363,12 +24608,12 @@
      "/root/.nradio-plugin-menu"
     ],
     "post_condition": [
+     "absent:/usr/libexec/nradio-cpe-monitor.lua",
      "absent:/etc/init.d/nradio-cpe-monitor",
      "absent:/var/run/nradio-smart-band/band_state",
      "absent:/var/run/nradio-smart-band/preference_state_v2",
      "absent:/tmp/nradio_band_preference_state",
      "absent:/var/run/nradio-smart-band/runtime.log",
-     "absent:/usr/libexec/nradio-cpe-monitor.lua",
      "absent:/etc/nradio-cpe-monitor/events.log",
      "absent:/var/run/nradio-cpe-monitor/status",
      "absent:/var/log/nradio-cpe-dial.log",
@@ -24394,7 +24639,6 @@
     ],
     "needs_manual": [
      "★曾命中系统关键路径，已剔除并需人工裁定: ['service:smsd', 'service:cpesel', 'service:uhttpd', 'service:odhcpd']",
-     "只知目录前缀、不知具体文件（norm_dir 归一所致，删它等于删固件），须回原文核: /usr/libexec",
      "弱证据（变量指向，未必真写入）: /var/run/nradio-smart-band",
      "弱证据（变量指向，未必真写入）: /var/run/nradio-smart-band/lock",
      "uci 键含变量（可能是共用注册项）: uci -q set cpesel.sim${gIndex}.cur=\"$_val\"",
@@ -24995,13 +25239,21 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "plugin_uninstall",
@@ -25058,7 +25310,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "writes_unique": {
@@ -25101,7 +25353,8 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
+     "/usr/libexec/nradio-mt5700-dual"
     ],
     "store": [
      "appcenter",
@@ -25225,13 +25478,21 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "plugin_uninstall",
@@ -25271,7 +25532,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "cleanup": {
@@ -25390,13 +25651,21 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -25408,8 +25677,7 @@
      "/www/luci-static/nradio/images/icon",
      "/etc/config/appcenter",
      "/usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
-     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
-     "/usr/libexec/nradio-ai-compat.sh"
+     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm"
     ],
     "post_condition": [
      "absent:/etc/init.d/nradio-mt5700-dual",
@@ -25431,23 +25699,20 @@
      "no_store_entry:appcenter",
      "no_store_entry:plugin_uninstall",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall",
      "keeps_service:appcenter",
      "keeps_service:uhttpd"
     ],
     "needs_manual": [
      "★曾命中系统关键路径，已剔除并需人工裁定: ['service:appcenter', 'service:uhttpd']",
-     "只知目录前缀、不知具体文件（norm_dir 归一所致，删它等于删固件），须回原文核: /usr/libexec",
      "弱证据（变量指向，未必真写入）: /usr/libexec/nradio-mt5700-atsd-proxy.lua",
+     "弱证据（变量指向，未必真写入）: /usr/libexec/nradio-mt5700-dual",
      "弱证据（变量指向，未必真写入）: /etc/init.d/nradio-mt5700-atsd-proxy",
      "弱证据（变量指向，未必真写入）: /usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
      "弱证据（变量指向，未必真写入）: /usr/lib/lua/luci/controller/nradio_adv/mt5700.lua",
      "弱证据（变量指向，未必真写入）: /www/5700",
      "弱证据（变量指向，未必真写入）: /etc/nradio-mt5700-dual",
-     "弱证据（变量指向，未必真写入）: /usr/libexec/nradio-mt5700-dual",
      "弱证据（变量指向，未必真写入）: /www/luci-static/nradio/images/icon",
      "uci 行未解析出配置键: uci -q delete appcenter.nradio_mt5700 >/dev/null 2>&1 || true",
      "uci 行未解析出配置键: uci -q delete appcenter.nradio_mt5700_core >/dev/null 2>&1 || true",
@@ -25461,7 +25726,9 @@
      "uci 行未解析出配置键: uci commit appcenter || die \"MT5700 WebUI 应用商店配置提交失败\"",
      "应用商店注册项: appcenter",
      "应用商店注册项: plugin_uninstall",
-     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: uci set firewall"
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: uci set firewall",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn"
     ]
    },
    "upstream_cleanup": [
@@ -26377,13 +26644,21 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "plugin_uninstall",
@@ -26421,7 +26696,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "writes_unique": {
@@ -26508,13 +26783,21 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "plugin_uninstall",
@@ -26552,7 +26835,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "cleanup": {
@@ -26623,13 +26906,21 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -26640,23 +26931,22 @@
      "/www/luci-static/nradio/images/icon",
      "/etc/config/appcenter",
      "/usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
-     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
-     "/usr/libexec/nradio-ai-compat.sh"
+     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm"
     ],
     "post_condition": [
      "no_store_entry:appcenter",
      "no_store_entry:plugin_uninstall",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall",
      "keeps_service:uhttpd"
     ],
     "needs_manual": [
      "★曾命中系统关键路径，已剔除并需人工裁定: ['service:uhttpd']",
      "应用商店注册项: appcenter",
-     "应用商店注册项: plugin_uninstall"
+     "应用商店注册项: plugin_uninstall",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn"
     ]
    },
    "upstream_cleanup": [],
@@ -27362,7 +27652,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "appcenter"
@@ -27384,7 +27674,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "writes_unique": {
@@ -27398,7 +27688,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "appcenter"
@@ -27430,7 +27720,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "appcenter"
@@ -27448,7 +27738,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "cleanup": {
@@ -27462,9 +27752,9 @@
     "disable_rc": [],
     "uci_reset": [],
     "remove_paths": [
+     "/usr/libexec/nradio-ai-compat.sh",
      "/usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
      "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
-     "/usr/libexec/nradio-ai-compat.sh",
      "target.parentElement;"
     ],
     "restore_baseline": [],
@@ -27485,13 +27775,10 @@
      "/etc/init.d/uhttpd",
      "/etc/init.d/infocd",
      "/etc/init.d/appcenter",
-     "/usr/libexec",
-     "appcenter",
-     "/usr/libexec/nradio-ai-compat.sh"
+     "/usr/libexec/nradio-ai-compat.sh",
+     "appcenter"
     ],
     "post_condition": [
-     "absent:/usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
-     "absent:/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
      "absent:/usr/libexec/nradio-ai-compat.sh",
      "absent:target.parentElement;",
      "no_store_entry:appcenter",
@@ -27499,8 +27786,9 @@
     ],
     "needs_manual": [
      "★曾命中系统关键路径，已剔除并需人工裁定: ['service:uhttpd']",
-     "只知目录前缀、不知具体文件（norm_dir 归一所致，删它等于删固件），须回原文核: /usr/libexec",
-     "应用商店注册项: appcenter"
+     "应用商店注册项: appcenter",
+     "★/rom 存在此出厂件，插件不可能是创建者，只能重置不能删（上游却要求删）: /usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
+     "★/rom 存在此出厂件，插件不可能是创建者，只能重置不能删（上游却要求删）: /usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm"
     ]
    },
    "upstream_cleanup": [
@@ -27863,7 +28151,6 @@
      "lacks_key:firewall.@defaults[0].flow_offloading",
      "lacks_key:mtkhnat.global.mode",
      "lacks_key:mtkhnat.global.enable",
-     "matches_baseline:/sys/kernel/debug/hnat/hook_toggle",
      "keeps_service:mtkhnat"
     ],
     "needs_manual": [
@@ -27874,7 +28161,8 @@
      "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: mtkhnat",
      "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: uci set firewall",
      "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: uci set mtkhnat",
-     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: fw3 reload"
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: fw3 reload",
+     "禁区路径但 /rom 无原件，比对基线必假 → 人工核对: /sys/kernel/debug/hnat/hook_toggle"
     ]
    },
    "upstream_cleanup": [],
@@ -28077,13 +28365,27 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
+     "/usr/libexec/nradio-openbox-runtime.lua",
+     "/usr/libexec/nradio-openbox-line.lua",
+     "/usr/libexec/nradio-openbox-wan",
+     "/opt/open-box",
+     "/opt/ob-libc.so",
+     "/usr/libexec/nradio-openbox-appcenter"
     ],
     "store": [
      "plugin_uninstall",
@@ -28132,7 +28434,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "writes_unique": {
@@ -28166,8 +28468,13 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec",
-     "/opt"
+     "/usr/libexec/nradio-openbox-runtime.lua",
+     "/usr/libexec/nradio-openbox-line.lua",
+     "/usr/libexec/nradio-openbox-wan",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/opt/open-box",
+     "/opt/ob-libc.so",
+     "/usr/libexec/nradio-openbox-appcenter"
     ],
     "store": [
      "appcenter",
@@ -28279,13 +28586,21 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh"
     ],
     "store": [
      "plugin_uninstall",
@@ -28323,7 +28638,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "cleanup": {
@@ -28352,11 +28667,14 @@
      "/usr/libexec/nradio-openbox-runtime.lua",
      "/usr/libexec/nradio-openbox-line.lua",
      "/usr/libexec/nradio-openbox-wan",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/opt/open-box",
+     "/opt/ob-libc.so",
+     "/usr/libexec/nradio-openbox-appcenter",
      "/etc/hotplug.d/iface/99-nradio-openbox-wan",
      "/etc/init.d/openbox-panel",
      "/usr/lib/lua/luci/controller/nradio_adv/openbox.lua",
      "/usr/lib/lua/luci/view/nradio_openbox/panel.htm",
-     "/usr/libexec/nradio-openbox-uninstall",
      "/www/luci-static/nradio/images/icon/openbox.svg"
     ],
     "restore_baseline": [],
@@ -28441,13 +28759,21 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-ai-compat.sh",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -28458,18 +28784,20 @@
      "/usr/lib/lua/luci/controller/nradio_adv/webssh.lua",
      "/etc/config/appcenter",
      "/usr/lib/lua/luci/controller/nradio_adv/appcenter.lua",
-     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
-     "/usr/libexec/nradio-ai-compat.sh"
+     "/usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm"
     ],
     "post_condition": [
      "absent:/usr/libexec/nradio-openbox-runtime.lua",
      "absent:/usr/libexec/nradio-openbox-line.lua",
      "absent:/usr/libexec/nradio-openbox-wan",
+     "absent:/usr/libexec/nradio-openbox-uninstall",
+     "absent:/opt/open-box",
+     "absent:/opt/ob-libc.so",
+     "absent:/usr/libexec/nradio-openbox-appcenter",
      "absent:/etc/hotplug.d/iface/99-nradio-openbox-wan",
      "absent:/etc/init.d/openbox-panel",
      "absent:/usr/lib/lua/luci/controller/nradio_adv/openbox.lua",
      "absent:/usr/lib/lua/luci/view/nradio_openbox/panel.htm",
-     "absent:/usr/libexec/nradio-openbox-uninstall",
      "absent:/www/luci-static/nradio/images/icon/openbox.svg",
      "not_running:openbox-panel",
      "not_running:openbox",
@@ -28482,16 +28810,12 @@
      "no_store_entry:appcenter",
      "no_store_entry:plugin_uninstall",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall",
      "keeps_service:firewall"
     ],
     "needs_manual": [
      "★曾命中系统关键路径，已剔除并需人工裁定: ['service:firewall']",
-     "只知目录前缀、不知具体文件（norm_dir 归一所致，删它等于删固件），须回原文核: /usr/libexec",
-     "只知目录前缀、不知具体文件（norm_dir 归一所致，删它等于删固件），须回原文核: /opt",
      "uci 行未解析出配置键: uci commit firewall",
      "uci 行未解析出配置键: uci -q delete \"firewall.$section\" || true",
      "uci 行未解析出配置键: uci -q delete \"appcenter.$section\" ;;",
@@ -28502,7 +28826,9 @@
      "应用商店注册项: plugin_uninstall",
      "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: ip -4 rule",
      "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: iptables",
-     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: uci set firewall"
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: uci set firewall",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn"
     ]
    },
    "upstream_cleanup": [
@@ -29441,13 +29767,21 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-qiyou-uninstall"
     ],
     "store": [
      "plugin_uninstall",
@@ -29482,7 +29816,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/qy"
     ]
    },
@@ -29598,13 +29932,21 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-qiyou-uninstall"
     ],
     "store": [
      "plugin_uninstall",
@@ -29635,7 +29977,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/qy"
     ]
    },
@@ -29759,13 +30101,21 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-qiyou-uninstall",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -29774,8 +30124,7 @@
      "iptables",
      "/usr/lib/lua/luci/controller/nradio_adv/webssh.lua",
      "/etc/opkg/distfeeds.conf",
-     "/etc/config/appcenter",
-     "/usr/libexec/nradio-qiyou-uninstall"
+     "/etc/config/appcenter"
     ],
     "post_condition": [
      "absent:/etc/qy",
@@ -29799,14 +30148,14 @@
      "no_store_entry:appcenter",
      "matches_baseline:/etc/opkg/distfeeds.conf",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall"
     ],
     "needs_manual": [
      "弱证据（变量指向，未必真写入）: /www/luci-static/nradio/images/icon",
-     "应用商店注册项: appcenter"
+     "应用商店注册项: appcenter",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn"
     ]
    },
    "upstream_cleanup": [
@@ -30555,7 +30904,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-qiyou-uninstall",
      "/etc/qy"
     ],
     "store": [
@@ -30570,7 +30919,7 @@
     "_weak": [],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-qiyou-uninstall"
     ]
    },
    "writes_unique": {
@@ -30590,7 +30939,7 @@
     "_weak": [],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-qiyou-uninstall"
     ]
    },
    "writes_shared": {
@@ -30612,7 +30961,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-qiyou-uninstall",
      "/etc/qy"
     ],
     "store": [
@@ -30634,7 +30983,7 @@
     "safety_reason": "动服务或写配置；断开自身管理通道的风险存在",
     "read_only": false,
     "readonly_refs": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-qiyou-uninstall"
     ],
     "remove_packages": [],
     "stop_services": [
@@ -30689,10 +31038,9 @@
      "/etc/init.d/appcenter",
      "/etc/init.d/uhttpd",
      "/etc/rc.d/S99qy_acc.boot",
-     "/usr/libexec",
+     "/usr/libexec/nradio-qiyou-uninstall",
      "/etc/qy",
-     "appcenter",
-     "/usr/libexec/nradio-qiyou-uninstall"
+     "appcenter"
     ],
     "post_condition": [
      "absent:/tmp/qy",
@@ -30876,13 +31224,21 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-qiyou-uninstall"
     ],
     "store": [
      "plugin_uninstall",
@@ -30914,7 +31270,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/qy"
     ]
    },
@@ -31028,13 +31384,21 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-qiyou-uninstall"
     ],
     "store": [
      "plugin_uninstall",
@@ -31062,7 +31426,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/qy"
     ]
    },
@@ -31186,13 +31550,21 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
+     "/usr/libexec/nradio-qiyou-uninstall",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -31200,8 +31572,7 @@
      "ip rule del",
      "iptables",
      "/usr/lib/lua/luci/controller/nradio_adv/webssh.lua",
-     "/etc/config/appcenter",
-     "/usr/libexec/nradio-qiyou-uninstall"
+     "/etc/config/appcenter"
     ],
     "post_condition": [
      "absent:/etc/qy",
@@ -31223,13 +31594,13 @@
      "not_running:qy_mosq",
      "not_running:qy_acc",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall"
     ],
     "needs_manual": [
-     "弱证据（变量指向，未必真写入）: /www/luci-static/nradio/images/icon"
+     "弱证据（变量指向，未必真写入）: /www/luci-static/nradio/images/icon",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn"
     ]
    },
    "upstream_cleanup": [
@@ -31877,13 +32248,20 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall"
     ],
     "store": [
      "plugin_uninstall",
@@ -31918,7 +32296,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-ai-compat.sh",
      "/etc/init.d/acc"
     ]
    },
@@ -32041,13 +32419,20 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall"
     ],
     "store": [
      "plugin_uninstall",
@@ -32078,7 +32463,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "cleanup": {
@@ -32200,13 +32585,20 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -32215,8 +32607,7 @@
      "iptables",
      "/usr/lib/lua/luci/controller/nradio_adv/webssh.lua",
      "/etc/opkg/distfeeds.conf",
-     "/etc/config/appcenter",
-     "/usr/libexec/nradio-leigod-uninstall"
+     "/etc/config/appcenter"
     ],
     "post_condition": [
      "absent:/usr/lib/lua/luci/controller/nradio_adv/leigod.lua",
@@ -32240,9 +32631,7 @@
      "no_store_entry:appcenter",
      "matches_baseline:/etc/opkg/distfeeds.conf",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall",
      "keeps_service:miniupnpd"
     ],
@@ -32252,7 +32641,9 @@
      "包名含变量，需人工确认: opkg install \"$lg_pkg\"; then   # 含变量，需人工确认包名",
      "uci 行未解析出配置键: uci commit upnpd >/dev/null 2>&1 || true",
      "应用商店注册项: appcenter",
-     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: iptables"
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: iptables",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn"
     ]
    },
    "upstream_cleanup": [
@@ -32966,13 +33357,20 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall"
     ],
     "store": [
      "plugin_uninstall",
@@ -33004,7 +33402,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "writes_unique": {
@@ -33113,13 +33511,20 @@
      "EASYTIER_ROUTE_WIZARD"
     ],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
-     "/etc/docker"
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
+     "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall"
     ],
     "store": [
      "plugin_uninstall",
@@ -33147,7 +33552,7 @@
     ],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-ai-compat.sh"
     ]
    },
    "cleanup": {
@@ -33263,13 +33668,20 @@
      "/etc/hotplug.d/openvpn/99-openvpn-route",
      "/etc/rc.local",
      "EASYTIER_ROUTE_WIZARD",
-     "/usr/libexec",
+     "/usr/libexec/nradio-mt5700-atsd-proxy.lua",
      "/etc/openlist",
      "/etc/openclash",
+     "/usr/libexec/openlist-sync-config",
+     "/usr/libexec/mosdns-sync-config",
+     "/usr/libexec/nradio-mosdns-uninstall",
      "/etc/qy",
      "/etc/config/accelerator",
-     "/opt",
+     "/usr/libexec/nradio-leigod-uninstall",
+     "/usr/libexec/nradio-mt5700-dual",
+     "/opt/usr",
+     "/usr/libexec/docker",
      "/etc/docker",
+     "/usr/libexec/nradio-openbox-uninstall",
      "plugin_uninstall",
      "appcenter",
      "routes.list",
@@ -33277,8 +33689,7 @@
      "ip rule del",
      "iptables",
      "/usr/lib/lua/luci/controller/nradio_adv/webssh.lua",
-     "/etc/config/appcenter",
-     "/usr/libexec/nradio-leigod-uninstall"
+     "/etc/config/appcenter"
     ],
     "post_condition": [
      "absent:/usr/lib/lua/luci/controller/nradio_adv/leigod.lua",
@@ -33299,13 +33710,13 @@
      "not_running:acc-gw.router.aarch64",
      "not_running:acc_upgrade_monitor",
      "matches_baseline:/etc/config/appcenter",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/dhcp",
-     "matches_baseline:/etc/config/openvpn",
      "matches_baseline:/etc/config/firewall"
     ],
     "needs_manual": [
-     "弱证据（变量指向，未必真写入）: /www/luci-static/nradio/images/icon"
+     "弱证据（变量指向，未必真写入）: /www/luci-static/nradio/images/icon",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator",
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/openvpn"
     ]
    },
    "upstream_cleanup": [
@@ -33952,7 +34363,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-leigod-uninstall",
      "/etc/config/accelerator"
     ],
     "store": [
@@ -33967,7 +34378,7 @@
     "_weak": [],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-leigod-uninstall"
     ]
    },
    "writes_unique": {
@@ -33987,7 +34398,7 @@
     "_weak": [],
     "_partial": [],
     "_ro_skipped": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-leigod-uninstall"
     ]
    },
    "writes_shared": {
@@ -34007,7 +34418,7 @@
     "cron": [],
     "rclocal": [],
     "dirs": [
-     "/usr/libexec",
+     "/usr/libexec/nradio-leigod-uninstall",
      "/etc/config/accelerator"
     ],
     "store": [
@@ -34029,7 +34440,7 @@
     "safety_reason": "动服务或写配置；断开自身管理通道的风险存在",
     "read_only": false,
     "readonly_refs": [
-     "/usr/libexec"
+     "/usr/libexec/nradio-leigod-uninstall"
     ],
     "remove_packages": [],
     "stop_services": [
@@ -34078,10 +34489,9 @@
      "/etc/init.d/infocd",
      "/etc/init.d/appcenter",
      "/etc/init.d/uhttpd",
-     "/usr/libexec",
+     "/usr/libexec/nradio-leigod-uninstall",
      "/etc/config/accelerator",
-     "appcenter",
-     "/usr/libexec/nradio-leigod-uninstall"
+     "appcenter"
     ],
     "post_condition": [
      "absent:/usr/sbin/leigod",
@@ -34101,10 +34511,11 @@
      "not_running:acc-gw.router.arm64",
      "not_running:acc-gw.router.aarch64",
      "not_running:acc_upgrade_monitor",
-     "matches_baseline:/etc/config/accelerator",
      "matches_baseline:/etc/config/appcenter"
     ],
-    "needs_manual": []
+    "needs_manual": [
+     "插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: /etc/config/accelerator"
+    ]
    },
    "upstream_cleanup": [
     "leigod_uninstall_integrated"
@@ -34160,10 +34571,14 @@
    "EASYTIER_ROUTE_WIZARD"
   ],
   "dirs": [
-   "/usr/libexec",
-   "/overlay",
+   "/usr/libexec/nradio-cpe-monitor.lua",
+   "/usr/libexec/nradio-plugin-uninstall",
+   "/overlay/nradio-apps",
    "/etc/openclash",
-   "/etc/qy"
+   "/etc/qy",
+   "/usr/libexec/mosdns-sync-config",
+   "/usr/libexec/nradio-mosdns-uninstall",
+   "/usr/libexec/nradio-mt5700-atsd-proxy.lua"
   ],
   "store": [
    "appcenter",
@@ -34211,7 +34626,7 @@
    "/etc/init.d/easytier",
    "/etc/init.d/zerotier",
    "/etc/openclash",
-   "/overlay",
+   "/overlay/swapfile",
    "/etc/init.d/dockerd",
    "/etc/init.d/cgroupfs-mount"
   ]
