@@ -1,10 +1,10 @@
 ﻿# kunpeng-router-ai-skills
 
-![OpenClash](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/openclash.png) ![ocspeed](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/ocspeed.png) ![1Panel](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/1panel.png) ![Docker](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/docker.png) ![maye](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/maye.png) ![常用插件](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/plugins.png) ![VPN组网](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/network.png) ![游戏加速](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/game.png) ![应用商店](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/store.png) ![设备维护](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/maint.png)
+![OpenClash](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/openclash.png) ![ocspeed](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/ocspeed.png) ![1Panel](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/1panel.png) ![Docker](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/docker.png) ![maye](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/maye.png) ![常用插件](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/plugins.png) ![VPN组网](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/network.png) ![游戏加速](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/game.png) ![应用商店](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/store.png) ![设备维护](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/maint.png) ![设备自检](https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/assets/menu/selftest.png)
 
 **🤔 这是什么？**
 
-把一台**内核无 veth / bridge 不可用**的鲲鹏无限 / NRadio C2000 路由器（OpenWrt 21.02，MT7987，aarch64），不刷机调教到能跑 Docker、1Panel、OpenClash 的全部真机实测经验 —— 沉淀为 **46 个机读任务 + 离线安装素材 + 复盘文档** 的 AI Agent 技能仓库。任何 AI（WorkBuddy / Codex / Cursor / Claude Code…）读它能直接上手干活。
+把一台**内核无 veth / bridge 不可用**的鲲鹏无限 / NRadio C2000 路由器（OpenWrt 21.02，MT7987，aarch64），不刷机调教到能跑 Docker、1Panel、OpenClash 的全部真机实测经验 —— 沉淀为 **47 个机读任务 + 离线安装素材 + 复盘文档** 的 AI Agent 技能仓库。任何 AI（WorkBuddy / Codex / Cursor / Claude Code…）读它能直接上手干活。
 
 > 🔒 公开脱敏版：所有密码 / token / 入口码均已替换为 `<你的xxx>` 占位符；离线素材经 md5 校验。
 
@@ -15,6 +15,7 @@
 - 🐋 **一键任务 3**：Docker + 1Panel 安装（含 host 网络默认化，容器建 veth 必死的解法）
 - 🧩 **一键任务 4**：第三方 NROS 插件安装器（maye 助手 · **总入口**；红线 + 补丁基线校验，菜单需人工按）
 - 🧰 **任务 5 ~ 9**：maye 助手的**五个功能分类直达入口** —— 🔌 常用插件 / 🛡️ VPN 组网 / 🎮 游戏加速器 / 🎨 应用商店与页面美化 / 🔧 设备维护与检测（每个分类有自己的红线与判据，任一分类都**不是**「照 tasks/05 跑一遍」那么简单）
+- 🩺 **任务 11**：设备状态与环境自检（**纯只读**全机体检 —— 系统资源与环境 / 容器梳理 / 网络与信号含 5G·CPE / 服务与补丁状态 / 装载余量与可装性对照；只报不修、零写盘、不用真终端）
 - 📦 另有 34 个机读任务：换源救源、无 SSH 救援、TF 扩容、面板排障、**Docker 环境清空**… 全在 `tasks/index.json`
 
 **🚀 AI 快速接入（一段话，复制即用）**
@@ -29,7 +30,7 @@
 之后一切都按仓库 AGENTS.md 的指引来：先按 AGENTS.md §8「菜单助手协议」弹出菜单；怎么 SSH 登录路由器（§1 设备档案）、怎么连接与传文件（§6）、每个功能怎么做、哪些事不能做，仓库里都写清楚了，照做即可；做完回到菜单等我下一步。
 ```
 
-菜单长这样（下面是**展示预览**；解析规则、四关、4)~9) 的交互式细则、10 条硬约束全部在
+菜单长这样（下面是**展示预览**；解析规则、四关、4)~9) 的交互式细则、10 条硬约束、以及 `11)` 只读自检的特别说明全部在
 [`AGENTS.md`](AGENTS.md) §8「菜单助手协议」—— 那是唯一真源，随仓库走、不用你贴）：
 
 ```text
@@ -66,6 +67,11 @@
   9)  🔧 设备维护与检测（体检 · 工具箱 · 硬件加速）
         nros.maintenance
 
+  ── 10 预留给「清除 / 卸载」引擎（尚未开放），本表从 11 续号 ──
+
+  11)  🩺 设备状态与环境自检（资源 · 容器 · 5G · 服务 · 装载余量）
+        device.selftest
+
   0)  🚪 退出
 
 ────────────────────────────────────────────
@@ -84,12 +90,12 @@
 |---|---|
 | [`AGENTS.md`](AGENTS.md) | Agent 约定入口：这个仓库是什么、先读什么、高危禁令、每个任务从哪进 |
 | [`llms.txt`](llms.txt) | LLM 索引清单：全部文档一句话摘要，便于检索式加载 |
-| [`tasks/index.json`](tasks/index.json) | **46 个机读任务**：每条含 id / title / risk / playbook / preconditions / verify / rollback / offline / refs 等字段 |
-| [`SKILL.md`](SKILL.md) | 主技能：设备档案 + A→V 有序任务路由表（含 T1–T5 任务包速查 + maye 分类分册） |
+| [`tasks/index.json`](tasks/index.json) | **47 个机读任务**：每条含 id / title / risk / playbook / preconditions / verify / rollback / offline / refs 等字段 |
+| [`SKILL.md`](SKILL.md) | 主技能：设备档案 + A→V 有序任务路由表（含 T1–T6 任务包速查 + maye 分类分册） |
 
 **最小接入方式**：让 Agent 先读 `AGENTS.md`，按 `tasks/index.json` 的任务 id 精确取用 playbook，而不是通读全库。
 
-## 任务包（T1–T5 + maye 分类分册）
+## 任务包（T1–T6 + maye 分类分册）
 
 | 任务包 | Playbook | 离线素材 |
 |---|---|---|
@@ -103,6 +109,7 @@
 | **T5-c · 分类三 游戏加速器** | [`tasks/08-nros-game-accel.md`](tasks/08-nros-game-accel.md) | 同上（destructive：明文 HTTP 下载 root 脚本，无校验和） |
 | **T5-d · 分类四 应用商店与页面美化** | [`tasks/09-nros-appcenter-polish.md`](tasks/09-nros-appcenter-polish.md) | 同上（会覆盖商店补丁载体 `appcenter.htm` / `appcenter.lua`） |
 | **T5-e · 分类五 设备维护与检测** | [`tasks/10-nros-maintenance.md`](tasks/10-nros-maintenance.md) | 同上（红线：`5 › 11` 硬件加速会 `fw3 reload`） |
+| **T6 · 设备状态与环境自检（助手菜单 11 · 纯只读）** | [`tasks/11-device-selftest.md`](tasks/11-device-selftest.md) | 无离线素材；`scripts/device-selftest.py`（PC 侧入口）+ `scripts/payload/kp-selftest.sh`（设备侧采集器） |
 
 每个 playbook 都包含：前置条件 → 步骤（含离线/在线两条路径）→ 验证命令 → 回滚方法 → 已知坑。
 T5 的五个分类分册另外各自带**本分类专属红线表**与**跑前/跑后对照项**。
@@ -111,10 +118,10 @@ T5 的五个分类分册另外各自带**本分类专属红线表**与**跑前/�
 
 ```
 ├── AGENTS.md / llms.txt / SKILL.md     # AI 入口与路由
-├── tasks/                              # index.json(46 任务) + 10 份 playbook（含清空 Docker / maye 助手 + 五个分类分册）
+├── tasks/                              # index.json(47 任务) + 11 份 playbook（含清空 Docker / maye 助手 + 五个分类分册 + 设备自检）
 ├── references/                         # 23 篇专题文档（含 id/tags/risk frontmatter）
 ├── docs/                               # 调优经验总览 · 验收清单 · 助手菜单提示词 · 仓库维护指南
-├── assets/menu/                        # 菜单软件图标（10 枚 32px PNG，jsdelivr 引用）
+├── assets/menu/                        # 菜单软件图标（11 枚 32px PNG，jsdelivr 引用）
 ├── offline/                            # 离线安装素材 + checksums.md5（21 项）
 ├── scripts/                            # PC 侧驱动 + payload/（host 网络三件套、回归自测）
 └── C2000U-Docker-assessment.md         # C2000 U Docker 适配评估与实装记录
