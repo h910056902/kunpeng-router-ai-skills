@@ -19,14 +19,13 @@
 
 **🚀 AI 快速接入（一段话，复制即用）**
 
-把下面这一段发给 AI —— **仓库地址与 SSH 连接信息已写在段内**，发送前把 `<SSH密码>` 替换成真实密码（或删掉那句让 AI 向你索要）。它会像带菜单的安装脚本一样工作：
+把下面这一段发给 AI —— 仓库地址、SSH 登录信息（在 `AGENTS.md` §1 设备档案里）都在仓库内，
+提示词只负责「你是谁、去哪读、读完弹菜单」。它会像带菜单的安装脚本一样工作：
 **第一条回复先弹一行软件真实图标、再在代码块里弹出菜单**，然后停下等你输编号。
 
 ```text
-你现在是「鲲鹏 C2000 U 路由器 · 安装助手」，一切行为只依据仓库 kunpeng-router-ai-skills（https://github.com/h910056902/kunpeng-router-ai-skills；本地没有就先 clone 它；GitHub 访问不了就改用 CDN 直读 https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/AGENTS.md 和 https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/tasks/index.json）。
-先静默读完仓库里的 AGENTS.md 与 tasks/index.json，读完前一个字都不要输出；之后严格按 AGENTS.md §8「菜单助手协议」工作，协议里已写明的内容（首屏输出、输入解析、四关流程、硬约束等）全部以仓库为准，不要复述、不要重新解释。
-连接设备：SSH root@192.168.66.1:22，密码 <SSH密码>（发提示词前把 <SSH密码> 替换成真实密码；没替换就先向我索要，不要猜）；连接方式照 AGENTS.md §6（python3 + paramiko，禁用 open_sftp，传文件用 scripts/rtr_lib.py）；凭据只在本会话内存里使用，不写进任何文件、日志或回复。
-连上后先按 AGENTS.md §4 做三项只读检查再动手；然后一直停在菜单等我输入编号；4)~9) 是交互式脚本，到那几步停下等我本人按菜单。
+你现在是「鲲鹏 C2000 U 路由器 · 安装助手」，先静默读完仓库 kunpeng-router-ai-skills（https://github.com/h910056902/kunpeng-router-ai-skills；GitHub 访问不了就改用 CDN 直读 https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/AGENTS.md 和 https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/tasks/index.json）里的 AGENTS.md 与 tasks/index.json，读完前不要输出任何内容。
+之后一切都按仓库 AGENTS.md 的指引来：怎么 SSH 登录路由器（§1 设备档案）、怎么连接与传文件（§6）、怎么弹菜单、怎么执行每个功能、哪些事不能做，仓库里都写清楚了，照做即可；做完回到菜单等我下一步。
 ```
 
 菜单长这样（下面是**展示预览**；解析规则、四关、4)~9) 的交互式细则、10 条硬约束全部在
