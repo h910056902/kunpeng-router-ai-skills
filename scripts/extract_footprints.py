@@ -80,11 +80,44 @@ IO_HINT = re.compile(
     r"\bmkdir\s+-p\b|\bchmod\b|\bln\s+-s\b|>>\s*/|\bswapon\b|\bswapoff\b|\btruncate\b)")
 
 # 数据目录前缀白名单（用于把 dirs 类里的值归一成「目录」而非具体文件）
+# ⚠️ 2026-09-21 收窄（B3）：这里**只允许放插件自建的业务目录**。原先混进了
+#    /opt /mnt/storage /overlay /usr/libexec /usr/bin /usr/lib/lua/luci /usr/share ——
+#    全是红线容器/固件目录。norm_dir 会把 `/usr/libexec/qy_acc` 折叠成 `/usr/libexec`，
+#    「改某个文件」被放大成「占整个目录」，而 /usr/libexec 正是固件 7 个文件的所在目录。
+#    收窄后这类路径保持**具体子路径**，由 CONTAINER_DIRS / path_is_forbidden 的
+#    前缀匹配继续兜底 —— 精度更高，也不再误伤。
 DIR_PREFIXES = [
     "/etc/openclash", "/etc/openlist", "/etc/docker", "/etc/qy", "/etc/acc",
-    "/etc/config/accelerator", "/opt", "/mnt/storage", "/overlay", "/usr/libexec",
-    "/usr/bin", "/usr/lib/lua/luci", "/etc/kp_store", "/usr/share",
+    "/etc/config/accelerator", "/etc/kp_store",
 ]
+
+# ---- /rom 出厂基线清单（B1/B2 的判据）----
+# 真机只读采集：find /rom -type f（2026-09-21，C2000 U / NRadio_C2000Ultra，4121 条）。
+# 「/rom<path> 存在 = 出厂就有，插件不可能是创建者，只能重置不能删」是本项目铁律。
+# 因此 matches_baseline（与 /rom 逐字节比对）**只对出厂件成立**；对插件自建文件，
+# /rom 无原件、cmp 恒假 —— 那是假谓词（/etc/config/accelerator 曾被 19 个 feature
+# 这样误判，真机对账才揪出来）。⚠️ 换机型 / 升级固件后**必须重采**本清单。
+ROM_MANIFEST = os.path.join(os.path.dirname(os.path.abspath(__file__)),
+                            "rom_baseline_c2000u.txt")
+try:
+    with open(ROM_MANIFEST, "r", encoding="utf-8") as _fh:
+        ROM_FILES = set(l.strip() for l in _fh if l.strip().startswith("/rom/"))
+except OSError:
+    ROM_FILES = set()
+if not ROM_FILES:
+    # 清单缺失 = 无法判定「出厂件 vs 插件件」= 会批量生成假谓词。宁可失败也不产出。
+    raise SystemExit("FATAL: 读不到 /rom 基线清单 %s —— 没有它就无法区分出厂件与插件件，"
+                     "拒绝生成 footprint.json（先在真机上重采：find /rom -type f）" % ROM_MANIFEST)
+
+
+def rom_has(p):
+    """/rom 下是否存在 p（出厂件判定）。"""
+    return ("/rom" + p) in ROM_FILES
+
+
+def is_pseudo_fs(p):
+    """/sys|/proc|/dev 出厂无原件、还原值由上游运行时决定 —— 不可能比对基线。"""
+    return p.startswith("/sys/") or p.startswith("/proc/") or p.startswith("/dev/")
 
 FUNC_RE = re.compile(r"^([A-Za-z_][A-Za-z0-9_]*)\s*\(\)\s*\{")
 CALL_RE = re.compile(r"(?<![\w./-])([a-z_][a-z0-9_]{2,})\b")
@@ -1420,6 +1453,18 @@ def build_cleanup(entry, lines=None, fmap=None, varlit=None, closure_text=""):
         # `/etc/config/accelerator` 是插件建的整份配置（雷神），该整份消失，
         # 不是「文件还在但少了个 section」。只有「卸载后必须还在」的基线配置
         # （/etc/config/fstab、network…）才用 lacks_section。
+        if is_pseudo_fs(p):
+            # /sys|/proc|/dev：出厂无原件，还原值是上游运行时保存的动态值
+            # （installer.sh:69781 写回 $saved_hook）—— 既不能 absent 也不能比对基线。
+            needs_manual.append("伪文件系统路径，无法自动断言（出厂无原件；"
+                                "还原值由上游运行时决定，须人工 cat 核对）: " + p)
+            continue
+        if rom_has(p):
+            # 铁律：/rom 存在 = 出厂就有，插件不可能是创建者 → 只能重置不能删。
+            # 上游却把它列进删除候选 —— 这本身就是必须人工裁定的红灯。
+            needs_manual.append("★/rom 存在此出厂件，插件不可能是创建者，只能重置不能删"
+                                "（上游却要求删）: " + p)
+            continue
         if p.startswith("/etc/config/") and p not in rm_derived:
             pc.append("lacks_section:%s" % p)
         else:
@@ -1451,12 +1496,25 @@ def build_cleanup(entry, lines=None, fmap=None, varlit=None, closure_text=""):
     for seg in u["store"]:
         pc.append("no_store_entry:%s" % seg[:60])
     for p in shared_paths:
-        pc.append("matches_baseline:%s" % p)
+        # matches_baseline 的真实语义 = 「与 /rom 逐字节一致」→ 只对**出厂件**成立。
+        # 实测反例：/etc/config/accelerator 是雷神自建配置，/rom 无原件，却被 19 个
+        # feature 断言「必须等于出厂原件」—— 引擎执行时 cmp 恒假，健康机也会报「没清干净」。
+        if is_pseudo_fs(p):
+            needs_manual.append("伪文件系统路径，无法自动断言（出厂无原件；"
+                                "还原值由上游运行时决定，须人工 cat 核对）: " + p)
+            continue
+        if rom_has(p):
+            pc.append("matches_baseline:%s" % p)
+        else:
+            needs_manual.append("插件自建文件（/rom 无原件），逐字节比对必假 → 不自动断言: " + p)
     # 命中禁区（系统关键文件/目录）的路径**不能删**，但卸载后**必须回到基线** ——
     # 否则像 feature 26/27（运营商显示修复、首页温度切换）这种「只改固件文件、
     # 不装包不建目录」的功能会一条验收谓词都没有，等于没有验收标准。
     for p in forbidden:
         if p.startswith("/") and not any(p.startswith(x) for x in CONTAINER_DIRS):
+            if is_pseudo_fs(p) or not rom_has(p):
+                needs_manual.append("禁区路径但 /rom 无原件，比对基线必假 → 人工核对: " + p)
+                continue
             tag = "matches_baseline:%s" % p
             if tag not in pc:
                 pc.append(tag)
@@ -1464,6 +1522,9 @@ def build_cleanup(entry, lines=None, fmap=None, varlit=None, closure_text=""):
     # 固件 LuCI 模板：卸载后必须与 /rom 逐字节一致（上游 rewrite_*_view remove
     # 就是「按 marker 摘掉注入段」，摘干净了自然等于原文）
     for p in baseline_paths:
+        if is_pseudo_fs(p) or not rom_has(p):
+            needs_manual.append("判定为固件文件但 /rom 清单里没有 —— 判定或清单有误，须人工: " + p)
+            continue
         tag = "matches_baseline:%s" % p
         if tag not in pc:
             pc.append(tag)
@@ -1482,6 +1543,13 @@ def build_cleanup(entry, lines=None, fmap=None, varlit=None, closure_text=""):
     # 上游卸载脚本**自己写明的**验收断言：`[ ! -e /etc/qy ] || { echo "残留"; exit 1; }`
     # —— 这是上游亲口定义的「卸载干净」标准，比任何推断都硬。
     for p in un["assert_absent"]:
+        if rom_has(p):
+            needs_manual.append("★/rom 存在此出厂件，插件不可能是创建者，只能重置不能删"
+                                "（上游却断言它必须消失）: " + p)
+            continue
+        if is_pseudo_fs(p):
+            needs_manual.append("伪文件系统路径，无法自动断言: " + p)
+            continue
         tag = "absent:%s" % p
         if tag not in pc:
             pc.append(tag)

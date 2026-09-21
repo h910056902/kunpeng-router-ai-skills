@@ -313,17 +313,37 @@ feature 24「封版工具箱」的清除草稿里就冒出了 `remove_paths: ['/
 `_selfcheck.py` §10 已把它移出谓词白名单并加了零残留断言 —— 再出现即报错。
 同一轮顺带核过：删掉这 26 条后**没有任何功能掉到零谓词**（最少的还剩 2 条）。
 
-② ⏳ **未修 · `norm_dir` 粒度**：把 `/etc/openclash/custom/xxx.list` 归一成
-`/etc/openclash` →「改某个文件」和「占整个目录」长得一样。
+② ◐ **部分修复（2026-09-21 第二轮）· `norm_dir` 粒度**：折叠表（DIR_PREFIXES）
+曾混入 7 个红线前缀（`/opt /mnt/storage /overlay /usr/libexec /usr/bin
+/usr/lib/lua/luci /usr/share`），把 `/usr/libexec/qy_acc` 归一成 `/usr/libexec` ——
+「改某个文件」被放大成「占整个容器目录」。已把这 7 个前缀**移出折叠表**
+（只剩 7 个插件自建业务目录），feature 15/17/21/34 的证据现在落成具体文件路径
+（如 `absent:/usr/libexec/nradio-multiwan`）。
+**仍未修**：业务目录内部的折叠（`/etc/openclash/custom/xxx.list` → `/etc/openclash`）依旧存在。
 
-③ ⏳ **未修 · `matches_baseline` 落到 sysfs**：
-`/sys/kernel/debug/hnat/hook_toggle` 不可能逐字节比对 `/rom/...`，同样是假谓词。
+③ ✅ **已修（2026-09-21 第二轮）· `matches_baseline` 假基线**。真机对账
+（4121 条 `/rom` 清单固化到 `scripts/rom_baseline_c2000u.txt`）证明三类假谓词：
+(a) `/etc/config/accelerator` 等 48 条参数**根本不在 /rom**（插件自建件，
+    逐字节比对必假）—— 曾被 19 个 feature 断言；
+(b) `/proc/.../proxy_arp` ×2、`/sys/kernel/debug/hnat/hook_toggle` 落在
+    **伪文件系统**，/rom 无原件；
+(c) 顺带证伪了「新增 `value_equals` 谓词」的方案：`hook_toggle` 的还原值是
+    运行时动态量 `$saved_hook`、proxy_arp 上游只写不还原、真机 cat 为空 ——
+    **常量值断言照样是假谓词，未采纳**，降级 needs_manual。
+现在 `matches_baseline` **只对 /rom 清单里真实存在的出厂件发射**；伪文件系统与
+插件件一律降级 `needs_manual`（并保留 `readonly_refs` 兜底）。`_selfcheck.py`
+§10a-3 新增 4 条语义守卫（G1 absent∩matches_baseline 交集为空 / G2 matches_baseline
+禁伪文件系统 / G3 两类谓词禁容器目录 / G4 keeps_service∩not_running 交集为空），
+全部经过「注入必失败、还原必恢复」的负向验证。
 
-**谓词现状**（2026-09-21，41 feature / 38 个带谓词）：共 **12 类** ——
-`absent 162 / lacks_key 120 / matches_baseline 118 / not_running 45 /
+**谓词现状**（2026-09-21 第二轮，41 feature：36 带验收谓词 / 3 只读 /
+2 纯人工清单〔1、10〕）：共 **12 类** ——
+`absent 168 / lacks_key 120 / matches_baseline 70 / not_running 45 /
 no_store_entry 37 / keeps_service 35 / no_marker 6 / lacks_section 5 /
-no_block 2 / no_symlink 2 / keeps 1 / no_cron 1`。
-`no_net_rule` 已归零；危险项 0；有写盘但零谓词 0。
+no_block 2 / no_symlink 2 / keeps 1 / no_cron 1`（总 492）。
+`no_net_rule` 归零；危险项 0；语义冲突 0；零谓词守卫已收紧为
+「零谓词**且零 needs_manual** 才算失败」（features 1/10 写盘目标全是运行时状态
+或上游无卸载函数，人工清单即验收）。
 
 ## 它改什么（legacy_appcenter 模式，即本机当前画像）
 
