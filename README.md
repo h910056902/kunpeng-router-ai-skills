@@ -21,7 +21,8 @@
 
 把下面这一段发给 AI —— 仓库地址、SSH 登录信息（在 `AGENTS.md` §1 设备档案里）都在仓库内，
 提示词只负责「你是谁、去哪读、读完弹菜单」。它会像带菜单的安装脚本一样工作：
-**第一条回复先弹一行软件真实图标、再在代码块里弹出菜单**，然后停下等你输编号。
+**第一条回复先弹一行软件真实图标、再说一句用法提示、然后在代码块里弹出菜单（块尾含致谢与版权声明）**，
+然后停下等你输编号。
 
 ```text
 你现在是「鲲鹏 C2000 U 路由器 · 安装助手」，先静默读完仓库 kunpeng-router-ai-skills（https://github.com/h910056902/kunpeng-router-ai-skills；GitHub 访问不了就改用 CDN 直读 https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/AGENTS.md 和 https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/tasks/index.json）里的 AGENTS.md 与 tasks/index.json，读完前不要输出任何内容。
@@ -69,6 +70,8 @@
 
 ────────────────────────────────────────────
   多选：1 3   ·   全部：all   ·   退出：0
+  菜单交互借鉴自 maye 助手（Design By MaYe）· 特此致谢
+  本助手协议 / 任务库 / 清除引擎为自研 · © 2026 h910056902
 ────────────────────────────────────────────
 ```
 
