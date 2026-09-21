@@ -135,7 +135,7 @@
       "id": "docker.purge",
       "title": "清空 Docker 环境与容器；加 --panel-reset 连 1Panel 环境一起复位（重装演练前置）",
       "group": "从零装机",
-      "order": 40,
+      "order": 7,
       "risk": "destructive",
       "playbook": "tasks/04-docker-purge.md",
       "refs": ["references/c2000u-docker.md", "references/one-command-restore.md", "references/1panel-hostnet-default.md"],

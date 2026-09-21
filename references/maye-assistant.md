@@ -222,6 +222,10 @@ feature 27 同理（`uninstall_nradio_home_temperature_switch`，L58420）。
   lacks_section 5 / no_block 2 / no_symlink 2 / keeps 1 / no_cron 1`
 - 危险项仍为 **0**（固件服务进 stop_services 0 条、容器目录进 remove_paths 0 条）
 
+> ⚠️ 上面这组数字是**那一轮 33 feature 基线的快照**，别当成现状。现状（2026-09-21，
+> 41 feature）见本节末「谓词现状」。其中 `no_net_rule 23` 这一类**已被整体淘汰** ——
+> 它的参数是命令片段而不是规则特征，属假谓词，已降级为人工提示。
+
 ## 菜单是什么结构：六种分派写法（2026-09-21，解析器三次收口后定稿）
 
 只遍历主菜单会**丢掉整批动作**。真实源码里「菜单号 → feature」有六种写法，
@@ -293,13 +297,33 @@ feature 24「封版工具箱」的清除草稿里就冒出了 `remove_paths: ['/
 不让它静默消失（否则「闸门开太大」这类回归没人看得见）。
 现状：17 个 feature / 41 条，全部只是「待人工核」，不进删除清单。
 
-**仍未修的三个解析缺陷**（详见工作区 `maye适配-解析缺陷与修复方案-20260920.md`）：
-① `no_net_rule` 的参数是**命令片段**（`fw3 reload` / `iptables` / `ip rule add`），
-不是规则特征（chain / fwmark / CIDR）→ 引擎永远找不到 → **假阳性通过**，26 条；
-② `norm_dir` 把 `/etc/openclash/custom/xxx.list` 归一成 `/etc/openclash`
-→「改某个文件」和「占整个目录」长得一样；
-③ `matches_baseline` 落到 sysfs 路径（`/sys/kernel/debug/hnat/hook_toggle`）
-→ 不可能逐字节比对 `/rom/...`，同样是假谓词。
+**解析缺陷修复进度**（详见工作区 `maye适配-解析缺陷与修复方案-20260920.md`）：
+
+① ✅ **已修（2026-09-21）· `no_net_rule` 假谓词**。它的参数取自 `net` 类正则的
+**命中文本**（`fw3 reload` / `iptables` / `ip rule add`），而不是规则特征
+（chain / fwmark / CIDR）→ 引擎永远找不到 → **假阳性通过**，26 条。
+深挖之后发现「改造它」这条路走不通：上游这些命令的动作对象几乎全是 shell 变量
+（`ip rule del to "$remote_subnet" lookup main priority 60`、
+`iptables -t nat -D POSTROUTING -s "$local_subnet" -o "$tun_if" -j MASQUERADE`），
+抽不出稳定的规则身份；唯一看似可抽的「表 / 链 / 目标」三元组同样**不安全** ——
+`nat/POSTROUTING/MASQUERADE` 出厂固件自身就在用，拿它判「没清干净」会在**干净机器上失败**；
+而 `fw3 reload` / `mtkhnat` 根本不是规则，是动作与服务。
+**结论：这一类整体淘汰。** 抽取器不再产出 `no_net_rule` 谓词，改为输出可操作的人工提示
+（点名 `iptables-save` / `ip rule show` / `ip route show` 去核对）。
+`_selfcheck.py` §10 已把它移出谓词白名单并加了零残留断言 —— 再出现即报错。
+同一轮顺带核过：删掉这 26 条后**没有任何功能掉到零谓词**（最少的还剩 2 条）。
+
+② ⏳ **未修 · `norm_dir` 粒度**：把 `/etc/openclash/custom/xxx.list` 归一成
+`/etc/openclash` →「改某个文件」和「占整个目录」长得一样。
+
+③ ⏳ **未修 · `matches_baseline` 落到 sysfs**：
+`/sys/kernel/debug/hnat/hook_toggle` 不可能逐字节比对 `/rom/...`，同样是假谓词。
+
+**谓词现状**（2026-09-21，41 feature / 38 个带谓词）：共 **12 类** ——
+`absent 162 / lacks_key 120 / matches_baseline 118 / not_running 45 /
+no_store_entry 37 / keeps_service 35 / no_marker 6 / lacks_section 5 /
+no_block 2 / no_symlink 2 / keeps 1 / no_cron 1`。
+`no_net_rule` 已归零；危险项 0；有写盘但零谓词 0。
 
 ## 它改什么（legacy_appcenter 模式，即本机当前画像）
 

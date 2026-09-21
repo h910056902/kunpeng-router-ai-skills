@@ -14228,24 +14228,18 @@
      "/root/.nradio-plugin-menu"
     ],
     "post_condition": [
-     "no_net_rule:ip rule del",
-     "no_net_rule:iptables",
-     "no_net_rule:ip route del",
-     "no_net_rule:ip route add",
-     "no_net_rule:ip route replace",
-     "no_net_rule:ip rule add",
      "matches_baseline:/proc/sys/net/ipv4/conf/all/proxy_arp",
      "matches_baseline:/proc/sys/net/ipv4/conf/$LAN_IF/proxy_arp"
     ],
     "needs_manual": [
      "★曾命中系统关键路径，已剔除并需人工裁定: ['/proc/sys/net/ipv4/conf/all/proxy_arp', '/proc/sys/net/ipv4/conf/$LAN_IF/proxy_arp']",
      "弱证据（变量指向，未必真写入）: /etc/hotplug.d/openvpn/99-openvpn-route",
-     "网络规则: ip rule del",
-     "网络规则: iptables",
-     "网络规则: ip route del",
-     "网络规则: ip route add",
-     "网络规则: ip route replace",
-     "网络规则: ip rule add"
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: ip rule del",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: iptables",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: ip route del",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: ip route add",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: ip route replace",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: ip rule add"
     ]
    },
    "upstream_cleanup": [
@@ -14495,10 +14489,6 @@
     "post_condition": [
      "not_running:easytier",
      "lacks_key:firewall.easytierzone.masq",
-     "no_net_rule:iptables",
-     "no_net_rule:ip route replace",
-     "no_net_rule:ip rule del",
-     "no_net_rule:ip rule add",
      "no_block:/etc/rc.local",
      "no_block:EASYTIER_ROUTE_WIZARD",
      "keeps_service:firewall"
@@ -14512,10 +14502,10 @@
      "uci 行未解析出配置键: uci -q commit firewall >/dev/null 2>&1 || true",
      "rc.local / 向导块: /etc/rc.local",
      "rc.local / 向导块: EASYTIER_ROUTE_WIZARD",
-     "网络规则: iptables",
-     "网络规则: ip route replace",
-     "网络规则: ip rule del",
-     "网络规则: ip rule add"
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: iptables",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: ip route replace",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: ip rule del",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: ip rule add"
     ]
    },
    "upstream_cleanup": [
@@ -14714,14 +14704,13 @@
     ],
     "post_condition": [
      "not_running:openvpn",
-     "no_net_rule:iptables",
      "no_store_entry:routes.list"
     ],
     "needs_manual": [
      "弱证据（变量指向，未必真写入）: /usr/sbin/openvpn",
      "弱证据（变量指向，未必真写入）: /etc/openvpn/client.ovpn",
-     "网络规则: iptables",
-     "应用商店注册项: routes.list"
+     "应用商店注册项: routes.list",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: iptables"
     ]
    },
    "upstream_cleanup": [],
@@ -15088,7 +15077,6 @@
     "post_condition": [
      "not_running:AdGuardHome",
      "not_running:openvpn",
-     "no_net_rule:iptables",
      "no_store_entry:routes.list",
      "no_store_entry:appcenter"
     ],
@@ -15098,9 +15086,9 @@
      "弱证据（变量指向，未必真写入）: /mnt/app_data",
      "弱证据（变量指向，未必真写入）: /usr/sbin/openvpn",
      "弱证据（变量指向，未必真写入）: /etc/openvpn/client.ovpn",
-     "网络规则: iptables",
      "应用商店注册项: routes.list",
-     "应用商店注册项: appcenter"
+     "应用商店注册项: appcenter",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: iptables"
     ]
    },
    "upstream_cleanup": [],
@@ -21237,10 +21225,6 @@
      "lacks_key:nradio_multiwan.main.interfaces",
      "lacks_key:firewall.@defaults[0].flow_offloading",
      "lacks_key:firewall.@defaults[0].flow_offloading_hw",
-     "no_net_rule:iptables",
-     "no_net_rule:uci set firewall",
-     "no_net_rule:fw3 reload",
-     "no_net_rule:mtkhnat",
      "keeps_service:mtkhnat",
      "keeps_service:odhcpd"
     ],
@@ -21260,10 +21244,10 @@
      "uci 行未解析出配置键: uci delete \"nradio_multiwan.$mwui_id\" && uci commit nradio_multiwan || return 1",
      "uci 行未解析出配置键: uci commit firewall >/dev/null 2>&1 || return 1",
      "uci 行未解析出配置键: uci -q delete firewall.@defaults[0].flow_offloading_hw >/dev/null 2>&1 || true",
-     "网络规则: iptables",
-     "网络规则: uci set firewall",
-     "网络规则: fw3 reload",
-     "网络规则: mtkhnat"
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: iptables",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: uci set firewall",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: fw3 reload",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: mtkhnat"
     ]
    },
    "upstream_cleanup": [],
@@ -21874,7 +21858,6 @@
      "lacks_key:dockerd.globals.data_root",
      "lacks_key:dockerd.globals.log_level",
      "lacks_key:dockerd.globals.iptables",
-     "no_net_rule:iptables",
      "no_store_entry:appcenter",
      "no_store_entry:plugin_uninstall",
      "matches_baseline:/etc/opkg/distfeeds.conf",
@@ -21895,9 +21878,9 @@
      "弱证据（变量指向，未必真写入）: /usr/lib/lua/luci/view/nradio_appcenter/appcenter.htm",
      "rc.d 路径被变量截断，须回原文核: /etc/rc.d/S",
      "uci 行未解析出配置键: uci -q commit dockerd >/dev/null 2>&1 || true",
-     "网络规则: iptables",
      "应用商店注册项: appcenter",
-     "应用商店注册项: plugin_uninstall"
+     "应用商店注册项: plugin_uninstall",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: iptables"
     ]
    },
    "upstream_cleanup": [
@@ -25445,7 +25428,6 @@
      "lacks_key:firewall.nradio_mt5700_cpe1.dest_port",
      "lacks_key:firewall.nradio_mt5700_cpe1.target",
      "lacks_key:firewall.nradio_mt5700_cpe1.enabled",
-     "no_net_rule:uci set firewall",
      "no_store_entry:appcenter",
      "no_store_entry:plugin_uninstall",
      "matches_baseline:/etc/config/appcenter",
@@ -25477,9 +25459,9 @@
      "uci 行未解析出配置键: uci commit at-webserver-cpe1 || die \"保存副线路配置失败\"",
      "uci 行未解析出配置键: uci commit firewall || die \"保存双线路服务访问配置失败\"",
      "uci 行未解析出配置键: uci commit appcenter || die \"MT5700 WebUI 应用商店配置提交失败\"",
-     "网络规则: uci set firewall",
      "应用商店注册项: appcenter",
-     "应用商店注册项: plugin_uninstall"
+     "应用商店注册项: plugin_uninstall",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: uci set firewall"
     ]
    },
    "upstream_cleanup": [
@@ -27881,10 +27863,6 @@
      "lacks_key:firewall.@defaults[0].flow_offloading",
      "lacks_key:mtkhnat.global.mode",
      "lacks_key:mtkhnat.global.enable",
-     "no_net_rule:mtkhnat",
-     "no_net_rule:uci set firewall",
-     "no_net_rule:uci set mtkhnat",
-     "no_net_rule:fw3 reload",
      "matches_baseline:/sys/kernel/debug/hnat/hook_toggle",
      "keeps_service:mtkhnat"
     ],
@@ -27893,10 +27871,10 @@
      "弱证据（变量指向，未必真写入）: /root/.nradio-plugin-menu",
      "uci 行未解析出配置键: uci commit firewall || return 1",
      "uci 行未解析出配置键: uci commit mtkhnat || return 1",
-     "网络规则: mtkhnat",
-     "网络规则: uci set firewall",
-     "网络规则: uci set mtkhnat",
-     "网络规则: fw3 reload"
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: mtkhnat",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: uci set firewall",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: uci set mtkhnat",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: fw3 reload"
     ]
    },
    "upstream_cleanup": [],
@@ -28501,9 +28479,6 @@
      "lacks_key:nradio_openbox.main",
      "lacks_key:nradio_openbox.main.root",
      "lacks_key:nradio_openbox.main.mount",
-     "no_net_rule:ip -4 rule",
-     "no_net_rule:iptables",
-     "no_net_rule:uci set firewall",
      "no_store_entry:appcenter",
      "no_store_entry:plugin_uninstall",
      "matches_baseline:/etc/config/appcenter",
@@ -28523,11 +28498,11 @@
      "uci 行未解析出配置键: uci commit appcenter",
      "uci 行未解析出配置键: uci commit nradio_openbox",
      "uci 键含变量（可能是共用注册项）: uci set \"appcenter.$pkg_sec.open=1\"",
-     "网络规则: ip -4 rule",
-     "网络规则: iptables",
-     "网络规则: uci set firewall",
      "应用商店注册项: appcenter",
-     "应用商店注册项: plugin_uninstall"
+     "应用商店注册项: plugin_uninstall",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: ip -4 rule",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: iptables",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: uci set firewall"
     ]
    },
    "upstream_cleanup": [
@@ -32262,7 +32237,6 @@
      "not_running:acc-gw.router.aarch64",
      "not_running:acc_upgrade_monitor",
      "lacks_key:upnpd.config.enabled",
-     "no_net_rule:iptables",
      "no_store_entry:appcenter",
      "matches_baseline:/etc/opkg/distfeeds.conf",
      "matches_baseline:/etc/config/appcenter",
@@ -32277,8 +32251,8 @@
      "弱证据（变量指向，未必真写入）: /www/luci-static/nradio/images/icon",
      "包名含变量，需人工确认: opkg install \"$lg_pkg\"; then   # 含变量，需人工确认包名",
      "uci 行未解析出配置键: uci commit upnpd >/dev/null 2>&1 || true",
-     "网络规则: iptables",
-     "应用商店注册项: appcenter"
+     "应用商店注册项: appcenter",
+     "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: iptables"
     ]
    },
    "upstream_cleanup": [

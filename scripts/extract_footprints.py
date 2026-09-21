@@ -1375,10 +1375,18 @@ def build_cleanup(entry, lines=None, fmap=None, varlit=None, closure_text=""):
             needs_manual.append("uci 行未解析出配置键: " + seg[:120])
 
     for kind, tag in (("cron", "cron 条目"), ("rclocal", "rc.local / 向导块"),
-                      ("net", "网络规则"), ("marker", "补丁 marker"),
+                      ("marker", "补丁 marker"),
                       ("store", "应用商店注册项")):
         for seg in u[kind]:
             needs_manual.append("%s: %s" % (tag, seg[:120]))
+
+    # 网络规则**一律只给人工提示，不给自动谓词**（理由见下方 post_condition 处）。
+    # 提示里点名核对命令 —— 否则「网络规则: iptables」这种信息量约等于零，
+    # 拿到手不知道要去哪里看什么。
+    for seg in u["net"]:
+        needs_manual.append(
+            "网络规则（不自动判定；请人工核对 iptables-save / ip rule show / ip route show）: "
+            + seg[:120])
 
     # 共用设施里那些「必须保持完好」的系统文件 → 用基线比对谓词收口。
     # 不能写 absent：/etc/config/fstab、/etc/rc.local、/etc/crontabs/root 卸载后**必须还在**。
@@ -1424,8 +1432,18 @@ def build_cleanup(entry, lines=None, fmap=None, varlit=None, closure_text=""):
         pc.append("lacks_key:%s" % key)
     for seg in u["marker"]:
         pc.append("no_marker:%s" % seg[:60])
-    for seg in u["net"]:
-        pc.append("no_net_rule:%s" % seg[:60])
+    # 🚫 刻意**不**产出 `no_net_rule:` 谓词。
+    #    它的参数是「命令片段」而不是「规则特征」：引擎执行 `no_net_rule:fw3 reload`
+    #    时会去 iptables 里找一条叫 "fw3 reload" 的规则 —— 恒真。**假谓词比没有谓词
+    #    更坏**，它让人以为「验收过了」。而且 `fw3 reload` / `mtkhnat` 根本不是规则，
+    #    是动作与服务。
+    #    唯一看似可抽的「表/链/目标」三元组同样不安全：上游规则的动作对象几乎全是
+    #    shell 变量（`ip rule del to "$remote_subnet"`、
+    #    `iptables -s "$local_subnet" -j MASQUERADE`），而 `nat/POSTROUTING/MASQUERADE`
+    #    出厂固件自身就在用 —— 拿它判「没清干净」会在干净机器上失败。
+    #    → 降级为 needs_manual 人工提示（见上）。
+    #    回归守卫：_selfcheck.py §10 已把 no_net_rule 移出谓词白名单，
+    #    一旦重新出现即报「白名单外的谓词」+ 专门的计数断言。
     for seg in u["cron"]:
         pc.append("no_cron:%s" % seg[:60])
     for seg in u["rclocal"]:
