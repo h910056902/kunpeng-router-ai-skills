@@ -757,7 +757,8 @@
       "steps_summary": "自行备份 -> snapshot 拍补丁基线 -> 设备侧 wget 下载并对 sha256 -> sh -n 过语法 -> 真终端跑菜单 -> check（丢补丁则 --fix）。绝对不要选：卸载 Docker / 装 AGH·mosdns / 装奇游·雷神 / 重装 OpenClash 内核。🧊 备选：直接跑离线精简版 offline/maye/ssh-nradio-plugin-installer-lite.sh（red-line 功能已物理删除，菜单同步缩减，见 offline/maye/PROVENANCE.md）",
       "verify": [
         "原版 sha256 = 62f248a924e7b05ccb5c1053ddc800835e075f3697d9221196eac1a0993c8ed8；离线精简版 sha256 = 3c2913f32056afb64042198058d4880ac5b9c7daca96b3286d68b1313131e104（二选一，别混校）",
-        "精简版真机冒烟（只读，零副作用）：printf '4\\n1\\n' | sh /tmp/ssh-nradio-plugin-installer-lite.sh 应 rc=0，跑完 25 个检查段（实测 407 行 / 30.3 s）；随后 find /etc /usr /root /www /opt /srv -xdev -newer <marker> 应无输出",
+        "精简版真机冒烟（只读）：printf '4\\n1\\n' | sh /tmp/ssh-nradio-plugin-installer-lite.sh 应 rc=0，跑完 25 个检查段（实测 407 行 / 30.3 s）；副作用复核必须用【遍历 + shell [ f -nt marker ]】，🔴 绝不可用 find -xdev -newer（BusyBox find 无 -newer，错误被 2>/dev/null 吞掉会假阴性）。实测结论：0 文件净变动，仅 /overlay、/mnt/app_data（脚本写探针）、/tmp（本次会话）三目录 mtime 变动",
+        "精简版真机安装类冒烟：printf '1\\n2\\ny\\n' | sh /tmp/ssh-nradio-plugin-installer-lite.sh 应 rc=0（实测 12.8 s，5 阶段全过），ttyd 1.7.7 落地 1,370,112 B、监听 192.168.66.1:7681、ttyd=enabled；实测副作用 19 文件 + 19 目录，其中 appcenter.htm/appcenter.lua 被改写（我们的补丁 marker 跑前后仍全 0）",
         "精简版菜单编号与原版不同，别照搬：顶层 4 类 [0-4]、分类1 [0-6]、分类2 [0-4]、设备维护为运行时连续编号 1-7",
         "菜单显示 NRadio_C2000Ultra，不报环境检测失败",
         "/etc/opkg/distfeeds.conf 仍是 3 条阿里云 21.02.7 源（守卫命中会原样保留）",

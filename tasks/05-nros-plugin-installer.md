@@ -34,15 +34,21 @@ sh /tmp/ssh-nradio-plugin-installer-lite.sh
 
 - ✅ 已验证：`sh -n`（PC+设备）、**0 悬挂引用**、feature ID 一致、**真机菜单走查全部正确渲染**、
   **真机只读 handler 端到端跑通**（`4 → 1 统一体检增强版`，25 个检查段 / 407 行 / `rc=0` / 30.3 s，
-  静态调用闭包 214 个函数全部可解析执行）、**rootfs 零改动**（`find -newer` 实测无任何文件变化）、
-  脚本锁干净释放。
-- ⚠️ **未验证**：**安装类 handler**（下载 ipk → `opkg install` → 落盘部署）没在真机跑过；
-  只读自检不经过那些分支。下载源可用性已由 CDN 探测 6 段全 PASS 间接证明，
-  但 ipk 依赖与设备端兼容性仍未验证。
+  静态调用闭包 214 个函数全部可解析执行）、
+  **真机安装类 handler 端到端跑通**（`1 → 2 ttyd / Web SSH`，5 阶段 / `rc=0` / 12.8 s，
+  ttyd 1.7.7 落地并监听 `192.168.66.1:7681`）、
+  **副作用经 `-nt` 法实测**（只读操作 0 文件净变动；安装操作实测改动 **19 文件 + 19 目录**，
+  清单见 `offline/maye/PROVENANCE.md` §7.1 ④）、脚本锁干净释放。
+- ⚠️ **未验证**：**其余安装项未逐个真跑** —— 只抽验了 ttyd 一项作代表。
+  OpenList / DDNS-GO / ZeroTier / EasyTier / MT5700 / Open-Box / swap / eMMC / 工具箱 / 风扇 /
+  温度切换 的设备端兼容性仍需自行判断；网络侧（ZeroTier/EasyTier 写 `ip rule`）风险最高，未触碰。
 - ⚠️ 本版**不是**上游原版，上游 `CHECKSUMS.txt` 的哈希对本文件不适用。
+- 🔴 **实测复核过的红线**：它会**改写 `appcenter.htm` 与 `appcenter.lua`**
+  （ttyd 安装那次两个文件都变了）—— 跑前备份这两个文件不能省。
+  本机跑前跑后我们的补丁 marker 全为 0，所以没有补丁被冲掉。
 - 仍建议按下面的流程走：**先备份 → 再跑 → 跑完 `check` 校验补丁**。
 - 📋 跑精简版时的真机靶子选择：`4 设备维护 → 1 统一体检增强版` 是**全程只读**的，
-  适合用来确认精简版"能真跑起来"，不会改动设备（实测零副作用）。
+  适合用来确认精简版"能真跑起来"，不会改动设备（实测 0 文件净变动）。
   想自己筛靶子：`python scripts/maye_trim/reach.py maye-lite.sh <入口函数名>` ——
   从入口沿静态调用图 BFS，列出闭包内所有写盘/删除/服务控制操作及行号；
   命中 ≠ 有害（`> /dev/null`、tmpfs 上的 `mkdir` 都会被命中），要逐条读原行再定论。
@@ -57,12 +63,23 @@ sha256sum /tmp/ssh-nradio-plugin-installer-lite.sh
 sh -n /tmp/ssh-nradio-plugin-installer-lite.sh && echo SYNTAX_OK
 
 # ② 真终端跑（人工按键）；或管道喂编号做非交互验证
-printf '4\n1\n' | sh /tmp/ssh-nradio-plugin-installer-lite.sh    # 只读体检验证，实测 rc=0
-sh /tmp/ssh-nradio-plugin-installer-lite.sh                      # 正常交互使用
+printf '4\n1\n'   | sh /tmp/ssh-nradio-plugin-installer-lite.sh   # 只读体检验证，实测 rc=0
+printf '1\n2\ny\n' | sh /tmp/ssh-nradio-plugin-installer-lite.sh  # 装 ttyd（有 [y/N] 确认），实测 rc=0
+sh /tmp/ssh-nradio-plugin-installer-lite.sh                       # 正常交互使用
 #   ⚠️ 同样**不要带任何参数**（多带参数会被当成菜单编号 → ERROR: 无效编号）
 
-# ③ 副作用复核（跑前后各一次，或跑前 touch marker）
-find /etc /usr /root /www /opt /srv -xdev -newer /tmp/marker   # 期望：无输出
+# ③ 副作用复核（跑前 touch marker，跑后比对）
+touch /tmp/kp-marker
+cd / && find . -xdev -type f | while IFS= read -r f; do [ "$f" -nt /tmp/kp-marker ] && echo "F $f"; done
+cd / && find . -xdev -type d | while IFS= read -r f; do [ "$f" -nt /tmp/kp-marker ] && echo "D $f"; done
+#   ⚠️⚠️ 此固件的 busybox find **不支持 `-newer` / `-mmin` / `-newermt`**！
+#       写成 `find ... -newer ... 2>/dev/null` 会报 unrecognized 但错误被吞 →
+#       **静默返回空结果，看起来像"零改动"，实为假阴性**（本项目真踩过，见 PROVENANCE §9.9）
+#   期望：0 个 F 行；`D` 行可能因脚本自己的写探针（建了立刻删的 .nradio-write-test.$$）而出现
+#   rootfs 仅 6,610 文件 / 523 目录 → 全盘扫一遍 0.6 s，每次跑完都值得扫
+
+# ④ 对照实验（设备上有每分钟一次的 crontab + 固件会周期写 /etc/config/cpecfg）
+#    看到意外改动时，静置同样时长什么都不做再扫一遍，把环境噪声与操作副作用分开
 ```
 
 
