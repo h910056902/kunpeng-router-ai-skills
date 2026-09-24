@@ -21,7 +21,7 @@ import re
 import sys
 import time
 
-WS = r"%USERPROFILE%\WorkBuddy\2026-09-19-12-19-57"
+WS = r"C:\Users\91005\WorkBuddy\2026-09-19-12-19-57"
 SKILL = os.path.join(os.path.expanduser("~"), ".workbuddy", "skills", "kunpeng-router-tuning")
 FOOTPRINT = os.path.join(SKILL, "tasks", "footprint.json")
 PAYLOAD = os.path.join(SKILL, "scripts", "payload", "kp-clean.sh")

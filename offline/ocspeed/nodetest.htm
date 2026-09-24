@@ -2,7 +2,7 @@
 <%
 -- 单节点测速结果页（点节点名弹出的那张）
 -- 独立页面 —— 拿不到 ocspeed.htm 里的令牌，所以这里自带一份同样的设计令牌。
--- 风格与主页面保持一致：Linear 深色精密风，强调色跟固件主题的青 #00D5FF。
+-- 风格与主页面保持一致：OpenClash 原生配色，强调色跟固件主题的青 var(--brand-primary)。
 --
 -- 坑（2026-09-16 踩过，页面 500）：LuCI 模板不认「百分号 + 双横线」那种注释写法。
 -- 解析器会把它当成 <%- 白空格裁剪标记，于是 Lua 读到孤立的减号，报
@@ -13,30 +13,47 @@
 <div class="nt-body">
 <style>
 .nt-body {
-  --bg-solid: #16171a;
-  --bg-card: rgba(255, 255, 255, 0.02);
-  --bg-subtle: rgba(255, 255, 255, 0.03);
-  --bg-muted: rgba(255, 255, 255, 0.05);
-  --border-light: rgba(255, 255, 255, 0.08);
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --text-main: #f7f8f8;
-  --text-body: #d0d6e0;
-  --text-muted: #8a8f98;
-  --text-sub: #62666d;
-  --brand: #00d5ff;
-  --on-brand: #04222b;
-  --ok: #10b981;
-  --warn: #f59e0b;
-  --bad: #f87171;
+  --bg-solid: #ffffff;
+  --bg-card: #ffffff;
+  --bg-subtle: #f8fafc;
+  --bg-muted: #f1f5f9;
+  --border-light: var(--border-light);
+  --border-subtle: #e5e7eb;
+  --text-main: #1f2937;
+  --text-body: #374151;
+  --text-muted: #6b7280;
+  --text-sub: #9ca3af;
+  --brand: #3b82f6;
+  --on-brand: #ffffff;
+  --ok: #059669;
+  --warn: var(--status-warn);
+  --bad: #dc2626;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, monospace;
 
-  font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
-  font-feature-settings: "cv01", "ss03";
+  font-family: system-ui, -apple-system, "Segoe UI", Roboto, "PingFang SC", "Microsoft YaHei", sans-serif;
+  font-feature-settings: normal;
   color: var(--text-body);
   max-width: 720px;
   margin: 0 auto;
   padding: 20px 16px 32px;
   -webkit-font-smoothing: antialiased;
+}
+html[data-darkmode="true"] .nt-body {
+  --bg-solid: #1f2937;
+  --bg-card: #1f2937;
+  --bg-subtle: #374151;
+  --bg-muted: #4b5563;
+  --border-light: #6b7280;
+  --border-subtle: #4b5563;
+  --text-main: #e5e7eb;
+  --text-body: #ebebeb;
+  --text-muted: #d1d5db;
+  --text-sub: #9ca3af;
+  --brand: #3b82f6;
+  --on-brand: #ffffff;
+  --ok: #34d399;
+  --warn: #f9bb51;
+  --bad: #ff7070;
 }
 
 .nt-head { margin-bottom: 18px; }
@@ -88,7 +105,7 @@ table.nt td {
   border-bottom: 1px solid var(--border-subtle);
 }
 table.nt tr:last-child td { border-bottom: none; }
-table.nt tr:hover td { background: rgba(0, 213, 255, 0.055); }
+table.nt tr:hover td { background: var(--brand-light); }
 table.nt td.d {
   font-family: var(--font-mono);
   font-variant-numeric: tabular-nums;
@@ -97,7 +114,7 @@ table.nt td.d {
   white-space: nowrap;
   width: 110px;
 }
-/* 延迟分级：只给数字上色，不给整行铺底色 —— 深色底上整行染色会显得脏 */
+/* 延迟分级：只给数字上色，不给整行铺底色 —— 浅色底上整行染色会显得脏 */
 td.d.g { color: var(--ok); }
 td.d.y { color: var(--warn); }
 td.d.r { color: var(--bad); }
@@ -128,8 +145,8 @@ td.d.x { color: var(--text-sub); }
   transition: background 0.15s, border-color 0.15s;
 }
 .nt-back:hover {
-  background: rgba(255, 255, 255, 0.09);
-  border-color: rgba(255, 255, 255, 0.16);
+  background: var(--bg-hover);
+  border-color: #94a3b8;
   color: var(--text-main);
 }
 .nt-back:focus-visible {

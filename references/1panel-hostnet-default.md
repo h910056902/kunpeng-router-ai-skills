@@ -333,5 +333,38 @@ dmesg → oom-kill:constraint=CONSTRAINT_NONE,global_oom,
 | `siyuan` | `UpErr` | 容器不存在 | 残留的是**修复前**的 `undefined network` 旧错，不代表当前转换器有问题 |
 | `ai-gateway` | `Stopped` | `exited(0)` | 一致（用户手动停的） |
 
+---
+
+## 十二、清空重装后的复验（2026-09-22，只读 + /tmp 自测）
+
+**背景**：2026-09-19 跑了两次 `kp-docker-purge.sh --apply --yes --backup-vols --data-root --panel-reset`
+演练、09-21 18:57 重装了 1Panel 本体、09-22 上午设备重启。
+清空后**设备是干净裸环境**（容器 0 / 镜像只剩 `hello-world` / 面板 `app_installs` **0 行** / `apps/` 为空）。
+→ 那套 host 默认化装置是否幸存，必须复验，不能假设。
+
+一条命令（驱动 `--stage probe`）拿到的结果：
+
+| 项 | 值 |
+|---|---|
+| 转换器回归自测（设备端） | **PASS=59 FAIL=0**（商店 2 空格 / 面板 4 空格 / 3 空格 / **CRLF** / 幂等 / 错误码三分支） |
+| 装置在位 | `compose_is_wrapper=yes`、`compose_real_present=yes`、`converter_present=yes` |
+| 与本地 payload 同源 | md5 一致（wrapper `0fd4fca9…`、转换器 `7cfb25b9…`） |
+| dockerd | running、overlay2、aarch64、docker 20.10.17 |
+| 加速源（重装后仍生效） | UCI `registry_mirrors` 两条；**`/etc/docker/daemon.json` 不存在**，真生效的是 `--config-file=/tmp/dockerd/daemon.json` |
+| registry 可达性 | 三个镜像源全 `401`（无凭据本就 401 = 通）、`apps-assets.fit2cloud.com` `200` |
+| 面板 | `v1.10.34-lts`、10090、**安全入口码重装后会换**、`installed_app_dirs=0` |
+| 方案 A 前提复核 | 面板二进制里 `docker-compose` 字样 **60 处** → 确实调外部可执行文件 |
+
+**结论：清空 + 重装 1Panel + 重启都没伤到这套装置**（装置在 overlay 上，与 `1panel.bak-*` 归档无关）。
+
+**顺带修掉一处真实覆盖度漏洞**：PC 驱动 `PAYLOAD_FILES` 漏了 `fixtures/compose.crlf.yml`
+→ 设备端 CRLF 回归用例会**静默跳过**，汇总照样显示 "全过"（正是 §九·补那类「样本没覆盖真实形态」的同型错误）。
+已补进清单（读它用 `newline="\n"` 不做换行翻译，CRLF 原样保留），并让自测在样本缺失时打印
+`SKIP …（覆盖度下降，非失败）`，不再无声略过。修完 PASS 从浮动的 45~59 变为稳定的 **59**。
+
+**复验后仍未做**：原 4 个应用（alist / siyuan / ai-gateway / deepseek-harness）的容器与镜像**未重建**
+—— 等你决定「面板里重装应用」还是「搬回旧环境」（`1panel.bak-20260919_203034` / `…_204243`）。
+注意 `deepseek-harness` 在 1 GB 机器上有全局 OOM 前科（见 §十一），不建议在这台机上重跑。
+
 
 

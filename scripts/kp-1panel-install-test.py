@@ -19,7 +19,7 @@ compose 模板**一律**引用外部 bridge 网络 1panel-network + ports:，所
 
 凭据：只从环境变量或本地凭据文件读，**绝不落盘、绝不进报告**。
     环境变量优先：ROUTER_HOST / ROUTER_USER / ROUTER_PW
-    凭据文件默认：%USERPROFILE%\\.workbuddy\\kunpeng-router.env（KEY=VALUE 一行一条）
+    凭据文件默认：C:\\Users\\91005\\.workbuddy\\kunpeng-router.env（KEY=VALUE 一行一条）
 
 阶段：probe pull control hostnet-install hostnet-restore install panel panelcheck verify uninstall
 """
@@ -39,11 +39,11 @@ import zipfile
 
 # ---------------------------------------------------------------- 常量
 
-CRED_FILE = r"%USERPROFILE%\.workbuddy\kunpeng-router.env"
-SKILL_DIR = r"%USERPROFILE%\.workbuddy\skills\kunpeng-router-tuning"
+CRED_FILE = r"C:\Users\91005\.workbuddy\kunpeng-router.env"
+SKILL_DIR = r"C:\Users\91005\.workbuddy\skills\kunpeng-router-tuning"
 SCRIPTS_DIR = os.path.join(SKILL_DIR, "scripts")
 PAYLOAD_DIR = os.path.join(SCRIPTS_DIR, "payload")
-OUT_ROOT = r"%USERPROFILE%\WorkBuddy\2026-09-19-02-21-37\1panel-install-test"
+OUT_ROOT = r"C:\Users\91005\WorkBuddy\2026-09-19-02-21-37\1panel-install-test"
 
 STORE_INDEX = "https://apps-assets.fit2cloud.com/stable/1panel.json.zip"
 REMOTE_WORK = "/tmp/kp1pt"
@@ -60,7 +60,11 @@ PAYLOAD_FILES = [
     "fixtures/compose.store2sp.yml",
     "fixtures/compose.panel4sp.yml",
     "fixtures/compose.weird3sp.yml",
+    "fixtures/compose.crlf.yml",
 ]
+# ⚠️ compose.crlf.yml 必须一起推：读它时用的是 newline="\\n"（不做换行翻译），
+#    CRLF 会被原样保留；少了它，设备端 CRLF 那条回归用例会**静默跳过**，
+#    表面"全过"其实没覆盖 —— 这正是 2026-09-19 真机事故的同型错误（样本没覆盖真实形态）。
 # 需要先 mkdir 的远端子目录（按 PAYLOAD_FILES 里的目录部分自动推）
 PAYLOAD_SUBDIRS = ["fixtures"]
 

@@ -12,7 +12,7 @@ source: kunpeng-router-tuning
 
 状态：**已部署可用**。入口 `/cgi-bin/luci/nradioadv/system/dockerpanel`
 文件：`/usr/sbin/dpctl`、`/usr/lib/lua/dpapi.lua`、`controller/nradio_adv/dockerpanel.lua`、`view/nradio_dockerpanel/dockerpanel.htm`
-本地副本：`%USERPROFILE%\Desktop\鲲鹏无限路由器美化\patches\dockerpanel\`
+本地副本：`C:\Users\91005\Desktop\鲲鹏无限路由器美化\patches\dockerpanel\`
 
 > **⚡ 最重要的性能结论（2026-09-11）**：**别用 `docker` CLI 读数据**。
 > 在本机实测 CLI 每条命令冷态 4-9 秒，而用 Lua `socket.unix` 直连 Docker HTTP API 只要 **0.03-0.3 秒**，

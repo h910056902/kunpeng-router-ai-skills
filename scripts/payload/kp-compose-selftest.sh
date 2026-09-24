@@ -84,10 +84,14 @@ main() {
   # 样本 3：3 空格（模拟第三方主题/手改）
   if [ -f "$FIX/compose.weird3sp.yml" ]; then
     case_convert "weird-3sp（非 2/4 幂缩进）" "$FIX/compose.weird3sp.yml"
+  else
+    say "SKIP weird-3sp：样本缺失 $FIX/compose.weird3sp.yml（覆盖度下降，非失败）"
   fi
   # 样本 4：CRLF 行尾（Windows 编辑过的 compose）
   if [ -f "$FIX/compose.crlf.yml" ]; then
     case_convert "crlf（CRLF 行尾）" "$FIX/compose.crlf.yml"
+  else
+    say "SKIP crlf：样本缺失 $FIX/compose.crlf.yml（覆盖度下降，非失败）"
   fi
 
   # 已是 host 的文件：--check 必须 rc=1（不能被当成"需要转换"）

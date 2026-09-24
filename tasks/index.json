@@ -1,6 +1,6 @@
 {
   "schema": "kunpeng-router-tasks/1",
-  "updated": "2026-09-19",
+  "updated": "2026-09-24",
   "repo": "kunpeng-router-ai-skills",
   "entrypoint": "AGENTS.md",
   "index": "tasks/index.json",
@@ -93,7 +93,7 @@
       "playbook": "tasks/02-ocspeed-install.md",
       "refs": ["references/c2000u-openclash.md", "references/one-command-restore.md"],
       "scripts": ["scripts/rtr_lib.py", "scripts/revtunnel_put.py"],
-      "offline": ["offline/ocspeed/speedswitch.sh", "offline/ocspeed/ocspeed.lua", "offline/ocspeed/ocspeed.htm", "offline/ocspeed/nodetest.htm", "offline/ocspeed/config.ocspeed", "offline/ocspeed/kp-ocspeed.sh"],
+      "offline": ["offline/ocspeed/speedswitch.sh", "offline/ocspeed/ocspeed.lua", "offline/ocspeed/ocspeed.htm", "offline/ocspeed/nodetest.htm", "offline/ocspeed/config.ocspeed", "offline/ocspeed/kp-ocspeed.sh", "offline/ocspeed/luci-app-ocspeed_3.5-1_all.ipk"],
       "preconditions": [
         "OpenClash 已装且 /etc/init.d/openclash 可执行（ocspeed 是它的附属插件）",
         "已有一个可用的策略组名（订阅里的组名，默认示例为「宝贝云」），否则装完没有可切目标"

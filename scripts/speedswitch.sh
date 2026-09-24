@@ -23,7 +23,7 @@
 _OC_PORT=$(uci -q get openclash.config.cn_port 2>/dev/null)
 [ -z "$_OC_PORT" ] && _OC_PORT=9090
 _OC_SECRET=$(uci -q get openclash.config.dashboard_password 2>/dev/null)
-[ -z "$_OC_SECRET" ] && _OC_SECRET=<你的Clash面板密码>
+[ -z "$_OC_SECRET" ] && _OC_SECRET=7LHZ3l74
 API=http://127.0.0.1:$_OC_PORT
 SECRET=$_OC_SECRET
 DIR=/tmp/ocspeed

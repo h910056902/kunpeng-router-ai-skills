@@ -269,7 +269,7 @@ Error: Command blocked for security: cmd.exe %VAR% environment variable syntax i
 ```js
 // kp_unit_test.js 骨架
 const { execFileSync } = require('child_process');
-const BASH = '%USERPROFILE%\\.workbuddy\\binaries\\PortableGit\\versions\\1.2.0\\bin\\bash.exe';
+const BASH = 'C:\\Users\\91005\\.workbuddy\\binaries\\PortableGit\\versions\\1.2.0\\bin\\bash.exe';
 const src  = require('fs').readFileSync(SCRIPT, 'utf8');
 
 // 从源码里按大括号配平抽出函数体（保证测的是同一份代码，不是复制粘贴的副本）

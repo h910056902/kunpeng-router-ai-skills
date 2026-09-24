@@ -3,72 +3,102 @@
 <div class="ocspeed-body">
 <style>
 /* ==========================================================================
-   Modern Network Control Dashboard - Clean Engineering Aesthetic (No AI Slop)
-   ========================================================================== */
-/* ==========================================================================
-   设计令牌 —— Linear 深色精密风（dark-mode-native）
-   固件外壳本来就是深色（nradio 主题 body #111111），这里把页面做成同一介质，
-   而不是在深色壳里贴白卡片。三个来源：
-     · 层次    —— 不用阴影，用「白色不透明度台阶」表达高度（0.02 → 0.03 → 0.05）
-     · 分隔    —— 一律半透明白发丝线，禁用实心深色描边（深色底上看不见）
-     · 强调色  —— 收敛到固件主题的青 #00D5FF 一族（换成品红/靛蓝会跟外壳打架）
-   令牌挂在 .ocspeed-body 上而不是 :root —— 避免污染外层 LuCI 框架的配色。
+   设计令牌 —— OpenClash 原生配色（对齐 openclash 的 oc.css 令牌表）
+   卡片白 / 灰蓝文本 / 主蓝 #3b82f6 / 成功 #059669 / 错误 #dc2626
+   浅色默认；暗色跟随 OpenClash 的开关（html[data-darkmode="true]）。
    ========================================================================== */
 .ocspeed-body {
-  --bg-canvas: transparent;              /* 透出外壳的 #111111，页面无缝嵌入 */
-  --bg-solid: #16171a;                   /* 需要不透明的极少数场景（遮住下方线条） */
-  --bg-card: rgba(255, 255, 255, 0.02);
-  --bg-subtle: rgba(255, 255, 255, 0.03);
-  --bg-muted: rgba(255, 255, 255, 0.05);
-  --bg-hover: rgba(255, 255, 255, 0.07);
-  --bg-inset: rgba(0, 0, 0, 0.28);
+  --bg-canvas: transparent;              /* 透出 argon 外壳背景 */
+  --bg-solid: #ffffff;
+  --bg-card: #ffffff;                    /* oc --bg-white */
+  --bg-subtle: #f8fafc;                  /* oc --bg-light */
+  --bg-muted: #f1f5f9;                   /* oc --bg-gray */
+  --bg-hover: #f3f4f6;                   /* oc --hover-bg */
+  --bg-inset: #f9fafb;
 
-  --border-light: rgba(255, 255, 255, 0.08);
-  --border-subtle: rgba(255, 255, 255, 0.05);
-  --border-strong: rgba(255, 255, 255, 0.14);
-  --border-focus: #00d5ff;
+  --border-light: var(--border-light);               /* oc --border-light */
+  --border-subtle: #e5e7eb;
+  --border-strong: #d1d5db;
+  --border-focus: #3b82f6;
 
-  --text-main: #f7f8f8;                  /* 不用纯白，减轻深色底上的眼疲劳 */
-  --text-body: #d0d6e0;
-  --text-muted: #8a8f98;
-  --text-sub: #62666d;
+  --text-main: #1f2937;
+  --text-body: #374151;                  /* oc --text-primary */
+  --text-muted: #6b7280;
+  --text-sub: #9ca3af;
 
-  --brand-primary: #00d5ff;
-  --brand-hover: #6ee3ff;
-  --brand-active: #00aeff;
-  --brand-light: rgba(0, 213, 255, 0.10);
-  --brand-ring: rgba(0, 213, 255, 0.22);
-  --on-brand: #04222b;                   /* 高亮底上的文字用近黑，不用纯白 */
+  --brand-primary: #3b82f6;              /* oc --primary-color */
+  --brand-hover: #2563eb;                /* oc --btn-primary-hover */
+  --brand-active: #2563eb;
+  --brand-light: rgba(59, 130, 246, 0.1);   /* oc --primary-a10 */
+  --brand-ring: rgba(59, 130, 246, 0.28);
+  --on-brand: #ffffff;                   /* oc --text-on-primary */
 
-  --status-ok: #10b981;
-  --status-ok-bg: rgba(16, 185, 129, 0.10);
-  --status-ok-border: rgba(16, 185, 129, 0.28);
+  --status-ok: #059669;                  /* oc --success-color */
+  --status-ok-bg: rgba(5, 150, 105, 0.1);
+  --status-ok-border: rgba(5, 150, 105, 0.28);
 
-  --status-warn: #f59e0b;
-  --status-warn-bg: rgba(245, 158, 11, 0.10);
-  --status-warn-border: rgba(245, 158, 11, 0.28);
+  --status-warn: var(--status-warn);                /* oc --tip-color */
+  --status-warn-bg: var(--status-warn-bg);
+  --status-warn-border: var(--status-warn-border);
 
-  --status-bad: #f87171;
-  --status-bad-bg: rgba(248, 113, 113, 0.10);
-  --status-bad-border: rgba(248, 113, 113, 0.28);
+  --status-bad: #dc2626;                 /* oc --error-color */
+  --status-bad-bg: rgba(220, 38, 38, 0.1);
+  --status-bad-border: rgba(220, 38, 38, 0.28);
 
-  /* 深色底上阴影几乎不可见 → 主要靠亮度台阶，阴影只留极轻的一层垫底 */
-  --shadow-sm: none;
-  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.35);
-  --radius-sm: 4px;
-  --radius-md: 8px;
-  --radius-lg: 12px;
+  /* 分档/图例辅助色 —— 与 oc.css 的类目色同源 */
+  --magenta: #b53cf1;      --magenta-a15: rgba(181, 60, 241, 0.15);   --magenta-bright: #ff00bb;
+  --violet: #7c3aed;
+  --indigo: #667eea;
+  --teal: #25b5b8;
+  --coral: #f5576c;
+  --orange: #ff6b00;
 
-  --font-ui: Inter, "Inter Variable", -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
+  --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
+  --shadow-card: 0 1px 2px 0 rgba(0, 0, 0, 0.05);   /* oc --shadow-sm */
+  --radius-sm: 6px;                        /* oc --radius-sm */
+  --radius-md: 6px;
+  --radius-lg: 8px;                        /* oc --radius-lg */
+
+  --font-ui: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial, "PingFang SC", "Microsoft YaHei", sans-serif;
   --font-mono: ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas, "JetBrains Mono", monospace;
+}
+
+/* 暗色：与 oc.css 的 html[data-darkmode=true] 表完全一致；argon 不设该开关时自动不生效 */
+html[data-darkmode="true"] .ocspeed-body {
+  --bg-solid: #1f2937;
+  --bg-card: #1f2937;
+  --bg-subtle: #374151;
+  --bg-muted: #4b5563;
+  --bg-hover: #374151;
+  --bg-inset: #1f2937;
+  --border-light: #6b7280;
+  --border-subtle: #4b5563;
+  --border-strong: #939393;
+  --text-main: #e5e7eb;
+  --text-body: #ebebeb;
+  --text-muted: #d1d5db;
+  --text-sub: #9ca3af;
+  --brand-light: rgba(96, 165, 250, 0.1);
+  --brand-ring: rgba(96, 165, 250, 0.3);
+  --on-brand: #ffffff;
+  --status-ok: #34d399;
+  --status-ok-bg: rgba(52, 211, 153, 0.1);
+  --status-ok-border: rgba(52, 211, 153, 0.4);
+  --status-warn: #f9bb51;
+  --status-warn-bg: rgba(249, 187, 81, 0.1);
+  --status-warn-border: rgba(249, 187, 81, 0.3);
+  --status-bad: #ff7070;
+  --status-bad-bg: rgba(255, 112, 112, 0.1);
+  --status-bad-border: rgba(255, 112, 112, 0.3);
+  --shadow-card: 0 1px 2px 0 rgba(0, 0, 0, 0.35);
 }
 
 .ocspeed-body {
   background: var(--bg-canvas);
   color: var(--text-body);
   font-family: var(--font-ui);
-  /* cv01 / ss03 是 Inter 的几何替代字形 —— Linear 的字体身份就靠它 */
-  font-feature-settings: "cv01", "ss03";
+  /* 系统字体栈，与 LuCI 外壳一致 */
+  font-feature-settings: normal;
   padding: 16px 20px;
   max-width: 1160px;
   margin: 0 auto;
@@ -128,7 +158,7 @@
   font-weight: 500;
   color: var(--brand-primary);
   background: var(--brand-light);
-  border: 1px solid rgba(0, 213, 255, 0.25);
+  border: 1px solid var(--brand-ring);
   padding: 1px 7px;
   border-radius: 999px;
   letter-spacing: 0;
@@ -193,7 +223,7 @@
 
 .ocspeed-body .pill.run .dot {
   background: var(--status-ok);
-  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.22);
+  box-shadow: 0 0 0 3px rgba(5, 150, 105, 0.2);
 }
 
 /* 现代化开关 Toggle Switch */
@@ -216,7 +246,7 @@
   position: relative;
   width: 32px;
   height: 18px;
-  background: rgba(255, 255, 255, 0.12);
+  background: #e5e7eb;
   border-radius: 999px;
   transition: background 0.2s ease;
   display: inline-block;
@@ -230,9 +260,9 @@
   left: 2px;
   width: 14px;
   height: 14px;
-  background: #eceef1;
+  background: var(--bg-muted);
   border-radius: 50%;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.45);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
   transition: transform 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
@@ -303,7 +333,7 @@
 /* 主卡：左侧一道 2px 强调线 + 极轻的顶部青色渐变，表示"这是当前生效的" */
 .ocspeed-body .card.p0 {
   border-left: 2px solid var(--brand-primary);
-  background: linear-gradient(180deg, rgba(0, 213, 255, 0.055) 0%, rgba(255, 255, 255, 0.02) 100%);
+  background: linear-gradient(180deg, var(--brand-light) 0%, var(--bg-card) 100%);
 }
 
 .ocspeed-body .card .k {
@@ -388,8 +418,8 @@
   animation: cardFlash 0.6s ease-out;
 }
 @keyframes cardFlash {
-  0% { background: rgba(16, 185, 129, 0.14); }
-  100% { background: rgba(255, 255, 255, 0.02); }
+  0% { background: rgba(5, 150, 105, 0.14); }
+  100% { background: var(--bg-card); }
 }
 
 /* 备用节点卡 */
@@ -459,7 +489,7 @@
 }
 
 .ocspeed-body .bk-item.r2 i, .ocspeed-body .bk-item.r3 i {
-  background: rgba(255, 255, 255, 0.16);
+  background: #94a3b8;
   color: var(--text-body);
 }
 
@@ -548,7 +578,7 @@
   border: 1px solid var(--brand-primary);
   color: var(--on-brand);
   font-weight: 600;
-  box-shadow: 0 0 0 1px rgba(0, 213, 255, 0.18), 0 2px 8px rgba(0, 213, 255, 0.18);
+  box-shadow: 0 0 0 1px var(--brand-ring), 0 2px 8px var(--brand-ring);
 }
 
 .ocspeed-body button.primary:hover {
@@ -680,7 +710,7 @@
 }
 
 .ocspeed-body .node-row:hover td {
-  background: rgba(0, 213, 255, 0.055);
+  background: var(--brand-light);
 }
 
 .ocspeed-body .node-row.junk {
@@ -745,23 +775,23 @@
 .ocspeed-body .chip.ln,
 .ocspeed-body .chip.rg-xx,
 .ocspeed-body .chip.mul {
-  background: rgba(255, 255, 255, 0.06);
-  color: #b6bcc6;
-  border-color: rgba(255, 255, 255, 0.10);
+  background: var(--bg-muted);
+  color: var(--text-sub);
+  border-color: var(--border-strong);
 }
-.ocspeed-body .chip.rg-sg { background: rgba(16, 185, 129, 0.14);  color: #6ee7b7; border-color: rgba(16, 185, 129, 0.28); }
-.ocspeed-body .chip.rg-jp { background: rgba(244, 114, 182, 0.14); color: #f9a8d4; border-color: rgba(244, 114, 182, 0.28); }
-.ocspeed-body .chip.rg-us { background: rgba(129, 140, 248, 0.14); color: #a5b4fc; border-color: rgba(129, 140, 248, 0.28); }
+.ocspeed-body .chip.rg-sg { background: rgba(5, 150, 105, 0.14);  color: var(--status-ok); border-color: var(--status-ok-border); }
+.ocspeed-body .chip.rg-jp { background: var(--magenta-a15); color: var(--magenta); border-color: rgba(181, 60, 241, 0.3); }
+.ocspeed-body .chip.rg-us { background: rgba(102, 126, 234, 0.15); color: var(--indigo); border-color: rgba(102, 126, 234, 0.3); }
 .ocspeed-body .chip.rg-hk,
-.ocspeed-body .chip.rg-tw { background: rgba(245, 158, 11, 0.14);  color: #fcd34d; border-color: rgba(245, 158, 11, 0.28); }
-.ocspeed-body .chip.rg-kr { background: rgba(56, 189, 248, 0.14);  color: #7dd3fc; border-color: rgba(56, 189, 248, 0.28); }
-.ocspeed-body .chip.rg-ru { background: rgba(248, 113, 113, 0.14); color: #fca5a5; border-color: rgba(248, 113, 113, 0.28); }
-.ocspeed-body .chip.rg-eu { background: rgba(45, 212, 191, 0.14);  color: #5eead4; border-color: rgba(45, 212, 191, 0.28); }
-.ocspeed-body .chip.rg-cn { background: rgba(251, 113, 133, 0.14); color: #fda4af; border-color: rgba(251, 113, 133, 0.28); }
-.ocspeed-body .chip.relay  { background: rgba(251, 146, 60, 0.14);  color: #fdba74; border-color: rgba(251, 146, 60, 0.28); }
-.ocspeed-body .chip.direct { background: rgba(34, 197, 94, 0.14);   color: #86efac; border-color: rgba(34, 197, 94, 0.28); }
-.ocspeed-body .chip.media  { background: rgba(192, 132, 252, 0.14); color: #d8b4fe; border-color: rgba(192, 132, 252, 0.28); }
-.ocspeed-body .chip.feat   { background: rgba(232, 121, 249, 0.14); color: #f0abfc; border-color: rgba(232, 121, 249, 0.28); }
+.ocspeed-body .chip.rg-tw { background: var(--status-warn-bg);  color: var(--status-warn); border-color: var(--status-warn-border); }
+.ocspeed-body .chip.rg-kr { background: rgba(59, 130, 246, 0.15);  color: var(--azure, var(--brand-primary)); border-color: rgba(59, 130, 246, 0.3); }
+.ocspeed-body .chip.rg-ru { background: var(--status-bad-bg); color: var(--status-bad); border-color: var(--status-bad-border); }
+.ocspeed-body .chip.rg-eu { background: rgba(45, 212, 191, 0.14);  color: var(--teal); border-color: rgba(45, 212, 191, 0.28); }
+.ocspeed-body .chip.rg-cn { background: rgba(251, 113, 133, 0.14); color: var(--coral); border-color: rgba(251, 113, 133, 0.28); }
+.ocspeed-body .chip.relay  { background: rgba(251, 146, 60, 0.14);  color: var(--orange); border-color: rgba(251, 146, 60, 0.28); }
+.ocspeed-body .chip.direct { background: rgba(34, 197, 94, 0.14);   color: var(--status-ok); border-color: rgba(34, 197, 94, 0.28); }
+.ocspeed-body .chip.media  { background: rgba(192, 132, 252, 0.14); color: var(--violet); border-color: rgba(192, 132, 252, 0.28); }
+.ocspeed-body .chip.feat   { background: rgba(232, 121, 249, 0.14); color: var(--magenta-bright); border-color: rgba(232, 121, 249, 0.28); }
 
 /* 搜索框 */
 .ocspeed-body .searchbox {
@@ -818,16 +848,16 @@
 .ocspeed-body .pb.done .pb-dot {
   background: var(--status-ok);
   animation: none;
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.55);
+  box-shadow: 0 0 8px rgba(5, 150, 105, 0.5);
 }
 .ocspeed-body .pb.stall .pb-dot {
   background: var(--status-warn);
   animation-duration: 3s;
 }
 @keyframes pbDotPulse {
-  0% { box-shadow: 0 0 0 0 rgba(0, 213, 255, 0.40); }
-  70% { box-shadow: 0 0 0 7px rgba(0, 213, 255, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(0, 213, 255, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.4); }
+  70% { box-shadow: 0 0 0 7px rgba(59, 130, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
 }
 
 .ocspeed-body .pb-spacer { flex: 1; }
@@ -851,19 +881,19 @@
 /* 轨道：10px + 内阴影；末端滑块圆点 */
 .ocspeed-body .pb-track {
   position: relative;
-  background: rgba(255, 255, 255, 0.06);
+  background: var(--bg-muted);
   border-radius: 999px;
   height: 8px;
   overflow: visible;
-  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.55);
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.08);
 }
 
 .ocspeed-body .pb-fill {
   height: 100%;
   width: 0;
   border-radius: 999px;
-  background: linear-gradient(90deg, #0091b3, var(--brand-primary) 60%, #7ae8ff);
-  box-shadow: 0 0 12px rgba(0, 213, 255, 0.40);
+  background: linear-gradient(90deg, #2563eb, var(--brand-primary) 60%, #60a5fa);
+  box-shadow: 0 0 12px rgba(59, 130, 246, 0.4);
 }
 
 .ocspeed-body #pbarKnob {
@@ -874,21 +904,21 @@
   width: 14px;
   height: 14px;
   border-radius: 50%;
-  background: #0b0c0e;
+  background: var(--bg-inset);
   border: 3px solid var(--brand-primary);
-  box-shadow: 0 0 10px rgba(0, 213, 255, 0.55);
+  box-shadow: 0 0 10px rgba(59, 130, 246, 0.45);
   box-sizing: border-box;
   z-index: 2;
 }
 
 .ocspeed-body .pb.done .pb-fill {
-  background: linear-gradient(90deg, #0d9668, var(--status-ok) 60%, #4ade80);
-  box-shadow: 0 0 12px rgba(16, 185, 129, 0.35);
+  background: linear-gradient(90deg, #047857, var(--status-ok) 60%, var(--status-ok));
+  box-shadow: 0 0 12px rgba(5, 150, 105, 0.25);
 }
 
 .ocspeed-body .pb.done #pbarKnob {
   border-color: var(--status-ok);
-  box-shadow: 0 0 10px rgba(16, 185, 129, 0.55);
+  box-shadow: 0 0 10px rgba(5, 150, 105, 0.5);
 }
 
 .ocspeed-body .pb.done .pb-pct {
@@ -971,9 +1001,9 @@
   animation: stPulse 1.6s ease-out infinite;
 }
 @keyframes stPulse {
-  0% { box-shadow: 0 0 0 0 rgba(0, 213, 255, 0.35); }
-  70% { box-shadow: 0 0 0 7px rgba(0, 213, 255, 0); }
-  100% { box-shadow: 0 0 0 0 rgba(0, 213, 255, 0); }
+  0% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0.35); }
+  70% { box-shadow: 0 0 0 7px rgba(59, 130, 246, 0); }
+  100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); }
 }
 
 /* 横幅 (Banners) */
@@ -992,25 +1022,25 @@
 .ocspeed-body .banner.ok {
   background: var(--status-ok-bg);
   border-color: var(--status-ok-border);
-  color: #6ee7b7;
+  color: var(--status-ok);
 }
 
 .ocspeed-body .banner.info {
   background: var(--brand-light);
-  border-color: rgba(0, 213, 255, 0.25);
+  border-color: var(--brand-ring);
   color: var(--brand-primary);
 }
 
 .ocspeed-body .banner.warn {
   background: var(--status-warn-bg);
   border-color: var(--status-warn-border);
-  color: #fcd34d;
+  color: var(--status-warn);
 }
 
 .ocspeed-body .banner.err {
   background: var(--status-bad-bg);
   border-color: var(--status-bad-border);
-  color: #fca5a5;
+  color: var(--status-bad);
 }
 
 .ocspeed-body .banner .bsub {
@@ -1155,19 +1185,19 @@
 
 /* 终端/日志 (Console Log) */
 .ocspeed-body pre {
-  background: #08090a;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: var(--bg-inset);
+  border: 1px solid var(--bg-muted);
   border-radius: var(--radius-md);
   padding: 12px 14px;
   font-size: 11.5px;
   font-family: var(--font-mono);
-  color: #b6bcc6;
+  color: var(--text-sub);
   max-height: 280px;
   overflow: auto;
   white-space: pre-wrap;
   word-break: break-all;
   line-height: 1.65;
-  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.4);
+  box-shadow: inset 0 1px 0 rgba(0, 0, 0, 0.06);
 }
 
 .ocspeed-body pre::-webkit-scrollbar {
@@ -1175,7 +1205,7 @@
   height: 6px;
 }
 .ocspeed-body pre::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.14);
+  background: #cbd5e1;
   border-radius: 999px;
 }
 .ocspeed-body pre::-webkit-scrollbar-track {
@@ -1199,11 +1229,11 @@
   margin-right: 4px;
   vertical-align: middle;
 }
-.ocspeed-body .lgd i.g { background: #10b981; }
-.ocspeed-body .lgd i.y { background: #f59e0b; }
-.ocspeed-body .lgd i.r { background: #f87171; }
-.ocspeed-body .lgd i.c { background: #00d5ff; }
-.ocspeed-body .lgd i.v { background: #a855f7; }
+.ocspeed-body .lgd i.g { background: var(--status-ok); }
+.ocspeed-body .lgd i.y { background: var(--status-warn); }
+.ocspeed-body .lgd i.r { background: var(--status-bad); }
+.ocspeed-body .lgd i.c { background: var(--brand-primary); }
+.ocspeed-body .lgd i.v { background: var(--violet); }
 
 .ocspeed-body .empty {
   padding: 32px 16px;
@@ -1301,12 +1331,12 @@
   padding: 8px 10px;
   border-radius: 8px;
   background: rgba(15, 23, 42, 0.93);
-  color: #e2e8f0;
+  color: var(--border-light);
   font-size: 11px;
   line-height: 1.6;
   white-space: nowrap;
   pointer-events: none;
-  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.22);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
   transform: translate(-50%, -100%);
 }
 .ocspeed-body .chart-tip .tip-t {
@@ -1366,8 +1396,8 @@
   animation: cardPulse 1.6s ease-in-out infinite;
 }
 @keyframes cardPulse {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(0, 213, 255, 0); border-color: var(--border-light); }
-  50% { box-shadow: 0 0 0 4px rgba(0, 213, 255, 0.10); border-color: rgba(0, 213, 255, 0.35); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(59, 130, 246, 0); border-color: var(--border-light); }
+  50% { box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); border-color: rgba(59, 130, 246, 0.35); }
 }
 
 /* ========== 数字滚动容器 ========== */
@@ -1406,8 +1436,8 @@
   animation: breathe 2s ease-in-out infinite;
 }
 @keyframes breathe {
-  0%, 100% { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.18); }
-  50% { box-shadow: 0 0 0 5px rgba(16, 185, 129, 0); }
+  0%, 100% { box-shadow: 0 0 0 0 rgba(5, 150, 105, 0.18); }
+  50% { box-shadow: 0 0 0 5px rgba(5, 150, 105, 0); }
 }
 
 /* ========== 切换过渡色 ========== */
@@ -1466,12 +1496,12 @@
 .ocspeed-body details.cfg {
   border-radius: var(--radius-lg);
   padding: 20px;
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.028) 0%, rgba(255, 255, 255, 0.015) 100%);
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
+  background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-card) 100%);
+  box-shadow: inset 0 1px 0 var(--bg-subtle);
 }
 .ocspeed-body .chart-wrap {
   border-radius: var(--radius-lg);
-  background: linear-gradient(180deg, rgba(255, 255, 255, 0.028) 0%, rgba(255, 255, 255, 0.015) 100%);
+  background: linear-gradient(180deg, var(--bg-card) 0%, var(--bg-card) 100%);
 }
 
 /* 面板标题：字重降到 600 以内，字距收紧，和 Linear 的 Heading 3 一致 */
@@ -1496,17 +1526,17 @@
 }
 .ocspeed-body .tw::-webkit-scrollbar-thumb,
 .ocspeed-body .tw.scroll::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.12);
+  background: #e5e7eb;
   border-radius: 999px;
 }
 .ocspeed-body .tw::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.20);
+  background: #d1d5db;
 }
 .ocspeed-body .tw::-webkit-scrollbar-track {
   background: transparent;
 }
 .ocspeed-body .tw.scroll thead th {
-  background: #16171a;      /* 吸顶表头必须不透明，否则滚动时内容会透过去 */
+  background: var(--bg-card);      /* 吸顶表头必须不透明，否则滚动时内容会透过去 */
   box-shadow: 0 1px 0 var(--border-light);
 }
 
@@ -1556,12 +1586,12 @@
 .ocspeed-body .searchbox input:focus {
   border-color: var(--brand-primary);
   box-shadow: 0 0 0 3px var(--brand-ring);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--bg-subtle);
 }
 .ocspeed-body .form input,
 .ocspeed-body .form textarea,
 .ocspeed-body .searchbox input {
-  background: rgba(255, 255, 255, 0.02);
+  background: var(--bg-card);
   border-color: var(--border-light);
   border-radius: 6px;
 }
@@ -1583,8 +1613,8 @@
 
 /* 选中文字用青色，而不是浏览器默认的蓝 */
 .ocspeed-body ::selection {
-  background: rgba(0, 213, 255, 0.26);
-  color: #f7f8f8;
+  background: rgba(59, 130, 246, 0.12);
+  color: var(--text-main);
 }
 
 /* 键盘可达性：统一焦点圈（深色底上默认 outline 几乎看不见） */
@@ -1667,8 +1697,8 @@
 }
 
 /* 分类色只落在 2px 左边线上 —— 整块铺色会把几个 chip 变成彩色积木 */
-.ocspeed-body .catbest .cb.c-video { border-left-color: #f472b6; }
-.ocspeed-body .catbest .cb.c-media { border-left-color: #a78bfa; }
+.ocspeed-body .catbest .cb.c-video { border-left-color: var(--magenta); }
+.ocspeed-body .catbest .cb.c-media { border-left-color: var(--violet); }
 .ocspeed-body .catbest .cb.c-ai    { border-left-color: var(--brand-primary); }
 .ocspeed-body .catbest .cb.c-other { border-left-color: var(--text-sub); }
 
@@ -1694,8 +1724,8 @@
   color: var(--text-sub);
 }
 
-.ocspeed-body table.sites thead tr.catrow th.cbth.c-video { border-bottom-color: #f472b6; }
-.ocspeed-body table.sites thead tr.catrow th.cbth.c-media { border-bottom-color: #a78bfa; }
+.ocspeed-body table.sites thead tr.catrow th.cbth.c-video { border-bottom-color: var(--magenta); }
+.ocspeed-body table.sites thead tr.catrow th.cbth.c-media { border-bottom-color: var(--violet); }
 .ocspeed-body table.sites thead tr.catrow th.cbth.c-ai    { border-bottom-color: var(--brand-primary); }
 .ocspeed-body table.sites thead tr.catrow th.cbth.c-other { border-bottom-color: var(--text-sub); }
 
@@ -1716,10 +1746,10 @@
   padding-right: 14px;
 }
 
-.ocspeed-body table.sites tbody td.h4 { background: rgba(16, 185, 129, 0.16); }
-.ocspeed-body table.sites tbody td.h3 { background: rgba(16, 185, 129, 0.07); }
-.ocspeed-body table.sites tbody td.h2 { background: rgba(245, 158, 11, 0.11); }
-.ocspeed-body table.sites tbody td.h1 { background: rgba(248, 113, 113, 0.13); }
+.ocspeed-body table.sites tbody td.h4 { background: rgba(5, 150, 105, 0.14); }
+.ocspeed-body table.sites tbody td.h3 { background: rgba(5, 150, 105, 0.06); }
+.ocspeed-body table.sites tbody td.h2 { background: rgba(245, 158, 11, 0.12); }
+.ocspeed-body table.sites tbody td.h1 { background: var(--status-bad-bg); }
 .ocspeed-body table.sites tbody td.h0 { background: transparent; }
 
 /* 每列最快：右上角一个小点，不抢数字的注意力 */
@@ -1737,7 +1767,7 @@
   height: 5px;
   border-radius: 50%;
   background: var(--status-ok);
-  box-shadow: 0 0 6px rgba(16, 185, 129, 0.6);
+  box-shadow: 0 0 6px rgba(5, 150, 105, 0.4);
 }
 
 /* ---- 综合列（各站中位数） ---- */
@@ -1746,7 +1776,7 @@
   border-left: 1px solid var(--border-light);
   color: var(--text-main);
   font-weight: 600;
-  background: rgba(255, 255, 255, 0.015);
+  background: var(--bg-card);
 }
 
 .ocspeed-body table.sites td.agg .u {
@@ -1822,63 +1852,6 @@
 }
 
 
-/* ==========================================================================
-   v1.0 · Apple Pro 覆写层 —— 纯黑舞台 / SF Pro / 18px 大圆角 / 胶囊按钮
-   只覆写不删除：下层 Linear 规则全部保留，任何遗漏选择器都有兜底
-   ========================================================================== */
-.ocspeed-body{
-  --bg-canvas:#000000; --bg-solid:#161617;
-  --bg-card:#1c1c1e; --bg-subtle:#1c1c1e;
-  --bg-muted:rgba(255,255,255,0.06); --bg-hover:rgba(255,255,255,0.09);
-  --bg-inset:#0b0b0c;
-  --border-light:rgba(255,255,255,0.08); --border-subtle:rgba(255,255,255,0.05); --border-strong:rgba(255,255,255,0.14);
-  --border-focus:#2997ff;
-  --text-main:#f5f5f7; --text-body:#d6d6d9; --text-muted:#86868b; --text-sub:#6e6e73;
-  --brand-primary:#2997ff; --brand-hover:#5aa9ff; --brand-active:#0a84ff;
-  --brand-light:rgba(41,151,255,0.14); --brand-ring:rgba(41,151,255,0.30); --on-brand:#06283d;
-  --status-ok:#30d158; --status-ok-bg:rgba(48,213,88,0.12); --status-ok-border:rgba(48,213,88,0.30);
-  --status-warn:#ff9f0a; --status-warn-bg:rgba(255,159,10,0.12); --status-warn-border:rgba(255,159,10,0.30);
-  --status-bad:#ff453a; --status-bad-bg:rgba(255,69,58,0.12); --status-bad-border:rgba(255,69,58,0.30);
-  --radius-sm:7px; --radius-md:12px; --radius-lg:18px;
-  --font-ui:"SF Pro Display","SF Pro Text",-apple-system,BlinkMacSystemFont,"PingFang SC","Microsoft YaHei","Segoe UI",Roboto,sans-serif;
-}
-.ocspeed-body{background:#000;font-feature-settings:normal;padding:24px 24px 56px}
-.ocspeed-body h1{font-size:28px;font-weight:700;letter-spacing:-0.02em}
-.ocspeed-body .ver{background:var(--brand-light);border:1px solid transparent;color:var(--brand-primary)}
-.ocspeed-body .live{background:var(--bg-card)}
-.ocspeed-body .pill{background:var(--bg-card)}
-.ocspeed-body .card{background:var(--bg-card);border:1px solid transparent;border-radius:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04);transition:background .18s,transform .18s}
-.ocspeed-body .card:hover{background:#232327;transform:translateY(-2px)}
-.ocspeed-body .card .big{font-size:38px;font-weight:700;letter-spacing:-0.02em}
-.ocspeed-body .card.p0{position:relative;overflow:hidden}
-.ocspeed-body .card.p0::before{content:"";position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--brand-primary),transparent);box-shadow:0 0 14px rgba(41,151,255,.45)}
-.ocspeed-body .panel{background:var(--bg-card);border-radius:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.03)}
-.ocspeed-body .ph b{font-size:17px;font-weight:600;letter-spacing:-0.01em;color:var(--text-main)}
-.ocspeed-body button{font-family:var(--font-ui);border-radius:980px}
-.ocspeed-body button.primary{background:#0071e3;border:1px solid transparent;box-shadow:none}
-.ocspeed-body button.primary:hover{background:#1482ee}
-.ocspeed-body button.mini{border-radius:980px}
-.ocspeed-body .fbtn{border-radius:980px}
-.ocspeed-body .tw{border-radius:12px}
-.ocspeed-body .tw table{background:transparent}
-.ocspeed-body .tw thead th{font-size:11px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--text-muted)}
-.ocspeed-body .tw tbody tr{transition:background .15s}
-.ocspeed-body .tw tbody tr:hover{background:rgba(255,255,255,0.04)}
-.ocspeed-body .searchbox input{background:var(--bg-inset);border-radius:980px;border:1px solid var(--border-light)}
-.ocspeed-body .searchbox input:focus{border-color:var(--brand-primary);box-shadow:0 0 0 3px var(--brand-ring)}
-.ocspeed-body .pb{background:var(--bg-card);border-radius:18px;box-shadow:inset 0 1px 0 rgba(255,255,255,0.04)}
-.ocspeed-body .pb-fill{background:linear-gradient(90deg,#0071e3,#2997ff 60%,#64d2ff)}
-.ocspeed-body .pb.done .pb-fill{background:var(--status-ok)}
-.ocspeed-body .pb-stages{display:flex;flex-wrap:wrap;gap:8px}
-.ocspeed-body .pb-stages .st{display:inline-flex;align-items:center;gap:6px;padding:4px 14px;border-radius:980px;border:1px solid var(--border-light);font-size:12px;font-weight:500;color:var(--text-sub);background:transparent;flex:none}
-.ocspeed-body .pb-stages .st::before,.ocspeed-body .pb-stages .st::after{display:none}
-.ocspeed-body .pb-stages .st.done{color:var(--status-ok);border-color:var(--status-ok-border);background:var(--status-ok-bg)}
-.ocspeed-body .pb-stages .st.active{color:var(--brand-primary);border-color:var(--brand-ring);background:var(--brand-light);font-weight:600}
-.ocspeed-body .banner{border-radius:var(--radius-md)}
-.ocspeed-body .bk-item{border-radius:14px}
-.ocspeed-body details.cfg{background:var(--bg-card);border-radius:18px}
-.ocspeed-body #logbox{background:var(--bg-inset);border-radius:12px}
-.ocspeed-body button:focus-visible,.ocspeed-body a:focus-visible,.ocspeed-body summary:focus-visible,.ocspeed-body input:focus-visible{outline:2px solid var(--brand-primary);outline-offset:2px}
 @media (prefers-reduced-motion: reduce){.ocspeed-body *,.ocspeed-body *::before,.ocspeed-body *::after{animation-duration:.001ms !important;transition-duration:.001ms !important}}
 </style>
 
