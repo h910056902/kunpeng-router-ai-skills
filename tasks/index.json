@@ -744,7 +744,7 @@
       "risk": "write",
       "playbook": "tasks/05-nros-plugin-installer.md",
       "refs": ["references/maye-assistant.md"],
-      "scripts": ["scripts/adapt_maye_assistant.py", "scripts/maye_trim/trim_maye.py"],
+      "scripts": ["scripts/adapt_maye_assistant.py", "scripts/maye_trim/trim_maye.py", "scripts/maye_trim/reach.py"],
       "offline": ["offline/maye/ssh-nradio-plugin-installer-lite.sh"],
       "preconditions": [
         "[必须] 该脚本不产生任何备份（upstream backup_file() 是空实现，BACKUP_DIR 是死路径），跑前必须自行备份目标文件",

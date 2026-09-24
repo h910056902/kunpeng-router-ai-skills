@@ -31,7 +31,7 @@ source: kunpeng-router-tuning
 | 函数 | 663 个顶层函数（原 803，删 **140** 个 / 11,841 行） |
 | 哈希 | `3c2913f32056afb64042198058d4880ac5b9c7daca96b3286d68b1313131e104` |
 | 来源与规则 | [`offline/maye/PROVENANCE.md`](../offline/maye/PROVENANCE.md) |
-| 裁剪工具 | [`scripts/maye_trim/trim_maye.py`](../scripts/maye_trim/trim_maye.py)（可复现，改 `DENY_IDS`/`FAMILY` 即改口径） |
+| 裁剪工具 | [`scripts/maye_trim/trim_maye.py`](../scripts/maye_trim/trim_maye.py)（可复现，改 `DENY_IDS`/`FAMILY` 即改口径）· 配套 [`reach.py`](../scripts/maye_trim/reach.py)（静态调用闭包 + 写盘扫描，用来筛「只读 handler」当真机冒烟靶子） |
 
 **已删**：feature ID `2`(哈基米＝装 OpenClash) `4`(AGH) `9` `10` `11`(路由向导) `16`(还原应用商店)
 `17`(MosDNS) `19` `23`(哈基米分流/依赖修复) `22`(Docker 安装) `33`(硬件加速)，**外加分类 3 游戏加速器整体移除**，
