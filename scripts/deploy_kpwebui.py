@@ -6,11 +6,11 @@
   - 每条命令都用 safe() 包一层断线重连
 """
 import os, sys, time, hashlib
-sys.path.insert(0, r"%USERPROFILE%\.workbuddy\skills\kunpeng-router-tuning\scripts")
+sys.path.insert(0, r"C:\Users\91005\.workbuddy\skills\kunpeng-router-tuning\scripts")
 os.environ.setdefault("ROUTER_PW", "admin")
 from rtr_lib import Rtr
 
-LOCAL = r"<工作区>\kpwebui"
+LOCAL = r"C:\Users\91005\WorkBuddy\2026-09-06-00-21-37\kpwebui"
 BASE = "http://192.168.66.1:10087"
 
 FILES = [
@@ -169,5 +169,5 @@ try:
 finally:
     r.close()
 
-open(r"<工作区>\deploy_log.txt", "w", encoding="utf-8").write("\n".join(log))
+open(r"C:\Users\91005\WorkBuddy\2026-09-06-00-21-37\deploy_log.txt", "w", encoding="utf-8").write("\n".join(log))
 print("=== done ===")

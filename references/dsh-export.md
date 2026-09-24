@@ -54,7 +54,7 @@ source: kunpeng-router-tuning
 
 ## 三、一键脚本
 
-`<工作区>\_build_dsh_export.py`
+`C:\Users\91005\WorkBuddy\2026-09-06-00-21-37\_build_dsh_export.py`
 
 它做三件事：① 按 `PLAN` 字典复制技能目录树；② 转换根 `SKILL.md` 的 frontmatter；
 ③ 自检 `name` / `description` / `whenToUse` 存在且无 `agent_created` 残留。
@@ -63,8 +63,8 @@ source: kunpeng-router-tuning
 
 ```
 # 建隔离 venv 并装 pyyaml（只需一次）
-& "%USERPROFILE%\.workbuddy\binaries\python\versions\3.13.12\python.exe" `
-    -m venv "%USERPROFILE%\.workbuddy\binaries\python\envs\default"
+& "C:\Users\91005\.workbuddy\binaries\python\versions\3.13.12\python.exe" `
+    -m venv "C:\Users\91005\.workbuddy\binaries\python\envs\default"
 & "...\envs\default\Scripts\python.exe" -m pip install pyyaml
 
 # 校验装到 ~/.dsh/skills 的技能
@@ -85,6 +85,6 @@ source: kunpeng-router-tuning
 
 ## 五、文件落点
 
-- 源（WorkBuddy）：`%USERPROFILE%\.workbuddy\skills\`
-- 导出中间产物：`<工作区>\dsh-skills-export\`
-- 目标（DSH）：`%USERPROFILE%\.dsh\skills\`
+- 源（WorkBuddy）：`C:\Users\91005\.workbuddy\skills\`
+- 导出中间产物：`C:\Users\91005\WorkBuddy\2026-09-06-00-21-37\dsh-skills-export\`
+- 目标（DSH）：`C:\Users\91005\.dsh\skills\`

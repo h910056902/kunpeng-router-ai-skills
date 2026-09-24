@@ -28,7 +28,7 @@ source: kunpeng-router-tuning
 
 ```js
 const http = require('http');
-// POST /cgi-bin/luci/  body: luci_username=root&luci_password=<你的LuCI密码>
+// POST /cgi-bin/luci/  body: luci_username=root&luci_password=admin
 ```
 返回 200 + `Set-Cookie: sysauth=xxxx`。后续请求带 `Cookie: sysauth=xxxx`。
 

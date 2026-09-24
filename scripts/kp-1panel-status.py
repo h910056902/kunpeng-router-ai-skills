@@ -6,7 +6,7 @@
 适用：鲲鹏 C2000 U 等 OpenWrt + 1Panel v1.10 设备。
 
 凭据：环境变量 ROUTER_HOST / ROUTER_USER / ROUTER_PW，或凭据文件（KEY=VALUE）。
-      默认凭据文件 %USERPROFILE%\\.workbuddy\\kunpeng-router.env
+      默认凭据文件 C:\\Users\\91005\\.workbuddy\\kunpeng-router.env
       凭据绝不落盘、绝不进输出。
 
 用法：
@@ -38,7 +38,7 @@ import os
 import re
 import sys
 
-DEFAULT_CRED_FILE = r"%USERPROFILE%\.workbuddy\kunpeng-router.env"
+DEFAULT_CRED_FILE = r"C:\Users\91005\.workbuddy\kunpeng-router.env"
 
 
 # ---------------------------------------------------------------- 凭据

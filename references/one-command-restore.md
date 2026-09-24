@@ -400,7 +400,7 @@ ocspeed **不在任何 opkg 源里**：代码全在 `/usr/libexec/openclash-help
 
 ### 2. `ocspeed.lua` 曾写死控制端口/密钥 —— 修了
 
-旧代码 `curl … -H "Authorization: Bearer <你的Clash面板密码>" http://127.0.0.1:9090/…`。
+旧代码 `curl … -H "Authorization: Bearer 7LHZ3l74" http://127.0.0.1:9090/…`。
 `speedswitch.sh` 一直是从 `uci openclash.config.{cn_port,dashboard_password}` 取，
 两处不一致时 lua 那条查询 401；而下面有 `if cur == "" then cur = st.now end` 兜底，
 页面静默显示 `status.json` 的**陈旧值**，肉眼看不出来。现在两处取同一套 UCI。

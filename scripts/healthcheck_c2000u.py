@@ -25,7 +25,7 @@ bug 导向重点：
 import os
 import sys
 
-SP = r"%USERPROFILE%\.workbuddy\binaries\python\envs\default\Lib\site-packages"
+SP = r"C:\Users\91005\.workbuddy\binaries\python\envs\default\Lib\site-packages"
 if SP not in sys.path:
     sys.path.insert(0, SP)
 
@@ -40,7 +40,7 @@ AGH_PASS = os.environ.get('AGH_PASS', '')
 if not PW:
     sys.exit('[FATAL] ROUTER_PW 未设置')
 
-OUT_PATH = os.environ.get('CHECK_OUT', r'%USERPROFILE%\WorkBuddy\2026-09-13-22-04-27\router_check_report.txt')
+OUT_PATH = os.environ.get('CHECK_OUT', r'C:\Users\91005\WorkBuddy\2026-09-13-22-04-27\router_check_report.txt')
 _buf = []
 
 

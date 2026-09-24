@@ -15,12 +15,12 @@
 """
 import os, sys, io, time, socket, tarfile, threading, tempfile, shutil, argparse, functools
 
-sys.path.insert(0, r"%USERPROFILE%\.workbuddy\skills\kunpeng-router-tuning\scripts")
+sys.path.insert(0, r"C:\Users\91005\.workbuddy\skills\kunpeng-router-tuning\scripts")
 os.environ.setdefault("ROUTER_PW", "admin")
 from rtr_lib import Rtr
 import http.server, socketserver
 
-ARCH = r"<工作区>\nr-webui-archive"
+ARCH = r"C:\Users\91005\WorkBuddy\2026-09-06-00-21-37\nr-webui-archive"
 ROUTER = "192.168.66.1"
 PORT = 18899
 
@@ -172,7 +172,7 @@ def main():
         r.close()
         httpd.shutdown()
         shutil.rmtree(tmp, ignore_errors=True)
-        open(r"<工作区>\restore_log.txt",
+        open(r"C:\Users\91005\WorkBuddy\2026-09-06-00-21-37\restore_log.txt",
              "w", encoding="utf-8").write("\n".join(log))
 
 

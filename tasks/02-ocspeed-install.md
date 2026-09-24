@@ -75,10 +75,10 @@ echo "--- 5 mem";       free -k | awk '/MemAvailable/{print $2}'
 
 | 文件 | 大小 | md5 |
 |---|---|---|
-| `speedswitch.sh` | 42 KB | `667b44a6c4b196f75117ba38f53afbae` |
+| `speedswitch.sh` | 57 KB (v3.4) | `9544e0b38b29bb146690535466913f00` |
 | `ocspeed.lua` | 31 KB | `ea0fc06440268c99a91f705887889228` |
-| `ocspeed.htm` | 109 KB | `9999789b3c9fc75a7f4aea4a12ddbe57` |
-| `nodetest.htm` | 4.5 KB | `ec067e80fa1a465448a5b07871f4bf78` |
+| `ocspeed.htm` | 109 KB (v3.5 UI) | `0f512a333d139a4b58945bf7a2c67397` |
+| `nodetest.htm` | 4.5 KB (v3.5 UI) | `e857abd6577c4094f1bec743745193ec` |
 | `config.ocspeed` | 1 KB | `22ac5f0fe2c6ea32bdd7a2fabc86f384` |
 | `kp-ocspeed.sh` | 10 KB | `4055f2aa1702a7326681e5fcbcaedce5` |
 
@@ -154,6 +154,40 @@ cp -f /etc/config/ocspeed                          /mnt/storage/data/ocspeed-bac
 > **会把 SSH 通道撑爆**，表现为「脚本直接退 1、没有任何报错」。
 > 用 `scripts/rtr_lib.py` 的 `put_text_verified`（2026-09-19 已修：捕获连接重置后自动降级分块），
 > 或 PC 侧 `http.server` + 设备 `curl` 反向拉。
+
+### 路径 C —— ipk 一键安装（2026-09-23 新增，iStoreOS 24.10 实测通过）
+
+`offline/ocspeed/luci-app-ocspeed_3.5-1_all.ipk`（架构无关，21.02/24.10 通用；由
+`scripts/build_ocspeed_ipk.py` 从本目录五件套打包，md5 见 `offline/checksums.md5`）。
+
+> **v3.5-1（2026-09-24）**：`ocspeed.htm` / `nodetest.htm` 整体换装 **OpenClash 原生配色**
+> （浅色默认：`--bg-white #fff / --primary #3b82f6 / --success #059669 …`，
+> 暗色挂 `html[data-darkmode="true"]` 开关、与 OpenClash oc.css 同名同值令牌），
+> 删除原深色 Apple/Linear 风覆写层；布局与 JS 逻辑不动。
+> 升级安装后浏览器 **Ctrl+F5 强刷**一次（旧 CSS 可能被缓存）。
+
+```sh
+opkg install /tmp/luci-app-ocspeed_3.5-1_all.ipk     # postinst 自动清 LuCI 缓存 + 重启 rpcd/uhttpd
+```
+
+- `/etc/config/ocspeed` 已声明为 **conffile**，升级重装不覆盖用户改动；
+- **装完不会自动建 cron**，仍需手动 `speedswitch.sh enable`；
+- 卸载：`opkg remove luci-app-ocspeed`（postrm 清缓存；`/etc/openclash-helper/` 数据保留）。
+- 在 iStoreOS 旁路由（192.168.100.1）实测：安装 RC=0，`status` 出 JSON，
+  `test` 全量测速 72 节点（真节点 65 / 可用 34 / 失效 31 / 假节点 7），`switch=0` 不切组。
+
+**打包格式四大坑（重打 ipk 必读）**：
+1. **现代 OpenWrt 的 ipk 是 tar.gz 不是 ar 归档**：外层 tar.gz 内含 `./debian-binary`(内容"2.0")
+   + `./control.tar.gz` + `./data.tar.gz`；手工拼 ar 归档会被 opkg 报 `Malformed package file`。
+2. **data.tar.gz 里父目录必须显式写成 DIRTYPE 条目**（名字带 `/` 且 `type=DIRTYPE`），
+   否则 `/usr/libexec/openclash-helper` 这类不存在的父目录会被建成**空文件**，speedswitch.sh 落盘报 `Not a directory`。
+3. **依赖名是 `luci-app-openclash` 不是 `openclash`**（设备上 opkg 登记的包名），写错会报
+   `cannot find dependency openclash`。
+4. **必须带 `/usr/share/rpcd/acl.d/luci-app-<pkg>.json`，且 postinst 要重启 rpcd**
+   （2026-09-24 实测：缺 ACL 文件时 dispatcher 树里有节点、`satisfied:true`，但客户端渲染的 LuCI
+   会**隐藏会话 access-group 里没有的菜单项** → "装了但服务页面里看不到"。
+   排障手段：登录 ubus 看 `session.login` 返回的 `acls.access-group` 有没有包名）。
+   装完/升级后浏览器要**退出重登**一次，老会话的 ACL 是登录时固化的。
 
 ### 4.3 建 cron（**关键：没有 `cron` 子命令**）
 

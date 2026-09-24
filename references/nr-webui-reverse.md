@@ -12,7 +12,7 @@ source: kunpeng-router-tuning
 # nr_webui 解析与还原手册
 
 > 目标仓库：`https://github.com/h910056902/nr-webui-archive`（私有）
-> 本地副本：`<工作区>\nr-webui-archive\`
+> 本地副本：`C:\Users\91005\WorkBuddy\2026-09-06-00-21-37\nr-webui-archive\`
 > 解析时间：2026-09-12　样本：后端 `nr_webui` V2.0.8 二进制 / 前端 V2.0.15 / PC 工具 V1.1.2
 > 已实测还原到鲲鹏 C2000 U（`192.168.66.1:10086`）
 

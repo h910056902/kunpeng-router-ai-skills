@@ -10,7 +10,7 @@
 import os
 import sys
 
-SP = r"%USERPROFILE%\.workbuddy\binaries\python\envs\default\Lib\site-packages"
+SP = r"C:\Users\91005\.workbuddy\binaries\python\envs\default\Lib\site-packages"
 if SP not in sys.path:
     sys.path.insert(0, SP)
 import paramiko
@@ -18,7 +18,7 @@ import paramiko
 HOST = os.environ.get('ROUTER_HOST', '192.168.66.1')
 USER = os.environ.get('ROUTER_USER', 'root')
 PW = os.environ.get('ROUTER_PW', '')
-OUT = r'%USERPROFILE%\WorkBuddy\2026-09-13-22-04-27\router_check_round2.txt'
+OUT = r'C:\Users\91005\WorkBuddy\2026-09-13-22-04-27\router_check_round2.txt'
 _buf = []
 
 

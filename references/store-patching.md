@@ -86,7 +86,7 @@ ubus call appcenter list
 
 ## 已有补丁脚本的位置（PC 侧，别从零写）
 
-`%USERPROFILE%\Desktop\鲲鹏无限路由器美化\patches\`（**kunpeng-istoreos** 项目，与技能包仓库不同）：
+`C:\Users\91005\Desktop\鲲鹏无限路由器美化\patches\`（**kunpeng-istoreos** 项目，与技能包仓库不同）：
 
 执行顺序（README 记载，A 机实测通过）：
 

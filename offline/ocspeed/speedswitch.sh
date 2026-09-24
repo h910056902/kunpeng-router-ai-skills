@@ -1,7 +1,35 @@
 #!/bin/sh
-# OpenClash 自动测速切换 v3.3 — 全量测速 + 分类测速(视频/流媒体/AI) + 备用节点预选 + WebUI
+# OpenClash 自动测速切换 v3.4 — 全量测速 + 分类测速(视频/流媒体/AI) + 备用节点预选 + 故障转移 + WebUI
 #
-# v3.2 新增: 故障切换备用节点
+# v3.4 故障转移增强 (P0+P1)
+#   P0-1 failover_enable / backup_enable 打开, cron 三段齐全 → MTTR 由最坏 30 分钟降到 <60s
+#   P0-2 本地链路对照探针 local_link_ok(): 出口/本机链路本身断了就不切节点(切了也没用)
+#   P0-3 代理层对照探针: 当前节点全探针无响应 + 至少一个对照节点有响应 = 真故障;
+#                        若对照节点也全挂 = 探测通道/整体出口问题, 只告警不切
+#   P0-4 硬故障突破静默期: 上面这条真故障判据成立时立刻转, 不等 failover_quiet
+#   P1-1 备用池同源约束: 同一落地最多 1 个, 且优先避开当前节点所在落地
+#   P1-2 切换净收益: 同时满足「提升 ≥ switch_min_gain」且「≤ 当前延迟的 switch_good_ratio%」
+#   P1-3 切换后验证 + 劣化回滚: 切完 3s 复测, 仍不可用则试下一个(最多 3 个), 全失败回滚
+#   P1-4 备用名单探测并行化: 4 路并发, 探测耗时从 ~7s 降到 ~3s
+#   XX   切换限速 switch_min_interval(分钟): 只限速「执行切换」, 不影响每分钟一次的检测;
+#        真故障例外, 否则 MTTR 会被拖到限速窗口那么长
+#
+#   新增 UCI(全部有默认值, 不写也能跑, 关掉只需置 0):
+#     local_ifaces            本地出口接口列表(竖线分隔), 默认 'cpe|wan'
+#     failover_local_check    本地链路对照, 默认 1
+#     failover_local_ping     直连探测目标(不能是域名), 默认 223.5.5.5
+#     failover_refnodes       对照节点个数, 默认 3
+#     failover_maxalt         故障通道内的探测点回退次数, 默认 1(压 MTTR, 见下方注释)
+#     failover_hard_break     硬故障突破静默期, 默认 1
+#     failover_avoid_same_landing  备用池同源约束, 默认 1
+#     failover_verify         切换后复测验证, 默认 1
+#     failover_verify_tries   验证最多试几个候选, 默认 3
+#     failover_rollback       切完明显更差则回滚, 默认 1
+#     switch_min_gain         绝对收益下限(ms), 默认 30
+#     switch_good_ratio       相对收益上限(%), 默认 70
+#     switch_min_interval     两次切换最小间隔(分钟), 默认 120(0=不限)
+#
+# v3.3 修复 (全部是「功能静默失效」类缺陷):
 #   - 每 backup_interval 分钟主动探测一批候选节点, 把最快的若干个写入 $DATA/backup.json
 #   - failover_check 故障时优先逐个验证这张短名单, 命中即切, 省掉当场串行探测 Top5 的十几秒
 #   - 所有状态一律放 $DATA (overlay, 跨每天 02:00 自动重启保留);
@@ -118,6 +146,172 @@ probe_delay_multi() { # name timeout [max_alt]
     fi
   done
   return 1
+}
+
+# ---------- 节点名结构 ----------
+# 订阅节点名形如 L1|新加坡01|中转|流媒体|4x : 字段 2 = 落地, 字段 3 = 线路类型。
+# 流媒体专线是 4 段(L1|新加坡06|流媒体|3x), 字段 2 仍是落地, 不影响这里的使用。
+node_landing() { printf '%s' "$1" | cut -d'|' -f2; }
+
+# ---------- 切换限速 (用户要求: 两次切换至少间隔 N 分钟) ----------
+# 只限速「真正执行切换」这一个动作, 不影响每分钟一次的检测。
+# 背景: 全量测速每 30 分钟一轮, 而 top5 本身的离散度就在几十毫秒量级,
+# 「有节点比当前快 50ms 就切」几乎每轮都成立 —— 15 轮里切了 8 轮。
+# 每次切换都会打断所有已建立的 TCP 连接(视频重新缓冲、下载中断),
+# 代价远大于那几十毫秒的收益。
+# 真故障例外(见 failover_check): 故障转移不受此限速, 否则 MTTR 会被拖到限速窗口那么长。
+switch_allowed() { # -> 0=可切, 1=限速窗口内
+  local mi=$(get switch_min_interval); [ -z "$mi" ] && mi=120
+  case "$mi" in ''|*[!0-9]*) mi=120 ;; esac
+  [ "$mi" -le 0 ] && return 0
+  local lt=$(cat $DATA/last_switch 2>/dev/null || echo 0)
+  case "$lt" in ''|*[!0-9]*) lt=0 ;; esac
+  local now=$(date +%s)
+  if [ $((now - lt)) -lt $((mi * 60)) ]; then
+    log switch "切换限速: 距上次切换 $(( (now - lt) / 60 )) 分钟 < ${mi} 分钟, 本轮不切"
+    return 1
+  fi
+  return 0
+}
+mark_switch() { date +%s > $DATA/last_switch 2>/dev/null; }
+
+# ---------- P1-2 切换净收益判据 ----------
+# 「有收益」必须同时满足两条, 只满足其一不算:
+#   绝对: curd - bestd >= switch_min_gain      (默认 30ms)
+#   相对: bestd <= curd * switch_good_ratio%   (默认 70%)
+# 前者挡住噪声内的抖动, 后者挡住「900ms 换 850ms」这种只有 5% 提升、却要打断全部连接的切换。
+# 当前节点初赛无结果(=已不可用)时不看收益, 无脑切。
+worth_switching() { # curd bestd -> 0=值得切, 1=不值
+  local c="$1" b="$2"
+  [ -z "$c" ] && return 0
+  case "$b" in ''|*[!0-9]*) return 0 ;; esac
+  local g=$(get switch_min_gain); [ -z "$g" ] && g=30
+  local r=$(get switch_good_ratio); [ -z "$r" ] && r=70
+  [ "$b" -gt $(( c * r / 100 )) ] && return 1
+  [ $((c - b)) -lt "$g" ] && return 1
+  return 0
+}
+
+# ---------- P0-2 本地链路对照探针 ----------
+# 作用: 把「代理侧故障」和「本机 / 光猫 / 上游链路故障」区分开。
+# 只有本机出口正常时换节点才可能有用; 出口本身断了, 切一百次也是白切 ——
+# 既浪费一个冷却周期, 又白白打断一遍所有已建立的 TCP 连接。
+#
+# 判据: (a) 至少一个出口接口 up  且  (b) 直连 ping 得通
+# ⚠️ 不要用 DNS 做这个判断: mihomo 劫持了 DNS(enable_redirect_dns=1, dns-port 7874),
+#    DNS 走代理、会跟着代理一起挂, 拿它当对照等于没有对照。
+# ⚠️ 出口接口不能直接写死 wan: 本机真正的出口是 cpe(proto=wwan, 设备 eth3),
+#    wan(eth0) 恒为 up:false 也没有默认路由 —— 照 wan 判断会把所有转移永久拦死。
+local_link_ok() { # -> 0=本机出口正常(可以切), 1=本机/上游故障(不要切)
+  [ "$(get failover_local_check)" = "0" ] && return 0
+  local iflist=$(get local_ifaces); [ -z "$iflist" ] && iflist='cpe|wan'
+  local seen=0 any=0 iface st
+  for iface in $(echo "$iflist" | tr '|' ' '); do
+    [ -z "$iface" ] && continue
+    st=$(ubus call network.interface."$iface" status 2>/dev/null \
+         | tr -d ' \t\n' | grep -oE '"up":(true|false)' | head -1)
+    [ -z "$st" ] && continue            # 接口不存在 → 视为未知, 不参与判定
+    seen=$((seen+1))
+    case "$st" in '"up":true') any=1 ;; esac
+  done
+  # 列出的接口一个都不存在 → 无从判定, 放行(不因为自己探不了就拦住转移)
+  if [ "$seen" -gt 0 ] && [ "$any" -eq 0 ]; then
+    log failover "本地链路: 出口接口全部 down ($iflist), 属本机/上游故障, 本次不切换"
+    return 1
+  fi
+  local pt=$(get failover_local_ping); [ -z "$pt" ] && pt='223.5.5.5'
+  if ! ping -c 2 -W 2 "$pt" >/dev/null 2>&1; then
+    log failover "本地链路: 直连 ping $pt 不通, 属本机/上游故障, 本次不切换"
+    return 1
+  fi
+  return 0
+}
+
+# ---------- P0-3 代理层对照探针 ----------
+# 「当前节点测不通」本身不足以证明节点故障 —— 测速尾巴、探测点被干扰、整体出口拥塞,
+# 都会让所有节点在同一时刻一起返回空, 这时换成谁都一样。
+# 判定真故障必须有一个对照组: 同一时刻再去探几个别的节点,
+#   对照节点有响应       → 探测通道和本机出口都是好的, 故障确实落在当前节点上 → 可以切
+#   对照节点也全部无响应 → 更像探测通道/整体链路的问题, 换节点无意义 → 只告警不切
+ref_nodes_alive() { # cur -> 0=真故障(可切), 1=整体不可用(不切)
+  local cur="$1"
+  local want=$(get failover_refnodes); [ -z "$want" ] && want=3
+  local tu=$(get test_url); [ -z "$tu" ] && tu='https://www.gstatic.com/generate_204'
+  local TAB=$(printf '\t') n=0 name
+  : > $DIR/ref_list.txt
+  # 对照节点优先取备用名单(它是最近 90 分钟内实测最快的几个), 退回 nodes.json 的的健康节点
+  if [ -f $DATA/backup.json ]; then
+    grep -o '"n":"[^"]*"' $DATA/backup.json 2>/dev/null | sed 's#"n":"##; s#"$##' \
+      | grep -vxF "$cur" | head -$want >> $DIR/ref_list.txt
+  fi
+  [ -s $DIR/ref_list.txt ] || {
+    tr '{' '\n' < $DATA/nodes.json 2>/dev/null \
+      | grep '"d":[0-9]*,"s":"ok"' \
+      | sed 's#.*"n":"\([^"]*\)".*"d":\([0-9]*\).*#\2'"$TAB"'\1#' \
+      | sort -n | grep -vF "$cur" | cut -f2 | head -$want >> $DIR/ref_list.txt
+  }
+  [ -s $DIR/ref_list.txt ] || { log failover "对照探针: 找不到对照节点, 无法判定单节点故障"; return 1; }
+  : > $DIR/ref_res.txt
+  while read -r name; do
+    [ -z "$name" ] && continue
+    ( d=$(node_delay "$name" "$tu" 4000)
+      [ -n "$d" ] && printf '%s\t%s\n' "$d" "$name" >> $DIR/ref_res.txt ) &
+    n=$((n+1))
+    [ $((n % 4)) -eq 0 ] && wait
+  done < $DIR/ref_list.txt
+  wait
+  if [ -s $DIR/ref_res.txt ]; then
+    sort -n $DIR/ref_res.txt | head -1 > $DIR/ref_best.txt
+    log failover "对照探针: $(cut -f2 $DIR/ref_res.txt | tr '\n' ' ')有响应 -> 确认单节点故障"
+    return 0
+  fi
+  log failover "对照探针: 对照节点同样全部无响应 ($(tr '\n' ' ' < $DIR/ref_list.txt)), 更像整体链路/探测通道问题, 本次不切换"
+  return 1
+}
+
+# ---------- P1-1 备用池同源约束 ----------
+# 从已按延迟升序排好的 TSV(延迟<TAB>节点名)里, 按「同一落地最多收录 1 个」挑出 keep 个。
+# 按延迟排序时, 同一落地的中转/直连两条线路往往紧挨在一起,
+# 不加约束备用池会变成「同一个落地的两条线」—— 该落地一挂就全军覆没。
+pick_diverse() { # infile keep [exclude_landing] -> stdout
+  local in="$1" keep="$2" ex="$3"
+  local TAB=$(printf '\t') got=0 dd nm ld
+  : > $DIR/div_seen.txt
+  while IFS="$TAB" read -r dd nm; do
+    [ -z "$nm" ] && continue
+    [ "$got" -ge "$keep" ] && break
+    ld=$(printf '%s' "$nm" | cut -d'|' -f2)
+    [ -n "$ex" ] && [ "$ld" = "$ex" ] && continue
+    grep -qxF "$ld" $DIR/div_seen.txt 2>/dev/null && continue
+    printf '%s\t%s\n' "$dd" "$nm"
+    printf '%s\n' "$ld" >> $DIR/div_seen.txt
+    got=$((got+1))
+  done < "$in"
+  return 0
+}
+
+# ---------- P1-4 并行探测一批节点 ----------
+# 把 (name列表) 逐个 node_delay 的活儿摊到 4 路并发上, 结果写 $2(延迟<TAB>节点名)。
+# 串行时 3 个备用节点要 ~7s, 备用名单过期退回 Top5 串行更是 15s+,
+# 而 MTTR 的目标是一分钟以内 —— 这一点必须省出来。
+probe_list_parallel() { # listfile outfile [width] [maxalt]
+  local list="$1" out="$2" w="${3:-4}" ma="${4:-2}" n=0 name
+  : > "$out"
+  : > $DIR/pl_par.out
+  : > $DIR/pl_dead.txt
+  while read -r name; do
+    [ -z "$name" ] && continue
+    ( d=$(probe_delay_multi "$name" 5000 "$ma")
+      [ -n "$d" ] && printf '%s\t%s\n' "$d" "$name" >> $DIR/pl_par.out
+      [ -z "$d" ] && printf '%s\n' "$name" >> $DIR/pl_dead.txt ) &
+    n=$((n+1))
+    [ $((n % w)) -eq 0 ] && wait
+  done < "$list"
+  wait
+  cat $DIR/pl_par.out >> "$out" 2>/dev/null
+  rm -f $DIR/pl_par.out
+  sort -n "$out" > $DIR/pl_sort.tmp 2>/dev/null && mv $DIR/pl_sort.tmp "$out"
+  return 0
 }
 
 # 按花括号深度解析 /proxies: 只在 depth==3(某个 proxy 对象内部) 取 name/type/alive。
@@ -491,6 +685,9 @@ speedtest_full() {
   bestfin="未通过"
   [ -n "$bestdf" ] && bestfin="${bestdf} ms"
 
+  local mingain=$(get switch_min_gain); [ -z "$mingain" ] && mingain=30
+  local minratio=$(get switch_good_ratio); [ -z "$minratio" ] && minratio=70
+
   switched=0
   if [ "$do_switch_allowed" = "1" ] && [ -n "$best" ]; then
     if [ "$now" = "$best" ]; then
@@ -504,16 +701,22 @@ speedtest_full() {
       curdfin="未通过"
       [ -n "$curdf" ] && curdfin="${curdf} ms"
       if [ -n "$curd1" ]; then
-        if [ "$bestd" -ge $((curd1 - threshold)) ]; then
+        # P1-2 净收益判据取代原先的「比当前快 threshold 毫秒就切」:
+        # 必须同时满足 提升≥${mingain}ms 且 新延迟≤当前×${minratio}%。
+        if ! worth_switching "$curd1" "$bestd"; then
           dosw=0
-          log run "保持当前: $now 初赛${curd1}ms/决赛${curdfin} vs 最快 $best 初赛${bestd}ms/决赛${bestfin} (阈值${threshold}ms)"
+          log run "保持当前: $now 初赛${curd1}ms/决赛${curdfin} vs 最快 $best 初赛${bestd}ms/决赛${bestfin} (需提升≥${mingain}ms 且 ≤${minratio}%)"
         fi
       else
         log run "当前 $now 初赛无结果(失效或被排除), 将切到 $best (初赛${bestd}ms)"
       fi
+      # 切换限速: 两次真实切换之间至少间隔 switch_min_interval 分钟(0=不限)。
+      # 只压住「优化类切换」, 故障转移走另一条路径并不受它约束。
+      if [ $dosw -eq 1 ] && ! switch_allowed; then dosw=0; fi
       if [ $dosw -eq 1 ]; then
         curl -s -m 8 -X PUT -H "Authorization: Bearer $SECRET" -H 'Content-Type: application/json' -d "{\"name\":\"$(json_esc "$best")\"}" "$API/proxies/$group" >/dev/null 2>&1
         switched=1
+        mark_switch
         # 日志补齐 curd1, 事后才分得清「真的更快」还是「当前节点决赛没测出来」
         log run "已切换 $group: $now (初赛${curd1:-无}) -> $best (初赛${bestd}ms, 决赛${bestfin})"
       fi
@@ -631,7 +834,17 @@ backup_do() {
   rm -f $DIR/bak_par.out
   sort -n $DIR/bak_res.txt > $DIR/bak_res.tmp 2>/dev/null && mv $DIR/bak_res.tmp $DIR/bak_res.txt
 
-  head -$keep $DIR/bak_res.txt > $DIR/bak_top.txt
+  # P1-1 同源约束: 同一落地最多收录 1 个, 并且尽量避开当前节点所在的落地。
+  # 候选不足时降级允许同落地 —— 宁可同源也不要空池。
+  if [ "$(get failover_avoid_same_landing)" != "0" ]; then
+    pick_diverse $DIR/bak_res.txt "$keep" "$(node_landing "$cur")" > $DIR/bak_top.txt
+    if [ "$(wc -l < $DIR/bak_top.txt)" -lt "$keep" ]; then
+      log backup "备用池: 异落地候选不足, 降级允许与 $cur 同落地的节点"
+      pick_diverse $DIR/bak_res.txt "$keep" "" > $DIR/bak_top.txt
+    fi
+  else
+    head -$keep $DIR/bak_res.txt > $DIR/bak_top.txt
+  fi
   local n_keep=$(wc -l < $DIR/bak_top.txt)
   write_backup_json "$group" "$cur" "$n_total"
 
@@ -665,6 +878,14 @@ backup_select() {
   return $rc
 }
 
+# 把策略组切到指定节点。集中一处是为了让切换/验证/回滚三处用同一段 escaping,
+# 免得哪天某个节点名带引号时只有一条路径漏掉 json_esc。
+do_switch_node() { # group name
+  [ -z "$2" ] && return 1
+  curl -s -m 8 -X PUT -H "Authorization: Bearer $SECRET" -H 'Content-Type: application/json' \
+    -d "{\"name\":\"$(json_esc "$2")\"}" "$API/proxies/$1" >/dev/null 2>&1
+}
+
 failover_check() { # 断线自动故障转移
   run_busy && return 0
   local now=$(date +%s)
@@ -678,26 +899,31 @@ failover_check() { # 断线自动故障转移
   local cur=$(api_get "/proxies/$group" | grep -o '"now":"[^"]*"' | head -1 | cut -d'"' -f4)
   [ -z "$cur" ] && return 0
   case "$cur" in GLOBAL|DIRECT|REJECT|REJECT-DROP|COMPATIBLE|PASS|PASS-RULE|自动选择|延迟最低|宝贝云) return 0 ;; esac
-  # 静默期: 一轮 44 节点全量测速结束后, mihomo 的延迟探测通道会留下十几秒的
-  # 拥塞尾巴, 此时连刚测过、延迟正常的节点都会返回超时。等它冷却再检测,
-  # 否则每轮测速后必然紧跟一次「全节点超时」的伪故障转移。
+  # 静默期: 一轮 65+ 节点全量测速结束后, mihomo 的延迟探测通道会留下十几秒的
+  # 拥塞尾巴, 此时连刚测过、延迟正常的节点都会返回超时。
   # 对照日志可见: 20:09:46 测速 -> 20:11:01 全超时, 20:11:21 测速 -> 20:14:20 全超时。
+  # v3.4 起它只记一个标记、不再直接 return —— 硬故障必须能越过它(见 P0-4 判定)。
   local lr=$(cat $DATA/last_run 2>/dev/null || echo 0)
   local quiet=$(get failover_quiet); [ -z "$quiet" ] && quiet=90
+  local inquiet=0
   if [ "$lr" -gt 0 ] && [ $((now - lr)) -lt $quiet ]; then
-    log failover "全量测速刚结束 $((now-lr))s (静默期 ${quiet}s), 跳过本轮检测"
-    return 0
+    inquiet=1
   fi
   local thr=$(get failover_threshold); [ -z "$thr" ] && thr=3000
   local tu=$(get test_url); [ -z "$tu" ] && tu='https://www.gstatic.com/generate_204'
   local TAB=$(printf '\t')
-  local d=$(probe_delay_multi "$cur" 5000)
+  # 故障通道里的回退次数压到 1(可用 failover_maxalt 调)。
+  # probe_delay_multi 每次尝试最坏 8s, 默认最多 4 次 —— 死节点要连吃 32s 才肯认输,
+  # 而这里一分钟内要跑完「首探 + 复测 + 对照 + 候选 + 验证」五段。
+  # 省掉的是死节点的等待: 活节点第一次就返回, 根本用不到回退。
+  local ma=$(get failover_maxalt); [ -z "$ma" ] && ma=1
+  local d=$(probe_delay_multi "$cur" 5000 "$ma")
   if [ -z "$d" ] || [ "$d" -gt "$thr" ]; then
     # 抖动过滤: 首探失败不立刻判故障, 隔 3 秒复测一次。
     # 单次超时常常只是瞬时拥塞(测速尾巴、上游抖动), 一次就切换既没必要,
     # 还容易从 270ms 的好节点切到 800ms 的差节点。
     sleep 3
-    local d2=$(probe_delay_multi "$cur" 5000)
+    local d2=$(probe_delay_multi "$cur" 5000 "$ma")
     if [ -n "$d2" ] && [ "$d2" -le "$thr" ]; then
       log failover "瞬时抖动已恢复: $cur 首探${d:-超时}ms -> 复测 ${d2}ms"
       return 0
@@ -708,12 +934,35 @@ failover_check() { # 断线自动故障转移
     log failover "正常: $cur $d ms"
     return 0
   fi
-  log failover "异常: $cur ${d:-超时}ms (阈值$thr ms, 已二次复测), 开始故障转移"
+  log failover "异常: $cur ${d:-超时}ms (阈值$thr ms, 已二次复测), 开始故障判定"
+
+  # ---- P0-2 / P0-3 / P0-4: 三层对照, 决定「该不该切」 ----
+  # 「当前节点测不通」本身不足以证明节点故障 —— 本机链路断了、探测点被干扰、
+  # 整体出口拥塞、刚跑完一轮全量测速, 都会让所有节点在同一时刻一起返回空。
+  # 三条同时成立才认定硬故障, 缺一条都不切、只记日志:
+  #   1. 本地链路正常(出口接口 up 且直连 ping 通) —— 排除拔网线 / 光猫 / 上游故障
+  #   2. 对照节点有响应                          —— 排除探测点与整体链路问题
+  #   3. 当前节点全部探针无响应(上面已二次复测)   —— 排除单探针单次抖动
+  # 好处: 原先靠「静默期 + 冷却」硬挡的测速尾巴伪故障, 现在被第 2 条自动吸收,
+  #       于是静默期不必再把真故障一起挡在外面。
+  local hard=0
+  if local_link_ok; then
+    if ref_nodes_alive "$cur"; then hard=1; fi
+  fi
+  if [ "$hard" -eq 0 ]; then
+    local short=$cd; [ "$short" -gt 60 ] && short=60
+    if ! date -d "@$(( now - (cd - short) ))" +%s > $DATA/last_failover 2>/dev/null; then
+      date +%s > $DATA/last_failover
+    fi
+    log failover "判定: 非单节点故障(本地链路/对照探针未通过), 保持 $cur 不动, ${short}s 后重判"
+    return 0
+  fi
+  [ "$inquiet" -eq 1 ] && log failover "硬故障成立, 越过静默期 (全量测速刚结束 $((now-lr))s)"
 
   local best="" bestd=0 bsrc=""
+  : > $DIR/fo_probe.txt
 
-  # 优先用预先选好的备用节点短名单, 逐个验证, 命中即切。
-  # 每个只需一次探测 (实测约 2.3s), 比当场串行探测 Top5 的十几秒快一个量级。
+  # 优先用预先选好的备用节点短名单: 每个只需一次探测, 比当场探测 Top5 快一个量级。
   if [ "$(get backup_enable)" != "0" ] && [ -f $DATA/backup.json ]; then
     local biv=$(get backup_interval); [ -z "$biv" ] && biv=90
     local bts=$(grep -o '"ts":[0-9]*' $DATA/backup.json 2>/dev/null | head -1 | cut -d: -f2)
@@ -721,40 +970,22 @@ failover_check() { # 断线自动故障转移
     # 名单最多接受 3 倍间隔的陈旧度; 超期说明预选已停摆, 数据不可信, 退回实时探测
     if [ -n "$bts" ] && [ "$bage" -le $((biv * 60 * 3)) ]; then
       grep -o '"n":"[^"]*","d":[0-9]*' $DATA/backup.json 2>/dev/null \
-        | sed 's#"n":"##; s#","d".*##' > $DIR/bak_list.txt
-      # 不再「命中即 break、超阈值即丢弃」: 先把全部备用节点探一遍记下延迟,
-      # 阈值内取最快的; 若全部超阈值但仍有响应, 降级取最快的 ——
-      # 原逻辑是超阈值就丢、全丢光则放弃切换,
-      # 于是断网时明明有慢节点可用却只能干等下一个冷却周期。
-      : > $DIR/bak_probe.txt
-      while read -r nm; do
-        [ -z "$nm" ] && continue
-        [ "$nm" = "$cur" ] && continue
-        local vd=$(probe_delay_multi "$nm" 5000)
-        if [ -n "$vd" ]; then
-          printf '%s\t%s\n' "$vd" "$nm" >> $DIR/bak_probe.txt
-          log failover "备用节点探测: $nm ${vd}ms"
-        else
-          log failover "备用节点不可用: $nm 超时ms"
-        fi
-      done < $DIR/bak_list.txt
-      if [ -s $DIR/bak_probe.txt ]; then
-        local hit=$(sort -n $DIR/bak_probe.txt | awk -F'\t' -v t="$thr" '$1<=t {print; exit}')
-        if [ -n "$hit" ]; then
-          bestd=$(echo "$hit" | cut -f1); best=$(echo "$hit" | cut -f2); bsrc="备用名单"
-        else
-          local dg=$(sort -n $DIR/bak_probe.txt | head -1)
-          bestd=$(echo "$dg" | cut -f1); best=$(echo "$dg" | cut -f2); bsrc="备用名单(降级)"
-          log failover "阈值${thr}ms内无节点, 降级选用最快: $best ${bestd}ms"
-        fi
-      fi
+        | sed 's#"n":"##; s#","d".*##' | grep -vxF "$cur" > $DIR/bak_list.txt
+      # P1-4 改成 4 路并发: 串行时 3 个节点要 ~7s, 名单过期走 Top5 更要 15s+,
+      # 而 MTTR 的目标是一分钟以内。
+      # 不再按 failover_threshold 预筛 —— 阈值内的节点常常只有一两个, 一旦它们
+      # 也超时就没有退路; 有响应即收录, 最后统一按延迟升序排。
+      : > $DIR/pl_dead.txt
+      probe_list_parallel $DIR/bak_list.txt $DIR/fo_probe.txt 4 "$ma"
+      [ -s $DIR/fo_probe.txt ] && bsrc="备用名单"
+      [ -s $DIR/fo_probe.txt ] || log failover "备用名单节点全部无响应 ($(tr '\n' ' ' < $DIR/bak_list.txt))"
     else
       log failover "备用名单已过期 (${bage}s), 改用实时探测"
     fi
   fi
 
-  # 备用名单没命中, 退回原有逻辑: 从上次全量结果里取 Top5 当场串行探测
-  if [ -z "$best" ]; then
+  # 备用名单没命中, 退回原有逻辑: 从上次全量结果里取 Top5 当场探测
+  if [ ! -s $DIR/fo_probe.txt ]; then
     tr '{' '\n' < $DATA/nodes.json 2>/dev/null \
       | grep '"d":[0-9]*,"s":"ok"' \
       | sed 's#.*"n":"\([^"]*\)".*"d":\([0-9]*\).*#\2'"$TAB"'\1#' \
@@ -764,30 +995,72 @@ failover_check() { # 断线自动故障转移
       [ -s $DIR/failover_list.txt ] || cp $DIR/candidates.txt $DIR/failover_list.txt 2>/dev/null
       grep -vF "$cur" $DIR/failover_list.txt > $DIR/failover_list.tmp 2>/dev/null && mv $DIR/failover_list.tmp $DIR/failover_list.txt
     }
-    while read -r name; do
-      [ -z "$name" ] && continue
-      local dd=$(probe_delay_multi "$name" 5000)
-      if [ -n "$dd" ]; then
-        if [ -z "$best" ] || [ "$dd" -lt "$bestd" ]; then best="$name"; bestd=$dd; bsrc="实时探测"; fi
-      fi
-    done < $DIR/failover_list.txt
+    probe_list_parallel $DIR/failover_list.txt $DIR/fo_probe.txt 4 "$ma"
+    [ -s $DIR/fo_probe.txt ] && bsrc="实时探测"
   fi
 
-  if [ -n "$best" ]; then
-    curl -s -m 8 -X PUT -H "Authorization: Bearer $SECRET" -H 'Content-Type: application/json' -d "{\"name\":\"$(json_esc "$best")\"}" "$API/proxies/$group" >/dev/null 2>&1
+  # ---- P1-3 逐个候选切换 + 切换后验证 ----
+  # 原先是「探测出一个最快的就切」, 切完不管: 历史上有相当比例的切换最后是劣化,
+  # 甚至切到一个同样不可用的目标。现在按延迟升序最多试 failover_verify_tries 个,
+  # 每切一个都复测一次确认真的通了才收工。
+  local tries=$(get failover_verify_tries); [ -z "$tries" ] && tries=3
+  [ "$(get failover_verify)" = "0" ] && tries=1
+  local verify=$(get failover_verify); [ -z "$verify" ] && verify=1
+  local tried=0 done_sw=0 nm dd
+  while IFS="$TAB" read -r dd nm; do
+    [ -z "$nm" ] && continue
+    [ "$nm" = "$cur" ] && continue
+    [ "$tried" -ge "$tries" ] && break
+    tried=$((tried+1))
+    # </dev/null: 这个循环正在从 fo_probe.txt 读, 万一将来某条命令去啃 stdin,
+    # 剩下的候选会整段读歪(静默少试几个节点)。这一行是保险丝。
+    do_switch_node "$group" "$nm" </dev/null
+    if [ "$verify" != "0" ]; then
+      sleep 3
+      local vd=$(probe_delay_multi "$nm" 5000 2)
+      if [ -z "$vd" ]; then
+        log failover "候选不可用: $nm 切换后复测仍无响应, 试下一个"
+        continue
+      fi
+      log failover "候选已验证: $nm 复测 ${vd}ms"
+      dd=$vd
+    fi
+    best="$nm"; bestd=$dd; done_sw=1
+    break
+  done < $DIR/fo_probe.txt
+
+  if [ "$done_sw" -eq 1 ] && [ -n "$best" ]; then
+    # P1-3 劣化回滚: 如果刚被判死的原节点转眼就恢复了, 而且明显更快(≥2 倍),
+    # 说明刚才那一下更像瞬时抖动, 切回去。2 倍的门槛足够宽, 不会来回抖。
+    if [ "$verify" != "0" ] && [ "$(get failover_rollback)" != "0" ]; then
+      local od=$(probe_delay_multi "$cur" 5000 2)
+      if [ -n "$od" ] && [ $((od * 2)) -le "$bestd" ]; then
+        do_switch_node "$group" "$cur"
+        sleep 2
+        local od2=$(probe_delay_multi "$cur" 5000 2)
+        if [ -n "$od2" ]; then
+          log failover "回滚: 原节点 $cur 已恢复且明显更快 (${od}ms vs $best ${bestd}ms), 已切回"
+          best="$cur"; bestd=$od2; bsrc="$bsrc+回滚"
+        else
+          log failover "回滚失败: 原节点 $cur 复测又断了, 保持 $best"
+          do_switch_node "$group" "$best"
+        fi
+      fi
+    fi
     date +%s > $DATA/last_failover
+    mark_switch
     # 备用名单已被消耗 (切换目标成了新的当前节点), 下一分钟立刻重新预选
     rm -f $DATA/last_backup 2>/dev/null
     log failover "已故障转移($bsrc): $cur -> $best ($bestd ms)"
   else
     # 切换失败只压短冷却: 原逻辑在这里同样写满 failover_cooldown(默认120s),
-    # 结果是最需要重试的时刻反而等待最久。失败后 30 秒即重试。
+    # 结果是最需要重试的时刻反而等待最久。
     local short=$cd; [ "$short" -gt 30 ] && short=30
     if ! date -d "@$(( now - (cd - short) ))" +%s > $DATA/last_failover 2>/dev/null; then
       date +%s > $DATA/last_failover
     fi
     log failover "无可用备用节点, 保持 $cur (${short}s 后重试)"
-    log failover "诊断: 主节点与全部备用节点同时超时, 更像整体链路拥塞而非单节点故障, 此时切换无意义"
+    log failover "诊断: 备用节点全部无响应且切换均未通过验证, 更像机场侧整体故障"
   fi
 }
 
@@ -819,6 +1092,12 @@ web_status() {
   echo -n '"failover_threshold":"'; echo -n "$(get failover_threshold)"; echo '",'
   echo -n '"last_failover":'; cat $DATA/last_failover 2>/dev/null || echo 0
   echo ','
+  echo -n '"last_switch":'; cat $DATA/last_switch 2>/dev/null || echo 0
+  echo ','
+  echo -n '"switch_min_interval":"'; echo -n "$(get switch_min_interval)"; echo '",'
+  echo -n '"switch_min_gain":"'; echo -n "$(get switch_min_gain)"; echo '",'
+  echo -n '"switch_good_ratio":"'; echo -n "$(get switch_good_ratio)"; echo '",'
+  echo -n '"local_ifaces":"'; echo -n "$(json_esc "$(get local_ifaces)")"; echo '",'
   echo -n '"backup_enable":'; [ "$(get backup_enable)" != "0" ] && echo 'true,' || echo 'false,'
   echo -n '"backup_interval":"'; echo -n "$(get backup_interval)"; echo '",'
   echo -n '"backup":'

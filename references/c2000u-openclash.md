@@ -24,7 +24,7 @@ source: kunpeng-router-tuning
 | 启动耗时 | ~40s（内核 + GeoSite 10.5MB；老 Max 内存压力下要 2.5 分钟） |
 | 运行模式 | fake-ip + dnsmasq redirect（Dnsmasq Redirect 模式，非 TPROXY/TUN） |
 | 端口 | http 7890 / mixed 7893 / dns 7874 / api 9090 |
-| 代理认证 | A 机 UCI 带来 `Clash:<你的代理认证密码>`（7893 裸测必 407） |
+| 代理认证 | A 机 UCI 带来 `Clash:mY6Qm1HL`（7893 裸测必 407） |
 | ocspeed | v3.3.1 四件套恢复，cron 每 30 分钟，52 节点测速自动切换正常 |
 | 商店注册 | openclash（opkg 源）+ ocspeed（local 源），卡片确认出现 |
 | 内存代价 | clash 1412m VSZ / 系统可用 645→576MB |
@@ -85,7 +85,7 @@ A 机备份同版本产物，整体替换最可靠：
 /etc/init.d/openclash enable && /etc/init.d/openclash start
 # 轮询：pidof clash + curl -H "Authorization: Bearer <dashboard_password>" http://127.0.0.1:9090/version
 # 节点数：/proxies → luci.jsonc parse 数 pairs
-# 出网：curl -U Clash:<你的代理认证密码> -x http://127.0.0.1:7893 https://www.google.com   ← 必须带认证
+# 出网：curl -U Clash:mY6Qm1HL -x http://127.0.0.1:7893 https://www.google.com   ← 必须带认证
 ```
 
 **启动后 30-60s 内防火墙规则未就绪，直连 curl 也可能 000——等它落定再测，别急着回滚。**
@@ -301,7 +301,7 @@ rules:  … → GEOIP,CN,DIRECT → MATCH,宝贝云      ← 兜底指向订阅�
 
 **定位命令（免 SSH）**
 ```bash
-P=$(uci get openclash.config.dashboard_password)   # 设备侧；PC 侧直接用 <你的Clash面板密码>
+P=$(uci get openclash.config.dashboard_password)   # 设备侧；PC 侧直接用 XPjqP72j
 curl -s -H "Authorization: Bearer $P" http://127.0.0.1:9090/proxies/宝贝云 | grep -o '"now":"[^"]*"'
 tail -n 40 /var/log/ocspeed.log                    # 看有没有「决赛全部未通过」
 ```

@@ -33,7 +33,7 @@ from collections import OrderedDict
 
 sys.stdout = io.TextIOWrapper(sys.stdout.buffer, encoding="utf-8", errors="replace", write_through=True)
 
-WORKSPACE = r"%USERPROFILE%\WorkBuddy\2026-09-19-12-19-57"
+WORKSPACE = r"C:\Users\91005\WorkBuddy\2026-09-19-12-19-57"
 PRIVATE = os.path.join(os.path.expanduser("~"), ".workbuddy", "skills", "kunpeng-router-tuning")
 DEFAULT_INSTALLER = os.path.join(WORKSPACE, "_third", "installer.sh")
 DEFAULT_OUT = os.path.join(PRIVATE, "tasks", "footprint.json")

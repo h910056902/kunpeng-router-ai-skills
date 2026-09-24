@@ -1,10 +1,11 @@
 8cc282b6b8f1a14cb7639e8ed6ca0e30  core/mihomo-linux-arm64.gz
 22ac5f0fe2c6ea32bdd7a2fabc86f384  ocspeed/config.ocspeed
+dfa100bf44b988504ce6ae5bcdbdc07e  ocspeed/luci-app-ocspeed_3.5-1_all.ipk
 4055f2aa1702a7326681e5fcbcaedce5  ocspeed/kp-ocspeed.sh
-ec067e80fa1a465448a5b07871f4bf78  ocspeed/nodetest.htm
-9999789b3c9fc75a7f4aea4a12ddbe57  ocspeed/ocspeed.htm
+e857abd6577c4094f1bec743745193ec  ocspeed/nodetest.htm
+0f512a333d139a4b58945bf7a2c67397  ocspeed/ocspeed.htm
 ea0fc06440268c99a91f705887889228  ocspeed/ocspeed.lua
-667b44a6c4b196f75117ba38f53afbae  ocspeed/speedswitch.sh
+9544e0b38b29bb146690535466913f00  ocspeed/speedswitch.sh
 f8ffbc5b6ac636d662f89e098a6a6368  openclash/config.openclash.template
 c37e00b26140090d715fb89cae76507c  openclash/luci-app-openclash_0.47.156_all.ipk
 473ff21267d4bf8ea4428e1178223b28  panel/install.sh
@@ -12,7 +13,7 @@ c37e00b26140090d715fb89cae76507c  openclash/luci-app-openclash_0.47.156_all.ipk
 5412400156208b122214609ff1ef42ec  panel/kp-storage-init.sh
 67b6d2acebd55c74e7309087f3981067  panel/kp-store-check.sh
 e565ce3fdc6b4a122c4621a624a3fdd4  panel/kp-store-lib.sh
-cfac3f438088dd72719ed06aca22b51f  panel/kp-ui.sh
+9cea808abd40fd9d7c65bbfdd3a7df91  panel/kp-ui.sh
 c88798eb5e0dfaf79741176f6f9b689b  stubs/kmod-br-netfilter_5.4.281-1_aarch64_cortex-a53.ipk
 71420027a5ae5b46db461d47ab0f890a  stubs/kmod-dm_5.4.281-1_aarch64_cortex-a53.ipk
 06a54a864d901366d511cdaedb63a650  stubs/kmod-fs-btrfs_5.4.281-1_aarch64_cortex-a53.ipk
