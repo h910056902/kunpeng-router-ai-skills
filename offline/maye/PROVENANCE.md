@@ -38,8 +38,10 @@
 
 > **验证状态（2026-09-24）**：语法（PC+设备）、0 悬挂引用、feature ID 一致性、
 > **真机菜单走查**、**真机只读 handler 端到端**（统一体检增强版 25 段全跑通）、
-> **rootfs 零改动**（`find -newer` 实测）均已通过 —— 详见 §7 / §7.1。
-> **仍未验证**：安装类 handler（下载 ipk → `opkg install` → 落盘），见 §9 第 1 条。
+> **真机安装类 handler 端到端**（`ttyd / Web SSH` 5 阶段全过、落地并监听 7681）、
+> **副作用经 `-nt` 法实测**（只读操作 0 文件净变动；安装操作实测改动 19 文件 + 19 目录，
+> 清单见 §7.1 ④）均已通过 —— 详见 §7 / §7.1。
+> **未验证**：其余安装项未逐个真跑（只抽验了 ttyd 一项，见 §9 第 1 条）。
 
 ## 3. 裁剪目标：去掉"会动这台设备"的能力
 
@@ -160,18 +162,23 @@
 | **真机菜单走查** | 推送设备后管道喂编号，逐类进入后返回（不选任何功能项） | ✅ 顶层 + 4 个子菜单全部按设计渲染，`rc=0` |
 | **真机 handler 端到端** | 实跑 `4 → 1 统一体检增强版`（feature 13，静态调用闭包 **214 个函数**） | ✅ 25 个检查段全跑通，407 行输出，`rc=0`，30.3 s（见 §7.1） |
 | 跑前/跑后对照 | 8 个关键文件 sha256、`pidof`、6 个补丁 marker、opkg 576 包整体哈希、`crontab`、`distfeeds`、`/root` 与 `/etc/kp_store` 清单 | ✅ **10/10 区段同值**；仅 dropbear pid 与 tmpfs 用量因本次会话变化 |
-| rootfs 改动侦测 | `find /etc /usr /root /www /opt /srv /bin /sbin /lib -xdev -newer <marker>` | ✅ **无任何改动**（运行期实测，非静态推断） |
+| **rootfs 改动侦测** | 遍历 `find / -xdev` + shell `[ f -nt $marker ]`（⚠️ 此固件 busybox find **无 `-newer`**，见 §9 第 9 条） | ✅ **0 个文件净变动**；仅 3 个目录 mtime 变动，其中 `/overlay` 与 `/mnt/app_data` 由脚本自身的**写探针**造成、`/tmp` 由本次会话写文件造成（见 §7.1 ③） |
+| **安装类 handler 端到端** | 实跑 `1 → 2 ttyd / Web SSH`（feature 3，含 `install_ttyd_webssh` 2276 行） | ✅ 5 个阶段全过，`rc=0`，12.8 s；ttyd 1.7.7 落地并监听 `192.168.66.1:7681`（见 §7.1 ④） |
 | 脚本锁释放 | `/var/run/nradio-plugin-assistant/` | ✅ 空目录，无残留锁 |
 | 上传完整性 | 本机 sha256 vs 设备 `sha256sum` | ✅ 一致（`3c2913f3…1e104`） |
 
 ### 7.1 真机端到端验证详情（2026-09-24 · C2000 U）
 
 验证目的：**证明裁剪后的代码不只在语法层自洽，而是能真实跑通 handler**。
-选 `统一体检增强版`（feature 13）作为靶子，理由是它**全程只读** ——
-静态审查其调用闭包内没有任何持久化写入（`ensure_state_dir` 的目标目录已存在；
-`optimize_*_cdn_order` 只重排内存里的 URL 变量；`record_*__summary` /
-`set_last_selfcheck_status` 只写 shell 变量），唯一落盘处是 tmpfs 的
-`WORKDIR=/var/run/nradio-plugin-assistant/work.$$`。
+分两轮：先跑**只读 handler**（不担风险地把调用链跑穿），再跑**安装类 handler**
+（验证「下载 → 落盘 → 起服务」这条最容易因裁剪而断的路径）。
+
+#### ① 只读靶子：`4 → 1 统一体检增强版`（feature 13）
+
+选它是因为**全程只读** —— 静态审查其调用闭包（`reach.py`，**214 个函数**）
+确认无持久化写入：`ensure_state_dir` 的目标目录已存在；`optimize_*_cdn_order`
+只重排内存里的 URL 变量；`record_*__summary` / `set_last_selfcheck_status`
+只写 shell 变量；唯一落盘处是 tmpfs 的 `WORKDIR=/var/run/nradio-plugin-assistant/work.$$`。
 
 ```
 $ printf '4\n1\n' | sh /tmp/ssh-nradio-plugin-installer-lite.sh
@@ -198,12 +205,74 @@ overall:  安装阶段 = PASS / 系统体检 = PASS / 时间与证书 = PASS
 另有 9 个 SKIP 段（AdGuardHome / ttyd / OpenList / ZeroTier / EasyTier /
 eMMC 两段 / LuCI 温度与运营商显示）都是「可选插件未安装」的正常跳过。
 
-**这一轮验证覆盖到的**：菜单分派 → `run_menu_feature` → handler → 深层子函数
+#### ② 覆盖到的调用链
+
+菜单分派 → `run_menu_feature` → handler → 深层子函数
 （下载辅助、网络探测、opkg 查询、服务状态检查、日志解析）全链路真实执行，
 无函数缺失、无 `command not found`、无悬挂引用报错。
 
-**这一轮仍未覆盖的**：**安装类 handler**（下载 ipk → `opkg install` → 落盘部署）。
-只读自检不经过那些分支，所以"具体安装流程在真机上跑通"仍**未**被证伪也**未**被证实 ——
+#### ③ 副作用复核（**本轮订正过一次**，方法论很重要）
+
+第一轮的结论「零改动」是**错的** —— 当时用的命令是
+`find <树> -xdev -newer <marker> 2>/dev/null`，而**此固件的 busybox find
+不支持 `-newer`**：它报 `unrecognized: -newer`，错误被 `2>/dev/null` 吞掉，
+**静默返回空结果** → 看起来像"零改动"，实为假阴性。
+
+改用可用方法（遍历 + shell `[ f -nt ]`）重做后的**真实**结论：
+
+```
+0 个文件净变动；
+3 个目录 mtime 变动：
+  /overlay        <- 脚本自己的写探针（ensure_dir_writable /overlay，第 23445 行）
+  /mnt/app_data   <- 脚本自己的写探针（openlist_dir_is_writable /mnt/app_data，第 1324 行）
+  /tmp            <- 本次会话把输出写到了 /tmp
+```
+
+写探针的机制：`probe_file="$dir/.nradio-write-test.$$"; : > "$probe_file"; rm -f "$probe_file"`
+—— **建完立刻删，净文件为零，但父目录 mtime 会跳**。
+对照实验（静置 45 s 不做任何操作）确认：那 45 s 里变的是 `/etc/config/cpecfg`
+（固件自己周期写的 5G 模块状态），`/overlay`、`/mnt/app_data` 均未变 →
+证明这两个目录确实是被体检的写探针碰的，不是环境噪声。
+
+#### ④ 安装类靶子：`1 → 2 ttyd / Web SSH`（feature 3）
+
+先静态审查 `install_ttyd_webssh`（2276 行，内嵌 ~2500 行 helper 的 heredoc），
+确认它会：下载 ttyd 1.7.7 二进制 + LuCI ttyd 资源 → 写 `Web SSH` 包装页 →
+**改 `appcenter.htm` 加商店快捷入口** → 重启 ttyd / infocd / appcenter 并 reload uhttpd。
+跑前备份 7 个文件（含 `appcenter.htm`、`appcenter.lua`）到 `/tmp/kp-maye-bak-ttyd/`。
+
+```
+$ printf '1\n2\ny\n' | sh /tmp/ssh-nradio-plugin-installer-lite.sh
+rc=0     耗时 12.8 s     输出 61 行
+
+[20%]  [1/5] 下载或更新 ttyd 二进制        下载完成 100% 1.3MB/1.3MB 0分2秒
+[40%]  [2/5] 安装或刷新 LuCI ttyd 文件     1.3KB + 109.1KB
+[60%]  [3/5] 写入 Web SSH 包装页
+[80%]  [4/5] 写入应用商店快捷入口
+[100%] [5/5] 重启 ttyd 与 uhttpd 服务
+安装完成 / 直连 ttyd: http://192.168.66.1:7681/ / ttyd 访问认证: 已关闭
+```
+
+跑后用同一套 `-nt` 方法实测，**真实改动 19 个文件 + 19 个目录**：
+
+| 类别 | 文件 |
+|---|---|
+| 新增二进制 / 服务 | `/usr/bin/ttyd`(1,370,112 B)、`/etc/init.d/ttyd`、`/etc/config/ttyd`、`/etc/rc.d/S??ttyd` |
+| 新增 LuCI | `controller/ttyd.lua`、`model/cbi/ttyd.lua`、`view/ttyd/overview.htm`、`view/ttyd/nradio_polish.htm`、`view/nradio_adv/webssh.htm`、`controller/nradio_adv/webssh.lua`、`www/luci-static/nradio/images/icon/webssh.svg` |
+| ⚠️ **改写了商店文件** | `view/nradio_appcenter/appcenter.htm`、`controller/nradio_adv/appcenter.lua` |
+| ⚠️ 改了固件模板 | `usr/lib/lua/luci/nradio.lua`（补 `luci.nradio` 运行接口）、`/etc/skills/oaf-tool/SKILL.md`（加 appfilter 存在性检查） |
+| 卸载素材 / 记账 | `controller/nradio_adv/plugin_uninstall.lua`、`/usr/libexec/nradio-plugin-uninstall`、`/usr/libexec/nradio-ai-compat.sh`、`/etc/nradio-plugin-menu/webssh-owned-files.list`、`/root/.nradio-plugin-menu/action-history.log` |
+
+**关键判据：它确实改写了 `appcenter.htm` / `appcenter.lua`，但我们的补丁 marker
+（`nradio_appcenter_extra_action` / `_kp_installed_registry` / `aurora_open_app`）
+跑前跑后都是 0 —— 本机从未打过我们的商店补丁，所以没有补丁被冲掉。**
+这同时**实测验证了 §0 红线 1 的「它会改商店页」不是推测**。
+（`Design By MaYe` 计数跑后 = 1，即它自己的产权标识。）
+
+**仍未验证的**：其余安装项（OpenList / DDNS-GO / ZeroTier / EasyTier / MT5700 /
+Open-Box / swap / eMMC 扩展 / 封版工具箱 / 风扇控制 / 首页温度切换）未逐个真跑 ——
+本次只抽验了 ttyd 一项作为安装路径的代表。网络侧（ZeroTier/EasyTier 会写 `ip rule`）
+风险最高，未触碰。
 见 §9。
 
 ## 8. 复现步骤
@@ -225,7 +294,7 @@ SRC=maye-v320.sh LITE=maye-lite.sh python verify_lite.py
 #    从入口出发沿静态调用图 BFS，列出闭包内所有写盘/删除/服务控制操作及行号
 python reach.py maye-lite.sh run_unified_test_mode
 #    命中 ≠ 有害（`> /dev/null`、tmpfs 上的 mkdir 都会被命中），要逐条读原行；
-#    选出只读 handler 后，真机跑 + 配 find -newer 实测零副作用，才算验证完成
+#    选出只读 handler 后，真机跑 + 配下面的改动侦测实测副作用，才算验证完成
 ```
 
 `trim_maye.py` 内的 `DENY_IDS` / `FAMILY` 即为裁剪策略，改这两处即可调整口径。
@@ -234,33 +303,61 @@ python reach.py maye-lite.sh run_unified_test_mode
 ```sh
 # ① 纯静态：reach.py 扫闭包 → 挑一个「只读 handler」当冒烟靶子
 # ② 纯运行期：设备侧
-touch /tmp/marker
-printf '4\n1\n' | sh /tmp/ssh-nradio-plugin-installer-lite.sh   # 跑只读 handler
-find /etc /usr /root /www /opt /srv /bin /sbin /lib -xdev -newer /tmp/marker
-#    期望：无输出。这比"静态看着没问题"硬得多 —— 语法通过 + 引用自洽都证明不了"能跑"。
+touch /tmp/kp-marker
+printf '4\n1\n' | sh /tmp/ssh-nradio-plugin-installer-lite.sh   # 跑被测 handler
+
+# 改动侦测 —— ⚠️ 此固件的 busybox find **没有 `-newer` / `-mmin` / `-newermt`**，
+#    必须用 shell 的 `-nt` 判定（写成 find -newer 且 2>/dev/null 会静默返回空 → 假阴性！）
+cd / && find . -xdev -type f | while IFS= read -r f; do [ "$f" -nt /tmp/kp-marker ] && echo "F $f"; done
+cd / && find . -xdev -type d | while IFS= read -r f; do [ "$f" -nt /tmp/kp-marker ] && echo "D $f"; done
+#    rootfs 只有 6,610 文件 / 523 目录 → 全盘扫一遍 0.6 s，可以每次跑完都扫
+#    期望：只读操作 = 0 个 F 行（`D` 行可能因脚本自己的写探针而出现，见 §7.1 ③）
+#    这比"静态看着没问题"硬得多 —— 语法通过 + 引用自洽都证明不了"能跑"。
 ```
+
+> 💡 **别漏了对照实验**：设备上跑着每分钟一次的 crontab（ocspeed），固件自己也会周期写
+> `/etc/config/cpecfg`。看到意外改动时，先"静置同样时长什么都不做"再扫一遍，
+> 用对照组把环境噪声与操作副作用分开 —— 否则很容易把固件行为误判成脚本行为。
 
 ## 9. ⚠️ 未验证与已知限制
 
-1. **安装类 handler 没有在真机跑过**。2026-09-24 已把验证推进到「只读 handler 端到端」
-   （菜单分派 → `run_menu_feature` → 统一体检增强版，25 段全跑通，见 §7.1），
-   但**下载 ipk → `opkg install` → 落盘部署**这一段仍**未在真机执行**
-   —— 跑它就会真实改动设备，越出只读验证的边界。
-   所以本版能保证的是「能启动、菜单正确、调用链自洽、只读功能可执行」；
-   各具体安装流程的**下载源可用性、ipk 依赖、设备端兼容性**仍需自行判断。
-   （注：CDN 探测 6 段全 PASS 已间接证明 URL 解析与下载辅助函数可用。）
+1. **只抽验了一个安装项**。2026-09-24 已跑通「只读 handler（统一体检增强版 25 段）」与
+   「一个安装类 handler（`ttyd / Web SSH`，5 阶段全过、落地并监听 7681）」，见 §7.1。
+   **其余安装项未逐个真跑**（OpenList / DDNS-GO / ZeroTier / EasyTier / MT5700 /
+   Open-Box / swap / eMMC 扩展 / 封版工具箱 / 风扇控制 / 首页温度切换）——
+   下载源与 ipk 依赖整体可用性已由 CDN 探测 6 段 + ttyd 实测间接证明，
+   但**逐项的设备端兼容性仍需自行判断**。网络侧（ZeroTier / EasyTier 会写 `ip rule`）
+   **风险最高、本次刻意未触碰**。
 2. **仍不产生任何备份**（与上游一致）。跑任何安装项之前，自己备份
    `appcenter.lua` / `appcenter.htm` / `/etc/config/appcenter` / `/etc/opkg/distfeeds.conf`。
+   ⚠️ 实测证实它会改写这两个 appcenter 文件（见 §7.1 ④），备份不能省。
 3. **依赖上游函数名稳定**。若上游改了函数命名，`FAMILY` 归属需同步调整。
 4. **机型分支已移除**：AK68-798 / NRadio_C8-788 的专用菜单分支被删，统一走单一菜单；
    机型级功能门禁仍在，不支持的功能照样会被 `die` 拦下。
 5. **动态拼名家族未做任何裁剪**（modem/AT 的 `command_*` 等 81 个函数原样保留），
    因此本版仍完整保留 5G/模组相关的 AT 操作能力。
 6. **`install_*` 类流程的卸载脚本素材仍包含 AGH/Docker 片段**（见 §6 末注），
-   属落盘文本而非本进程执行。
+   属落盘文本而非本进程执行。⚠️ 但**卸载素材本身会被写进设备**
+   （ttyd 那次写了 `/usr/lib/lua/luci/controller/nradio_adv/plugin_uninstall.lua` +
+   `/usr/libexec/nradio-plugin-uninstall`）；内容是文本，**不要去点那些入口**。
 7. **会残留一个空的 tmpfs 目录** `/var/run/nradio-plugin-assistant/`（`WORKDIR` 的父目录），
    重启即消失，且**上游同样如此**（非裁剪引入）；锁文件本身会正常释放。
-8. 本版**不是**上游产物，被上游收录的哈希校验对本文件无意义。
+8. **只读操作也会碰目录 mtime**：脚本用「建一个探针文件再立刻删」来判断目录可写
+   （`ensure_dir_writable`），净文件为零但**目标目录的 mtime 会跳**。
+   实测体检会碰 `/overlay` 与 `/mnt/app_data`。做副作用复核时别把 D 行当故障。
+9. 🕳️ **`-newer` 假阴性（本项目真踩过）**：**此固件的 busybox find 不支持
+   `-newer` / `-mmin` / `-newermt`**。写成
+   `find <树> -xdev -newer <marker> 2>/dev/null` 时，它报 `unrecognized: -newer`
+   但错误被 `/dev/null` 吞掉，**静默返回空结果** → 看起来像"零改动"。
+   正确做法是遍历 + shell `[ f -nt marker ]`（见 §8）。
+   **推论：任何"期望无输出"的校验都别把 stderr 丢掉** —— 静默为空既可能是无问题，
+   也可能是命令根本没跑起来。
+10. **ttyd 的访问认证默认关闭**（`option credential '0'`，`interface='br-lan'`）。
+    仅监听 LAN 网桥，但**同网段任何设备都能拿到 root shell**。
+    本机 root 口令本身也弱，所以未额外处理；在意的话自行
+    `uci set ttyd.default.credential='1'` 并设 username/password 后
+    `/etc/init.d/ttyd restart`。
+11. 本版**不是**上游产物，被上游收录的哈希校验对本文件无意义。
 
 ## 10. 授权与声明
 

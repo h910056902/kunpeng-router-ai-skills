@@ -284,11 +284,27 @@ AI 若无法 clone（本机 `github.com` DNS 被污染），可用 CDN 直读兜
   （顶层 5 类 → 4 类；分类 1 `[0-10]`→`[0-6]`；分类 2 `[0-7]`→`[0-4]`）。
   已通过 `sh -n`（PC+设备）、**0 悬挂引用**、feature ID 一致性、**真机菜单走查**、
   **真机只读 handler 端到端**（实跑 `4→1 统一体检增强版`：feature 13，静态闭包 214 个函数，
-  25 个检查段 / 407 行 / `rc=0`，`find -xdev -newer` 实测 **rootfs 零改动**，10/10 指纹区段同值）。
-  规则与验证证据见 `offline/maye/PROVENANCE.md`，可复现工具 `scripts/maye_trim/trim_maye.py`。
-  ⚠️ 它是**裁剪衍生版**，上游 `CHECKSUMS.txt` 的哈希对它不适用；且**安装类 handler 未在真机执行过**
-  （只读自检不经过「下载 ipk → opkg install → 落盘」那些分支，跑前仍请自行备份）。
+  25 个检查段 / 407 行 / `rc=0`，真实耗时 30.3 s）、**真机安装类 handler 端到端**
+  （实跑 `1→2 ttyd / Web SSH`：feature 3，5 阶段全过 / `rc=0` / 12.8 s，ttyd 1.7.7 落地 1,370,112 B
+  并监听 `192.168.66.1:7681`）、10/10 指纹区段同值、脚本锁干净释放。
+  **副作用判定用 `-nt` 法实测**（BusyBox `find` 无 `-newer`，见下方 🕳️）：只读操作 **0 文件净变动**
+  （仅 `/overlay`、`/mnt/app_data`、`/tmp` 三个目录 mtime 变动 —— 前两个来自脚本自身的写探针、
+  第三个来自本次会话写输出）；安装操作实测 **19 文件 + 19 目录**，其中 `appcenter.htm` /
+  `appcenter.lua` 被改写（我们的补丁 marker 跑前后全 0 → 无补丁被冲掉）。
+  规则与验证证据见 `offline/maye/PROVENANCE.md`，可复现工具 `scripts/maye_trim/trim_maye.py` +
+  `scripts/maye_trim/reach.py`（静态调用闭包 + 写盘扫描，用来挑只读靶子）。
+  ⚠️ 它是**裁剪衍生版**，上游 `CHECKSUMS.txt` 的哈希对它不适用；⚠️ 其余安装项
+  （OpenList / DDNS-GO / ZeroTier / EasyTier / MT5700 / Open-Box / swap / eMMC 扩展 / 封版工具箱 /
+  风扇 / 首页温度）**仍未逐个真跑**，网络侧（ZeroTier/EasyTier 会写 `ip rule`）风险最高，跑前务必自行备份。
   💡 想确认精简版"真能跑"，最佳靶子是 `4 设备维护 → 1 统一体检增强版` —— 全程只读、零副作用。
+  🕳️ **副作用复核的假阴性坑（真踩过）**：不能用 `find <树> -xdev -newer <marker> 2>/dev/null` ——
+  BusyBox v1.33.2 的 `find` 不支持 `-newer`/`-mmin`/`-newermt`，会报 `unrecognized: -newer` 但 stderr 被吞，
+  **静默返回空 → 误判"零改动"**。正确写法是遍历 + shell `[ f -nt marker ]`：
+  ```sh
+  find . -xdev -type f 2>/dev/null | while IFS= read -r f; do [ "$f" -nt "$M" ] && printf 'F %s\n' "$f"; done
+  ```
+  另：设备有每分钟一次的 crontab（ocspeed）+ 固件周期写 `/etc/config/cpecfg`，看到意外改动要
+  **静置同样时长什么都不做再扫一遍**，区分环境噪声与操作副作用。
   🔴 另注：**不要对 maye 源码做死代码清理** —— 它存在动态拼名调用
   （`_func="command_${_vendor}_${_cmd}${_cmdset}"`），"无人引用"的函数全是活函数。
 

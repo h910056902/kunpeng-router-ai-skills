@@ -12,7 +12,17 @@
    - `mkdir -p "$WORKDIR"` 若 WORKDIR 在 /tmp 或 /var/run（tmpfs），则非持久化
    - 命中不等于有害，**要逐条读行**再定论
    因此本工具用于"缩小审查范围"，不代替结论。真正的结论建议配运行期实测：
-   设备侧 `touch /tmp/marker` → 跑 → `find /etc /usr /root /www /opt /srv -xdev -newer /tmp/marker`。
+   设备侧 `touch /tmp/marker` → 跑 → **遍历 + shell `[ f -nt marker ]`** 列出改动。
+
+   🕳️ **绝不可用 `find -xdev -newer <marker>` 做这一步**：BusyBox v1.33.2 的 `find`
+   不支持 `-newer` / `-mmin` / `-newermt`，它报 `unrecognized: -newer` 但错误常被
+   `2>/dev/null` 吞掉 → **静默返回空 → 假阴性"零改动"**（本项目已因此把两轮结论判错）。
+   正确写法（实测全盘 0.06–0.6 s）：:
+
+       M=/tmp/marker; cd /
+       find . -xdev -type f 2>/dev/null | while IFS= read -r f; do
+           [ "$f" -nt "$M" ] && printf 'F %s\n' "$f"
+       done
 
 用法::
 

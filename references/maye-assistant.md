@@ -44,8 +44,10 @@ AK68-798 / C8-788 的机型专用分支一并移除，统一为单一菜单（�
 feature ID 一致 · **真机菜单走查**（推送设备后逐类进入返回，顶层 + 4 子菜单全部按设计渲染，`rc=0`）·
 **真机只读 handler 端到端**（实跑 `4 → 1 统一体检增强版`，feature 13：25 个检查段 / 407 行输出 /
 `rc=0` / 30.3 s；静态调用闭包 **214 个函数**全部可解析执行，无缺函数、无悬挂引用）·
-**rootfs 零改动**（`find /etc /usr /root /www /opt /srv /bin /sbin /lib -xdev -newer <marker>` →
-无任何输出）· 跑前跑后 10/10 区段指纹同值（仅 dropbear pid 与 tmpfs 用量因本次会话变化）·
+**真机安装类 handler 端到端**（实跑 `1 → 2 ttyd / Web SSH`，feature 3：5 个阶段全过 /
+`rc=0` / 12.8 s，ttyd 1.7.7 落地 1,370,112 B 并监听 `192.168.66.1:7681`）·
+**副作用经 `-nt` 法实测**（只读操作 **0 文件净变动**；安装操作实测 **19 文件 + 19 目录**，
+其中 `appcenter.htm` / `appcenter.lua` 被改写 —— 实测坐实了「它会改商店页」）·
 脚本锁干净释放。
 
 **真机跑法（实测可用）**：
@@ -53,12 +55,27 @@ feature ID 一致 · **真机菜单走查**（推送设备后逐类进入返回�
 # 部署：设备无 sftp，用 cat > file 经 stdin 直传（2.39 MB 约 5 s）
 sha256sum /tmp/ssh-nradio-plugin-installer-lite.sh   # 3c2913f3…1e104
 sh -n /tmp/ssh-nradio-plugin-installer-lite.sh && echo SYNTAX_OK
-printf '4\n1\n' | sh /tmp/ssh-nradio-plugin-installer-lite.sh   # 只读体检验证，实测 rc=0
+printf '4\n1\n'    | sh /tmp/ssh-nradio-plugin-installer-lite.sh  # 只读体检验证，实测 rc=0
+printf '1\n2\ny\n' | sh /tmp/ssh-nradio-plugin-installer-lite.sh  # 装 ttyd（有 [y/N]），实测 rc=0
 ```
-`4 → 1 统一体检增强版` 是最佳"冒烟靶子"：**全程只读**，能验证整条调用链真能跑，
-且不动设备一根毫毛。真机体检报的 3 个 FAIL（`OpenVPN CDN` / `OpenVPN 自检` / `哈基米 ASN.mmdb`）
+`4 → 1 统一体检增强版` 是最佳"只读冒烟靶子"，能验证整条调用链真能跑且不动设备。
+真机体检报的 3 个 FAIL（`OpenVPN CDN` / `OpenVPN 自检` / `哈基米 ASN.mmdb`）
 **全是本机既有状态**——其中 `ASN.mmdb` 缺失属**脚本误报**（运行配置 `e_bbydy.yaml` 里 `ASN,`
 规则计数为 0，`Country.mmdb`/`GeoSite.dat` 均在位，无功能影响）。
+
+> 🕳️ **副作用复核的假阴性坑（真踩过）**：**此固件 busybox find 没有 `-newer` / `-mmin` /
+> `-newermt`**。`find <树> -xdev -newer <marker> 2>/dev/null` 会报 `unrecognized: -newer`
+> 但错误被吞掉 → **静默返回空结果，看起来像"零改动"**。必须用遍历 + shell `[ f -nt marker ]`：
+> ```sh
+> touch /tmp/kp-marker
+> cd / && find . -xdev -type f | while IFS= read -r f; do [ "$f" -nt /tmp/kp-marker ] && echo "F $f"; done
+> cd / && find . -xdev -type d | while IFS= read -r f; do [ "$f" -nt /tmp/kp-marker ] && echo "D $f"; done
+> ```
+> rootfs 仅 6,610 文件 / 523 目录 → 全盘扫 0.6 s。`D` 行可能因脚本自己的**写探针**
+> （建了立刻删的 `.nradio-write-test.$$`）而出现，别当故障。
+> 看到意外改动先做**对照实验**（静置同样时长什么都不做再扫一遍）—— 设备上有每分钟一次的
+> crontab，固件自己也会周期写 `/etc/config/cpecfg`。
+> 教训推广：**任何"期望无输出"的校验都别把 stderr 丢掉**，静默为空既可能是无问题，也可能是命令没跑起来。
 
 > 🔴 **不要做死代码清理**：脚本存在**动态拼名调用**
 > —— `58970: _func="_switch_sim_${_vendor}"`、`59075: _func="command_${_vendor}_${_cmd}${_cmdset}"`、
