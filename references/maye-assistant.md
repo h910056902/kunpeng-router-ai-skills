@@ -8,26 +8,137 @@ preconditions:
   - "🔴 严禁在其菜单选「卸载 Docker」"
   - "🔴 严禁在其菜单装 AGH/mosdns（端口与 Docker AGH 冲突）"
   - "改前先 snapshot"
-verified: 2026-09-19
+verified: 2026-09-24
 source: kunpeng-router-tuning
 ---
 # maye 插件安装助手兼容性（nradio.mayebano.shop）
 
-社区脚本「NRadio 官方系统插件安装助手」（作者 maye），**V3.2.0 / 2026-09-14**，
+社区脚本「NRadio 官方系统插件安装助手」（作者 maye），**当前上游为 V3.2.1 / 2026-09-23**，
 约 7 万行 sh 菜单式工具。上游 <https://github.com/561410590/ssh-nradio-plugin-installer>
 （镜像页 <https://nradio.mayebano.shop/>）。**与我们的商店补丁可共存**。
 
 完整操作流程见 [`tasks/05-nros-plugin-installer.md`](../tasks/05-nros-plugin-installer.md)。
 
+## ⚠️ 版本漂移记录（2026-09-24 实测，**必读**）
+
+上游 `00-current/ssh-nradio-plugin-installer.sh` 是**滚动更新的单文件**，同 URL 会随时间变版 ——
+2026-09-24 实测：同一条 `ghproxy.vip` / raw 链**只会返回当时的 HEAD（V3.2.1）**，不再给 V3.2.0。
+
+⚠️ **但旧版并非取不回：锁 commit 即可精确复现，且 sha256 与档案记录逐字节一致。**
+2026-09-24 PC 侧（raw）与设备侧（ghproxy.vip）**双通道各下一次，两边 sha256 相同**：
+
+| 取法 | URL 形态 | 实测 sha256 |
+|---|---|---|
+| **V3.2.0**（档案已验证版） | `…/561410590/ssh-nradio-plugin-installer/raw/**2daa69d8b4**/00-current/ssh-nradio-plugin-installer.sh` | `62f248a9…c8ed8` ✅ 与档案一致 |
+| V3.2.1（当前 HEAD） | `…/raw/refs/heads/main/00-current/ssh-nradio-plugin-installer.sh` | `67e57576…84403` |
+
+- V3.2.0 commit = `2daa69d8b4`（`feat: release V3.2.0 and updated router plugins`，2026-09-14T07:17:26Z）
+- V3.2.1 commit = `6c63125261`（`V3.2.1 update`，2026-09-22T12:57:29Z）
+- 上游目录树的 git blob size 与下载体**逐字节一致**（V3.2.1 = 2,893,017 B）→ 滚动 URL 拿到的是
+  上游真品，非镜像篡改。**想复跑已验证版本，就把 URL 的 `refs/heads/main` 换成 `2daa69d8b4`。**
+
+**两版对照**：
+
+| 项 | V3.2.0（2026-09-14 快照） | **V3.2.1（2026-09-23，当前上游）** |
+|---|---|---|
+| 大小 | 2,878,882 B | **2,893,017 B**（+14,135 B） |
+| sha256 | `62f248a924e7b05ccb5c1053ddc800835e075f3697d9221196eac1a0993c8ed8` | **`67e57576d81f2d3576f54312d213eda32528a010b6b5dbffeaa8bb1904c84403`** |
+| 上游 git blob | — | `c2e414236774663541eed050a475917fa724cac8`（size 2893017，与下载体逐字节一致） |
+| `SCRIPT_RELEASE_DATE` | `2026-09-14` | **`2026-09-23`** |
+
+**关键结论**：
+- ✅ **上游官方校验清单存在，且它登记的正是 V3.2.0**（2026-09-24 实测）：
+  `CHECKSUMS.txt` 与 `CHANGELOG.md` 在**仓库根目录**（**不在** `00-current/` 下 —— 本文件在
+  2026-09-24 的初稿里只查了 `00-current/CHECKSUMS.txt` 得到 404，由此写成「上游无校验清单」，
+  那是**查错路径**得出的错误结论，现已更正；`tasks/05` 原文「与上游 `CHECKSUMS.txt` 一致」是对的）。
+  官方原文（`CHECKSUMS.txt` 抬头 `# NRadio V3.2.0 release checksums` / `Generated … 2026-09-14`）：
+  `62f248a924e7b05ccb5c1053ddc800835e075f3697d9221196eac1a0993c8ed8  2878882  00-current/ssh-nradio-plugin-installer.sh`
+  → 与档案记录、与本仓 2026-09-24 双通道实测**三方一致**。V3.2.0 因此是**三重验证**版本。
+- 🚨 **V3.2.1 没有官方哈希、也没有变更记录** —— 2026-09-24 复取 `CHECKSUMS.txt` 仍是
+  `# NRadio V3.2.0 release checksums`（未随 V3.2.1 更新），`CHANGELOG.md` 最新条目也仍是
+  `V3.2.0 - 2026-09-14`，**全库没有一行 V3.2.1 的说明**。
+  即：**V3.2.1 无法用上游自己的清单验证**。它只能靠本仓的源码级审计（见下条）背书，
+  而这恰恰说明 —— **要跑就跑锁 commit 的 V3.2.0**（有官方哈希 + 有变更说明 + 本仓已四关验证）。
+- ✅ **V3.2.1 的三条红线分支全部原样未变**（2026-09-24 逐条核对源码）：
+  `backup_file()` 仍为空实现（2575 行 / 55081 行，函数体只有 `return 0`）；Docker 卸载分支仍在
+  （**4512-4534 行**：`rm -f /etc/config/dockerd /etc/config/docker /etc/docker/daemon.json …` 在 4512 行起，
+  `rm -rf /etc/docker /usr/libexec/docker "$DOCKER_ROOT" /tmp/nradio-docker-*` 在 4530 行，
+  随后 4531-4534 行连调 6 次 `cleanup_appcenter_entry`）；
+  AGH/mosdns 分支仍在（**123-124 行** `ADGUARDHOME_DNS_PORT=554` / `…LEGACY_DNS_PORT=553`、
+  **209 / 215 行** `MOSDNS_UNINSTALL` / `MOSDNS_PORT=553`，端口赋值另见 3000-3002 行）；
+  奇游/雷神明文 HTTP 链仍在（97 行 `http://sd.qiyou.cn` / 106 行 `http://119.3.40.126/...`）。
+- ✅ `distfeeds` 守卫仍在（5701 行 `软件源: 保留当前固件源`）→ 本机阿里云 3 条源不会被重写。
+- ✅ 版本门禁仍放行本机：`is_supported_nros_revision`（1224 行）对 `2.*` 一律 `return 0`；
+  `c2000_storage_swap_model_supported`（1243-1245 行）显式含 `NRadio_C2000Ultra` →
+  「swap 虚拟内存」项在本机可用。本机 `2.3.0.n0.c1` 照常过门禁。
+  `require_nradio_menu_environment` 的触发点从档案记的 72416 行**后移到 72730 行**
+  （`case "$UI_READ_RESULT" in 1|2|3|4)`），与文件增大相符。
+- ✅ **五个菜单的编号与禁选项 2026-09-24 逐项复核，与本文档表格完全一致、零错位**：
+  分类1 `1..10`+`0`（prompt `0-10`；②哈基米 ④AdGuardHome ⑥MosDNS 仍是禁项）；
+  分类2 `1..7`+`0`（`0-7`；4/5/6 三个路由向导仍是禁项）；分类3 `1..2`+`0`（`0-2`；奇游=1 雷神=2）；
+  分类4 本机非轻量机型但支持 8080 → `1 美化 / 2 还原 / 3 OpenWrt 原版 LuCI(8080)`+`0`（`上方编号，0 返回`；2 仍是禁项）；
+  分类5 本机走 default 支 → `0-8 / 11-12`、**返回键是 `12`**（9/10 仍为空跳号；`11 硬件加速管理`仍是禁项）。
+- 🆕 **V3.2.1 到底改了什么（2026-09-24 实测 diff：35 个 hunk / +436 −122 行）** ——
+  ⚠️ 旧版本节曾误记「V3.2.1 主要新增 = smart-band」，**已证伪**：`NRADIO_SMART_BAND*`
+  在两版各 47 处引用、`diff` 输出**零差异**、35 个 hunk 里**没有一处**涉及 smart-band。
+  实测改动**全部落在下列 6 处函数**，且**都在我们红线的禁选范围内**：
+  1. `SCRIPT_VERSION` / `SCRIPT_RELEASE_DATE`（版本头，5 / 7 行）；
+  2. `patch_common_template()`（9290 行）—— AGH 菜单标题**英译中汉化**
+     （`Base Setting`→`基础设置` 等），纯文案；
+  3. `install_openclash()`（24859 行）—— 新增调用 `ensure_hakimi_dns_antileak`（哈基米 DNS 防泄露；
+     即 §8.7 禁项③「哈基米」那条路径）；
+  4. AdGuardHome 系：`write_adguard_wrapper_files` / `normalize_adguard_yaml_defaults` /
+     `ensure_adguard_openclash_dns_chain` / `ensure_adguard_dashboard_auth_defaults` /
+     `guide_adguard_dashboard_account` / `install_adguardhome`（即禁项② AGH 那条路径）；
+  5. `storage_expand_*` —— 新增**崩溃安全迁移**：`storage_expand_migration_is_pending()`
+     （`.nradio-migration-pending` 续接状态）、`storage_expand_payload_matches_target()`
+     （递归 `cmp` 载荷校验）、`storage_expand_complete_migration()`（失败即保留源路径 + 重启服务）；
+     这是**加固**，修的是「迁移中途断电留下不一致状态」；
+  6. `write_mt5700_c2000_atsd_proxy()` / `install_mt5700_webui()`（MT5700 WebUI 项，菜单 `1 > 9`）。
+  → **结论**：V3.2.1 没有新增任何落在「可安全使用」范围内的能力，也没有削弱任何红线；
+    唯一实质收益是**第 5 条存储迁移加固**。若要跑「swap 虚拟内存」（分类1 的第 1 项，走 storage_expand），
+    V3.2.1 比 V3.2.0 稳；其余场景两版等价。
+- 🆕 上游 `00-current/` 另有独立小脚本（与主脚本分开维护，本仓不下载）：
+  `nradio-fanctrl-plugin.sh`(12,710 B)、`nradio-smart-band.sh`(22,982 B)、
+  `qiyou-nradio-temp-installer.sh`(26,563 B)、`leigod-nradio-temp-installer.sh`(30,364 B)、
+  `ssh-nradio-plugin-installer-2.0.0beta.sh`(849,223 B)。
+- 🆕 **Docker 安装项在本机不可达（利好，2026-09-24 实测）**：菜单 `1 > 8` 虽打印
+  `Docker（C5800 系列 / C8-688）`，但 `install_docker_plugin()` 第一句就是
+  `docker_require_supported_model`（70574 行），对非 `C5800-650/C5800-688/C8-688` 机型**直接 `die`**；
+  本机是 `NRadio_C2000Ultra` → **写操作前即退出，零副作用**。
+  所以该路径里那句 `docker_configure_storage()`（71212 行，会把
+  `dockerd.globals.data_root` 指到 `/mnt/rootfs_2nd_data/nradio-apps/docker/data`，
+  **与本机 1Panel 实际用的 `/mnt/storage/data/docker` 不同**）**在本机永远不会执行** ——
+  不必为此放宽红线 2 的适用范围。
+
+**处置规则（写进流程，2026-09-24 定稿）**：
+
+1. **默认锁 commit 取 V3.2.0**，不要用 `refs/heads/main` —— 后者会静默换成未验证的 HEAD。
+   落地命令（设备侧）：
+   ```sh
+   cd /tmp && wget -O ssh-nradio-plugin-installer.sh \
+     "https://ghproxy.vip/https://github.com/561410590/ssh-nradio-plugin-installer/raw/2daa69d8b4/00-current/ssh-nradio-plugin-installer.sh"
+   sha256sum ssh-nradio-plugin-installer.sh
+   #   必须等于 62f248a924e7b05ccb5c1053ddc800835e075f3697d9221196eac1a0993c8ed8
+   #   （= 上游 CHECKSUMS.txt 登记值 = 档案记录值，三方一致）
+   sh -n ssh-nradio-plugin-installer.sh && echo SYNTAX_OK
+   ```
+2. **双通道互证**：设备侧 `wget`（走 ghproxy.vip）与 PC 侧 `curl`（走 raw）各下一次、比 sha256，
+   一致即认为下载完整、且非镜像篡改（2026-09-24 实测两通道值逐字节相同）。
+3. **若哪天要用 V3.2.1 或更高版本**：先确认上游 `CHECKSUMS.txt` 是否已补登该版本的哈希；
+   **在没有官方校验值之前，不得裸跑** —— 必须先按本文件「V3.2.1 到底改了什么」的办法
+   （PC 侧 `diff` 逐 hunk 归函数 + 核对三条红线分支）做完源码审计，再由使用者决定。
+
 ## 三条红线（2026-09-19 实测）
 
 1. **它不产生任何备份。** 脚本第 19 行有 `BACKUP_DIR="/root/nradio-plugin-fix"`，
-   但 `backup_file()`（第 2575-2578 行、第 54767-54769 行）是**空实现**，函数体只有 `return 0`，
+   但 `backup_file()`（V3.2.1 实测：第 2575-2578 行、第 55081-55083 行；档案旧记的 54767-54769
+   是 V3.2.0 的行号，已后移）是**空实现**，函数体只有 `return 0`，
    注释写「…不在路由器上生成持久备份」。全脚本 100+ 处 `backup_file "..."` 全是空操作，
    没有任何 `mkdir`/`cp` 落到 `$BACKUP_DIR`。真机实测该目录**不存在**。
    → 想回滚只能靠自己跑前备份。（**旧版档案写「自带备份到 `/root/nradio-plugin-fix/`」是错的。**）
 
-2. **别选「卸载 Docker」**（第 4512-4530 行）。它 `rm -f /etc/config/dockerd` 并
+2. **别选「卸载 Docker」**（第 4512-4534 行）。它 `rm -f /etc/config/dockerd` 并
    `rm -rf /etc/docker /usr/libexec/docker $DOCKER_ROOT`。本机 `/etc/config/dockerd`（304 B）
    是 Docker `data_root` 与镜像加速源的**唯一载体**（`data_root '/mnt/storage/data/docker'` +
    2 条 `registry_mirrors`），删掉 = 1Panel 的 Docker 环境连带数据一起报废。
@@ -69,8 +180,11 @@ PTY 真终端按**正确用法**（**不带参数**）完整走通：
 带仓库 URL 会被当作菜单编号 → `ERROR: 无效编号：https://…` → 退出。合法位置参数只有 `0`~`5`。
 
 ⚠️ **状态目录**：`/root/.nradio-plugin-menu/`，内含
-`disclaimer_accepted_20260615-v260-model-disclaimer-c2000pro-risk-v1.flag`（27 B，`accepted V3.2.0 2026-09-14`）。
-同意一次后不再询问；删掉它下次会重新问。**它不是备份**（见红线 1）。
+`disclaimer_accepted_20260615-v260-model-disclaimer-c2000pro-risk-v1.flag`（27 B）。
+该 flag 的**文件名是上游固定的模板名**，内容由首次接受时那个版本的日期决定
+（2026-09-20 真机写入时是 `accepted V3.2.0 2026-09-14`）；
+⚠️ **本机现在已有该 flag**（2026-09-24 实测在位）→ 再跑 V3.2.1 时**不会重新询问免责声明**，
+直接进主菜单。同意一次后不再询问；删掉它下次会重新问。**它不是备份**（见红线 1）。
 
 ⚠️ **stdin 三种行为**：`< /dev/null` → `die "input cancelled"`；`exec_command` 不喂不关 → **永久挂住**；
 管道喂够 `y`+编号 → 能跑通（rc=0）。**技术可自动化，但流程上必须人工选菜单项**。
@@ -147,7 +261,8 @@ map 的 cond 是「分派支条件」（如 `[ "$UI_READ_RESULT" = "$maintenance
 
 真机实测：只进 5 个子菜单、一个功能项都没选，`/root/.nradio-plugin-menu/` 就出现了，
 里面只有 `disclaimer_accepted_20260615-v260-model-disclaimer-c2000pro-risk-v1.flag`
-（27 B，内容 `accepted V3.2.0 2026-09-14`）。
+（27 B，写入时内容 `accepted V3.2.0 2026-09-14`；该内容是**首次接受时的版本快照**，
+不随后续版本升级而变）。
 
 ⚠️ **所以不能用「状态目录存在」判断「maye 已装插件」** —— 用户按一次 `y` 就会误报。
 `scripts/adapt_maye_assistant.py` 原先把 `[ -d /root/.nradio-plugin-menu ]` 当「已安装」，
@@ -375,7 +490,9 @@ no_block 2 / no_symlink 2 / keeps 1 / no_cron 1`（总 492）。
 2. 用户在路由器上跑:
      cd /tmp && wget -O ssh-nradio-plugin-installer.sh \
        https://ghproxy.vip/https://github.com/561410590/ssh-nradio-plugin-installer/raw/refs/heads/main/00-current/ssh-nradio-plugin-installer.sh
-     sha256sum ssh-nradio-plugin-installer.sh   # 62f248a924e7b05ccb5c1053ddc800835e075f3697d9221196eac1a0993c8ed8
+     sha256sum ssh-nradio-plugin-installer.sh
+     # ⚠️ 期望值随上游滚动更新，**不要盲信本行**；正确做法见表「版本漂移记录」的双通道互证：
+     #    PC 侧再下一次并比 sha256，一致即下载完整；与档案记录不符时先核上游现状、由使用者决定。
      sh -n ssh-nradio-plugin-installer.sh && sh ssh-nradio-plugin-installer.sh
 3. python scripts/adapt_maye_assistant.py check        # 检测 6 个补丁指纹
 4. 有丢失 → python scripts/adapt_maye_assistant.py check --fix   # 自动重放对应 patches 脚本
@@ -383,7 +500,9 @@ no_block 2 / no_symlink 2 / keeps 1 / no_cron 1`（总 492）。
 ```
 
 > 旧版的下载地址 `https://nradio.mayebano.shop/ssh-nradio-plugin-installer.sh` 已不作为首选 ——
-> 实测可用且带完整性对账的是上面的 `ghproxy.vip` 链（配上游 `CHECKSUMS.txt` 校验 sha256）。
+> 实测可用的是上面的 `ghproxy.vip` 链。
+> ⚠️ **上游没有官方 `CHECKSUMS.txt`**（`00-current/` 下 404），完整性只能靠
+> **PC 侧 + 设备侧双通道独立下载互证 sha256**（2026-09-24 实测两通道值逐字节一致）。
 
 ## 补丁指纹清单（adapt_maye_assistant.py 的 MARKERS）
 
