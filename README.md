@@ -106,7 +106,7 @@
 | **T2 · ocspeed 安装** | [`tasks/02-ocspeed-install.md`](tasks/02-ocspeed-install.md) | `offline/ocspeed/` 五件套（speedswitch.sh / ocspeed.lua / ocspeed.htm / nodetest.htm / config.ocspeed）+ 一键装脚本 `kp-ocspeed.sh` |
 | **T3 · Docker + 1Panel 安装** | [`tasks/03-docker-1panel-install.md`](tasks/03-docker-1panel-install.md) | `offline/panel/` 六脚本（install / kp-install / kp-storage-init / kp-store-lib / kp-store-check / kp-ui）+ `scripts/payload/` host 网络默认化三件套 |
 | **T4 · 清空 Docker 环境（重装前置）** | [`tasks/04-docker-purge.md`](tasks/04-docker-purge.md) | `scripts/payload/kp-docker-purge.sh`（默认 dry-run，双开关才真删，动手前自动备份快照） |
-| **T5 · 第三方 NROS 插件安装器（maye 助手）· 总入口** | [`tasks/05-nros-plugin-installer.md`](tasks/05-nros-plugin-installer.md) | 无离线素材（设备侧在线下载 + sha256 校验）；适配器 `scripts/adapt_maye_assistant.py` |
+| **T5 · 第三方 NROS 插件安装器（maye 助手）· 总入口** | [`tasks/05-nros-plugin-installer.md`](tasks/05-nros-plugin-installer.md) | `offline/maye/ssh-nradio-plugin-installer-lite.sh`（**精简版**：红线功能已物理删除，60,590 行）+ `PROVENANCE.md` / `SHA256SUMS`；适配器 `scripts/adapt_maye_assistant.py` |
 | **T5-a · 分类一 常用插件安装** | [`tasks/06-nros-plugins-common.md`](tasks/06-nros-plugins-common.md) | 同上（红线：哈基米＝装 OpenClash / AGH·MosDNS 抢 53 / ttyd 默认免登录） |
 | **T5-b · 分类二 VPN / 组网 / 路由向导** | [`tasks/07-nros-network-route.md`](tasks/07-nros-network-route.md) | 同上（destructive：写 `ip rule`，本机全网出口＝断网风险） |
 | **T5-c · 分类三 游戏加速器** | [`tasks/08-nros-game-accel.md`](tasks/08-nros-game-accel.md) | 同上（destructive：明文 HTTP 下载 root 脚本，无校验和） |
@@ -125,8 +125,8 @@ T5 的五个分类分册另外各自带**本分类专属红线表**与**跑前/�
 ├── references/                         # 23 篇专题文档（含 id/tags/risk frontmatter）
 ├── docs/                               # 调优经验总览 · 验收清单 · 助手菜单提示词 · 仓库维护指南
 ├── assets/menu/                        # 菜单软件图标（11 枚 32px PNG，jsdelivr 引用）
-├── offline/                            # 离线安装素材 + checksums.md5（21 项）
-├── scripts/                            # PC 侧驱动 + payload/（host 网络三件套、回归自测）
+├── offline/                            # 离线安装素材 + checksums.md5（23 项，含 maye 精简版）
+├── scripts/                            # PC 侧驱动 + payload/（host 网络三件套、回归自测）+ maye_trim/（源码裁剪工具链）
 └── C2000U-Docker-assessment.md         # C2000 U Docker 适配评估与实装记录
 ```
 

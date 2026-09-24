@@ -19,6 +19,45 @@ source: kunpeng-router-tuning
 
 完整操作流程见 [`tasks/05-nros-plugin-installer.md`](../tasks/05-nros-plugin-installer.md)。
 
+## 🧊 精简版（maye-lite）· 已落库（2026-09-24）
+
+本仓库在 [`offline/maye/`](../offline/maye/) 维护一份**裁剪衍生版**：把上面的红线功能
+**物理删除**，而不是靠"操作时别点它"来规避。
+
+| 项 | 值 |
+|---|---|
+| 产物 | `offline/maye/ssh-nradio-plugin-installer-lite.sh` |
+| 体积 | 2,388,837 B / 60,590 行（原版 2,878,882 B / 72,458 行，**−17.1%**） |
+| 函数 | 663 个顶层函数（原 803，删 **140** 个 / 11,841 行） |
+| 哈希 | `3c2913f32056afb64042198058d4880ac5b9c7daca96b3286d68b1313131e104` |
+| 来源与规则 | [`offline/maye/PROVENANCE.md`](../offline/maye/PROVENANCE.md) |
+| 裁剪工具 | [`scripts/maye_trim/trim_maye.py`](../scripts/maye_trim/trim_maye.py)（可复现，改 `DENY_IDS`/`FAMILY` 即改口径） |
+
+**已删**：feature ID `2`(哈基米＝装 OpenClash) `4`(AGH) `9` `10` `11`(路由向导) `16`(还原应用商店)
+`17`(MosDNS) `19` `23`(哈基米分流/依赖修复) `22`(Docker 安装) `33`(硬件加速)，**外加分类 3 游戏加速器整体移除**，
+再加名字家族命中（`adguard`/`mosdns`/`qiyou`/`leigod`/`hakimi`/`docker`/`openclash`）。
+
+**菜单变化**：顶层 5 类 → 4 类（`[0-4]`）；分类 1 `[0-10]` → `[0-6]`；分类 2 `[0-7]` → `[0-4]`。
+AK68-798 / C8-788 的机型专用分支一并移除，统一为单一菜单（机型级门禁函数原样保留）。
+
+**验证**：`sh -n`（PC 与设备双侧）· **0 悬挂引用**（140 个被删名字在存活全文含 heredoc 中检索）·
+feature ID 一致 · **真机菜单走查**（推送设备后 PTY 启动，顶层 + 4 子菜单全部按设计渲染）·
+跑前跑后零副作用（`pidof` 三服务 + 5 文件 sha256 + 补丁 marker 全同值）。
+
+> 🔴 **不要做死代码清理**：脚本存在**动态拼名调用**
+> —— `58970: _func="_switch_sim_${_vendor}"`、`59075: _func="command_${_vendor}_${_cmd}${_cmdset}"`、
+> `60382: _exec="_command_atcmd_${_vendor%%_*}"`。
+> 所以 `command_huawei_*` / `command_generic_*` 这类"全文无人引用"的函数**全是活函数**。
+> `trim_maye.py` 刻意**不做**可达性/死代码推断，只用「显式归属 + 不动点不变式」。
+>
+> ⚠️ 另有一个**靠语法检查抓不到的坑**（本次真实踩到）：脚本末行的入口 `main_menu "$@"`
+> 是**顶层代码**而非函数体。若函数边界推算把"最后一个函数的结束"硬定为文件末行，
+> 就会把入口一起吞掉 —— `sh -n` 依然通过（少一句调用语法合法），只有**真机运行**
+> 才会暴露"启动即静默退出"。`mayelib.py` 已改为按「列 0 的 `}` 且不在 heredoc 内」求真实结束位置。
+
+⚠️ **未验证部分**：安装动作**没有在真机执行过**。本版只验证到
+"能启动、菜单渲染正确、语法与引用自洽"。每个具体安装流程（下载源、ipk 依赖、设备兼容）均未跑。
+
 ## ⚠️ 版本漂移记录（2026-09-24 实测，**必读**）
 
 上游 `00-current/ssh-nradio-plugin-installer.sh` 是**滚动更新的单文件**，同 URL 会随时间变版 ——

@@ -99,7 +99,7 @@ agent_created: true
 | T2 | ocspeed 安装 | `tasks/02-ocspeed-install.md` | `offline/ocspeed/`（五件套 + `kp-ocspeed.sh`） |
 | T3 | Docker + 1Panel 安装 | `tasks/03-docker-1panel-install.md` | `offline/panel/`（nros-panel 安装链） |
 | T4 | 清空 Docker 环境与容器；加 `--panel-reset` 可连 1Panel 环境一起复位（重装前置） | `tasks/04-docker-purge.md` | `scripts/payload/kp-docker-purge.sh`（dry-run 默认） |
-| T5 | 跑第三方 NROS 插件安装器（maye 助手）；红线：它不产生任何备份、别选卸载 Docker、别装 AGH·mosdns、别装奇游·雷神 | `tasks/05-nros-plugin-installer.md` | 跑前自行备份 + `scripts/adapt_maye_assistant.py`（snapshot / check） |
+| T5 | 跑第三方 NROS 插件安装器（maye 助手）；红线：它不产生任何备份、别选卸载 Docker、别装 AGH·mosdns、别装奇游·雷神。**想要彻底绕开红线 → 跑 `offline/maye/ssh-nradio-plugin-installer-lite.sh`（精简版，140 函数/11,841 行已删，见 `offline/maye/PROVENANCE.md`）** | `tasks/05-nros-plugin-installer.md` | 跑前自行备份 + `scripts/adapt_maye_assistant.py`（snapshot / check）；精简版可复现：`scripts/maye_trim/trim_maye.py` |
 | T5-a | 分类一 · 常用插件安装（换 swap / OpenList / DDNS-GO / Open-Box）；红线：上游「哈基米」＝装 OpenClash、AGH·MosDNS 抢 53、ttyd 默认免登录 | `tasks/06-nros-plugins-common.md` | 同 T5；`nros.plugins-common` |
 | T5-b | 分类二 · VPN / 组网 / 路由向导（ZeroTier · EasyTier · OpenVPN）；**destructive**：写 `ip rule`，本机全网出口靠 OpenClash，走错即断网 | `tasks/07-nros-network-route.md` | 同 T5 + 网络基线快照；`nros.network-route` |
 | T5-c | 分类三 · 游戏加速器（奇游 · 雷神）；**destructive**：明文 HTTP 下发 root 脚本、无校验和 | `tasks/08-nros-game-accel.md` | 同 T5 + 人工替代路径（自己取源码再审）；`nros.game-accel` |

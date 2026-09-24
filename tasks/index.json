@@ -744,8 +744,8 @@
       "risk": "write",
       "playbook": "tasks/05-nros-plugin-installer.md",
       "refs": ["references/maye-assistant.md"],
-      "scripts": ["scripts/adapt_maye_assistant.py"],
-      "offline": [],
+      "scripts": ["scripts/adapt_maye_assistant.py", "scripts/maye_trim/trim_maye.py"],
+      "offline": ["offline/maye/ssh-nradio-plugin-installer-lite.sh"],
       "preconditions": [
         "[必须] 该脚本不产生任何备份（upstream backup_file() 是空实现，BACKUP_DIR 是死路径），跑前必须自行备份目标文件",
         "确认设备是官方 NROS，而非刷过的标准 OpenWrt（该脚本明确不适用）",
@@ -754,9 +754,9 @@
         "必须在真 TTY 里跑：启动有 10 秒免责声明倒计时并等 stdin 输入 y（管道喂够 y+编号其实能跑通，但绝不许替使用者选菜单项；exec_command 不喂输入会永久挂住）",
         "运行命令不能带参数：就是 sh ssh-nradio-plugin-installer.sh；多带一个仓库 URL 会被当成菜单编号 -> ERROR 无效编号 -> 退出"
       ],
-      "steps_summary": "自行备份 -> snapshot 拍补丁基线 -> 设备侧 wget 下载并对 sha256 -> sh -n 过语法 -> 真终端跑菜单 -> check（丢补丁则 --fix）。绝对不要选：卸载 Docker / 装 AGH·mosdns / 装奇游·雷神 / 重装 OpenClash 内核",
+      "steps_summary": "自行备份 -> snapshot 拍补丁基线 -> 设备侧 wget 下载并对 sha256 -> sh -n 过语法 -> 真终端跑菜单 -> check（丢补丁则 --fix）。绝对不要选：卸载 Docker / 装 AGH·mosdns / 装奇游·雷神 / 重装 OpenClash 内核。🧊 备选：直接跑离线精简版 offline/maye/ssh-nradio-plugin-installer-lite.sh（red-line 功能已物理删除，菜单同步缩减，见 offline/maye/PROVENANCE.md）",
       "verify": [
-        "sha256 = 62f248a924e7b05ccb5c1053ddc800835e075f3697d9221196eac1a0993c8ed8",
+        "原版 sha256 = 62f248a924e7b05ccb5c1053ddc800835e075f3697d9221196eac1a0993c8ed8；离线精简版 sha256 = 3c2913f32056afb64042198058d4880ac5b9c7daca96b3286d68b1313131e104（二选一，别混校）",
         "菜单显示 NRadio_C2000Ultra，不报环境检测失败",
         "/etc/opkg/distfeeds.conf 仍是 3 条阿里云 21.02.7 源（守卫命中会原样保留）",
         "appcenter.lua/htm 的三个 marker 仍 >=1，否则 check --fix",

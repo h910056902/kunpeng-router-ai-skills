@@ -250,7 +250,7 @@ AI 若无法 clone（本机 `github.com` DNS 被污染），可用 CDN 直读兜
 | 1 | `tasks/01-openclash-install.md` | offline/openclash/、offline/core/ |
 | 2 | `tasks/02-ocspeed-install.md` | offline/ocspeed/ |
 | 3 | `tasks/03-docker-1panel-install.md` | offline/stubs/、scripts/payload/ |
-| 4 | `tasks/05-nros-plugin-installer.md` | 适配器 `scripts/adapt_maye_assistant.py`；档案 `references/maye-assistant.md` |
+| 4 | `tasks/05-nros-plugin-installer.md` | 适配器 `scripts/adapt_maye_assistant.py`；档案 `references/maye-assistant.md`；**离线精简版 `offline/maye/`（红线已物理删除，跑它即绕开 §8.6 禁选项）** |
 | 5 | `tasks/06-nros-plugins-common.md` | 同上（上游主菜单 `1. 常用插件安装`） |
 | 6 | `tasks/07-nros-network-route.md` | 同上（上游主菜单 `2. VPN / 组网 / 路由向导`） |
 | 7 | `tasks/08-nros-game-accel.md` | 同上（上游主菜单 `3. 游戏加速器`） |
@@ -276,7 +276,17 @@ AI 若无法 clone（本机 `github.com` DNS 被污染），可用 CDN 直读兜
 `scripts/adapt_maye_assistant.py`，分类分册 `tasks/06`~`tasks/10`），
 必须在真终端里由人操作菜单 —— 🔴 **不许用管道 / `exec_command` 包住它、更不许替使用者在它菜单里
 选任何一项**（技术上传管道喂输入确实能跑通，但那等于替人做选择，而它菜单里有「卸载 Docker」「还原应用商店」
-这类毁设备选项）。所以：
+  这类毁设备选项）。所以：
+
+- 🧊 **想彻底绕开「不能替人按菜单」这条限制？用离线精简版 `offline/maye/ssh-nradio-plugin-installer-lite.sh`。**
+  它把本节的禁选项**物理删除**（140 函数 / 11,841 行：装 OpenClash(哈基米)、AGH、MosDNS、Docker 安装、
+  还原应用商店、奇游/雷神、硬件加速、路由表向导、哈基米分流/依赖修复），菜单同步缩减
+  （顶层 5 类 → 4 类；分类 1 `[0-10]`→`[0-6]`；分类 2 `[0-7]`→`[0-4]`）。
+  已通过 `sh -n`（PC+设备）、**0 悬挂引用**、feature ID 一致性、**真机菜单走查**；跑前跑后零副作用。
+  规则与验证证据见 `offline/maye/PROVENANCE.md`，可复现工具 `scripts/maye_trim/trim_maye.py`。
+  ⚠️ 它是**裁剪衍生版**，上游 `CHECKSUMS.txt` 的哈希对它不适用；且**安装动作未在真机执行过**。
+  🔴 另注：**不要对 maye 源码做死代码清理** —— 它存在动态拼名调用
+  （`_func="command_${_vendor}_${_cmd}${_cmdset}"`），"无人引用"的函数全是活函数。
 
 - **AI 的职责**：前置检查 → 下载 → sha256 校验 → 设备侧备份 → 拍补丁基线 → 使用者按完菜单后跑校验与修复。
 - **① 前置照跑**，另外三件必须做到：
