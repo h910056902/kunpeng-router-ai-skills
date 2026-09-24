@@ -103,12 +103,12 @@
 | `/etc/crontabs/root` | 智能频段等定时任务 |
 | `/etc/config/dockerd` | **只在选「卸载 Docker」时**（见红线 2） |
 
-| 项 | 事实（2026-09-19 真机实测） |
+| 项 | 事实（2026-09-19 真机实测；2026-09-24 增补版本漂移） |
 |---|---|
 | 它是什么 | **社区 SSH 菜单脚本**（不是 ipk、不是固件包、不能上应用商店） |
-| 体积 / 行数 | 2,878,882 字节 · 约 7 万行 |
-| 版本 | `V3.2.0`（2026-09-14）· 脚本内 `SCRIPT_SIGNATURE="Designed by maye 2026-09-14"` |
-| 完整性 | sha256 `62f248a924e7b05ccb5c1053ddc800835e075f3697d9221196eac1a0993c8ed8`（与上游 `CHECKSUMS.txt` 一致，实测下载后逐字节对上） |
+| 体积 / 行数 | **V3.2.0** 2,878,882 字节 · 约 7 万行（V3.2.1 为 2,893,017 字节 · 72,772 行） |
+| 版本 | **本仓锁定 `V3.2.0`（2026-09-14）** · 脚本内 `SCRIPT_SIGNATURE="Designed by maye 2026-09-14"`。⚠️ 上游 `00-current/` 是**滚动单文件**，当前 HEAD 已是 `V3.2.1`（2026-09-23），**取用必须锁 commit，否则会静默拿到未验证版本** |
+| 完整性 | sha256 `62f248a924e7b05ccb5c1053ddc800835e075f3697d9221196eac1a0993c8ed8` —— ✅ **上游 `CHECKSUMS.txt`（仓库根目录）官方登记值**、档案记录值、2026-09-24 双通道实测值**三方一致**。⚠️ 上游 CHECKSUMS **至今仍只登记 V3.2.0**，`CHANGELOG.md` 最新条目也仍是 V3.2.0 → **V3.2.1 无官方哈希、无变更记录，不得裸跑** |
 | 适用边界 | 脚本自述 `SCRIPT_SCOPE_NOTICE`：**「适用于受支持的官方 NROS…并非标准 OpenWrt」** → **刷过原版 OpenWrt 的机器不要跑** |
 | 本机匹配 | model `HC-WT9500` → `normalize_nradio_model()`（第 1209-1210 行）归一化为 **`NRadio_C2000Ultra`**；board_name `HCMT7987-SNSD`；NROS `2.3.0.n0.c1` |
 | 本机额外开放 | 脚本按 `model_name == "NRadio_C2000Ultra"` 放行 **swap 扩容 / SD 卡检测**（第 7123 行，仅 C2000MAX 与 C2000Ultra 有） |
@@ -223,13 +223,20 @@ ls -l /tmp/kp-maye-bak/
 # ② 先拍我们补丁的基线（PC 侧跑；记录我们商店补丁的指纹）
 python scripts/adapt_maye_assistant.py snapshot
 
-# ③ 设备侧下载（官方给的命令，实测 0.9 秒 / 715 KB/s）
+# ③ 设备侧下载 —— ⚠️ 必须【锁 commit】取 V3.2.0，不要用 refs/heads/main
+#    （后者是滚动单文件，当前已是未经验证的 V3.2.1；2026-09-24 实测会静默换版）
 cd /tmp && wget -O ssh-nradio-plugin-installer.sh \
-  https://ghproxy.vip/https://github.com/561410590/ssh-nradio-plugin-installer/raw/refs/heads/main/00-current/ssh-nradio-plugin-installer.sh
+  "https://ghproxy.vip/https://github.com/561410590/ssh-nradio-plugin-installer/raw/2daa69d8b4/00-current/ssh-nradio-plugin-installer.sh"
+#   2daa69d8b4 = V3.2.0 的 commit（2026-09-14，feat: release V3.2.0 and updated router plugins）
 
 # ④ 校验完整性 + 语法（两条都要过，缺一不可）
 sha256sum /tmp/ssh-nradio-plugin-installer.sh
-#   期望 62f248a924e7b05ccb5c1053ddc800835e075f3697d9221196eac1a0993c8ed8
+#   必须 62f248a924e7b05ccb5c1053ddc800835e075f3697d9221196eac1a0993c8ed8
+#   —— 这三方必须一致，任一不符就停：①上行 sha256 ②本仓档案记录
+#      ③上游 CHECKSUMS.txt（仓库根目录，官方登记值，2026-09-24 仍只登记 V3.2.0）
+#   若哪天要改用 V3.2.1+：上游 CHECKSUMS.txt 必须先补登该版本哈希，否则不得裸跑
+#   （V3.2.1 至今无官方哈希、CHANGELOG 也无条目 —— 详见 references/maye-assistant.md
+#    的「版本漂移记录」+「V3.2.1 到底改了什么」两节）
 sh -n /tmp/ssh-nradio-plugin-installer.sh && echo SYNTAX_OK
 
 # ⑤ 在真终端里跑（人工操作菜单；进菜单前不要选 Docker/AGH/mosdns/奇游/雷神）
@@ -249,9 +256,9 @@ python scripts/adapt_maye_assistant.py check
 ## 5. 验证判据
 
 ```sh
-# ① 脚本自身完整
+# ① 脚本自身完整（且必须是锁 commit 取回的 V3.2.0）
 sha256sum /tmp/ssh-nradio-plugin-installer.sh | awk '{print $1}'
-#   期望 62f248a9...8ed8
+#   必须 62f248a9...8ed8（V3.2.0）。若得到 67e57576...4403，说明拿到的是 V3.2.1 —— 停，别跑。
 
 # ② 它认出了本机（菜单顶部应显示 NRadio_C2000Ultra，而不是「不在支持列表」）
 cat /tmp/sysinfo/model            # HC-WT9500
@@ -337,6 +344,7 @@ ls -ld /root/nradio-plugin-fix 2>&1   # 预期 No such file or directory
 | 下载 | `cd /tmp && wget -O ssh-nradio-plugin-installer.sh https://ghproxy.vip/https://github.com/.../00-current/ssh-nradio-plugin-installer.sh` → **0.9 秒 / 715 KB/s / 2,878,882 字节** |
 | 解析 | 设备侧 DNS 解析到 `198.18.1.10`（OpenClash 的 fake-ip），即下载走本机代理转发 —— **代理关掉时该链路未必通**，这是隐含依赖 |
 | 完整性 | `sha256sum` = `62f248a9…8ed8`，与上游 `CHECKSUMS.txt` **完全一致** |
+| ⚠️ 版本漂移（2026-09-24 增补） | 上表那次下载走的是 `refs/heads/main`。**该 URL 是滚动的**：2026-09-24 复跑同 URL 已拿到 **V3.2.1**（`67e57576…4403` / 2,893,017 B），不再是 V3.2.0。**今后必须锁 commit `2daa69d8b4`**；且上游 `CHECKSUMS.txt` / `CHANGELOG.md` **至今只覆盖到 V3.2.0** → V3.2.1 无官方校验值，不得裸跑。详见 `references/maye-assistant.md` 的「版本漂移记录」 |
 | 语法 | `sh -n` → `SYNTAX_OK` |
 | 4 条镜像链路 | `ghproxy.vip + raw` / `ghproxy.vip + github/raw` / `ghfast.top` / `raw 直连` **全部 OK** |
 

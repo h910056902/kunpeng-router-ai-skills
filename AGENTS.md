@@ -287,13 +287,21 @@ AI 若无法 clone（本机 `github.com` DNS 被污染），可用 CDN 直读兜
   - 记「跑前基线」（见 §8.4 ①）。
 - **② 拆成两半**：
   - **(a) AI 先做**：
-    - 设备侧下载：`cd /tmp && wget -O ssh-nradio-plugin-installer.sh https://ghproxy.vip/https://github.com/561410590/ssh-nradio-plugin-installer/raw/refs/heads/main/00-current/ssh-nradio-plugin-installer.sh`
+    - 设备侧下载：`cd /tmp && wget -O ssh-nradio-plugin-installer.sh "https://ghproxy.vip/https://github.com/561410590/ssh-nradio-plugin-installer/raw/2daa69d8b4/00-current/ssh-nradio-plugin-installer.sh"`
       （镜像不通依次换 `ghfast.top`、raw 直连）。⚠️ 下载失败先别怀疑脚本：设备解析到 `198.18.x.x`
       （OpenClash 的 fake-ip），这条链路**依赖本机 OpenClash 在跑** —— 先确认它没断，再重试。
+      ⚠️ **必须锁 commit `2daa69d8b4`（= V3.2.0）**，不要用 `refs/heads/main` —— 那是滚动单文件，
+      2026-09-24 实测同 URL 已静默换成 **V3.2.1**（`67e57576…4403` / 2,893,017 B）。
     - 校验（两条都要过）：`sha256sum` = `62f248a924e7b05ccb5c1053ddc800835e075f3697d9221196eac1a0993c8ed8`，
       且 `sh -n` 通过。⚠️ **哈希对不上时不要自己决定**：通常意味着上游发了新版（该项目一个月内走过
-      V3.0.5→V3.2.0）。停下告诉使用者，拉上游 `CHECKSUMS.txt` / `CHANGELOG.md` 比对版本与哈希，
-      由使用者决定 —— **绝不拿未核对的新版裸跑**。
+      V3.0.5→V3.2.0→V3.2.1）。停下告诉使用者，拉上游 `CHECKSUMS.txt` / `CHANGELOG.md`
+      —— ⚠️ **这两个文件在仓库根目录，不在 `00-current/` 下**（查错路径会得出「上游没有校验清单」
+      的错误结论）—— 比对版本与哈希，由使用者决定 —— **绝不拿未核对的新版裸跑**。
+      📌 2026-09-24 实测口径：上游 `CHECKSUMS.txt` 与 `CHANGELOG.md` **至今只覆盖到 V3.2.0**
+      （`CHECKSUMS.txt` 抬头仍是 `# NRadio V3.2.0 release checksums`），而 `00-current/` 的 HEAD
+      已是 V3.2.1 → **V3.2.1 无官方哈希、无变更记录，属未验证版本**。因此本协议默认锁 V3.2.0；
+      若使用者坚持要跑更高版本，必须先做完源码级审计（`diff` 逐 hunk 归函数 + 核对三条红线分支，
+      方法见 `references/maye-assistant.md` 的「V3.2.1 到底改了什么」）。
     - 备份它可能改到的文件到 `/tmp/kp-maye-bak/`（通用命令见 tasks/05 §4 ①；
       **每个分类还有各自的额外备份对象**，见 `tasks/06`~`tasks/10` 的 §4(a)）——
       🔴 **它自己不产生任何备份**。
