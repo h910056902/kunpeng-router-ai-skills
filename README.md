@@ -106,7 +106,7 @@
 | **T2 · ocspeed 安装** | [`tasks/02-ocspeed-install.md`](tasks/02-ocspeed-install.md) | `offline/ocspeed/` 五件套（speedswitch.sh / ocspeed.lua / ocspeed.htm / nodetest.htm / config.ocspeed）+ 一键装脚本 `kp-ocspeed.sh` |
 | **T3 · Docker + 1Panel 安装** | [`tasks/03-docker-1panel-install.md`](tasks/03-docker-1panel-install.md) | `offline/panel/` 六脚本（install / kp-install / kp-storage-init / kp-store-lib / kp-store-check / kp-ui）+ `scripts/payload/` host 网络默认化三件套 |
 | **T4 · 清空 Docker 环境（重装前置）** | [`tasks/04-docker-purge.md`](tasks/04-docker-purge.md) | `scripts/payload/kp-docker-purge.sh`（默认 dry-run，双开关才真删，动手前自动备份快照） |
-| **T5 · 第三方 NROS 插件安装器（maye 助手）· 总入口** | [`tasks/05-nros-plugin-installer.md`](tasks/05-nros-plugin-installer.md) | `offline/maye/ssh-nradio-plugin-installer-lite.sh`（**精简版**：红线功能已物理删除，60,590 行）+ `PROVENANCE.md` / `SHA256SUMS`；适配器 `scripts/adapt_maye_assistant.py` |
+| **T5 · 第三方 NROS 插件安装器（maye 助手）· 总入口** | [`tasks/05-nros-plugin-installer.md`](tasks/05-nros-plugin-installer.md) | `offline/maye/ssh-nradio-plugin-installer-lite.sh`（**精简版**：红线功能已物理删除，60,590 行；**真机已验证** —— 菜单走查 + 只读体检 handler 端到端，`find -newer` 实测零副作用）+ `PROVENANCE.md` / `SHA256SUMS`；适配器 `scripts/adapt_maye_assistant.py` |
 | **T5-a · 分类一 常用插件安装** | [`tasks/06-nros-plugins-common.md`](tasks/06-nros-plugins-common.md) | 同上（红线：哈基米＝装 OpenClash / AGH·MosDNS 抢 53 / ttyd 默认免登录） |
 | **T5-b · 分类二 VPN / 组网 / 路由向导** | [`tasks/07-nros-network-route.md`](tasks/07-nros-network-route.md) | 同上（destructive：写 `ip rule`，本机全网出口＝断网风险） |
 | **T5-c · 分类三 游戏加速器** | [`tasks/08-nros-game-accel.md`](tasks/08-nros-game-accel.md) | 同上（destructive：明文 HTTP 下载 root 脚本，无校验和） |

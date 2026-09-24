@@ -41,8 +41,24 @@ source: kunpeng-router-tuning
 AK68-798 / C8-788 的机型专用分支一并移除，统一为单一菜单（机型级门禁函数原样保留）。
 
 **验证**：`sh -n`（PC 与设备双侧）· **0 悬挂引用**（140 个被删名字在存活全文含 heredoc 中检索）·
-feature ID 一致 · **真机菜单走查**（推送设备后 PTY 启动，顶层 + 4 子菜单全部按设计渲染）·
-跑前跑后零副作用（`pidof` 三服务 + 5 文件 sha256 + 补丁 marker 全同值）。
+feature ID 一致 · **真机菜单走查**（推送设备后逐类进入返回，顶层 + 4 子菜单全部按设计渲染，`rc=0`）·
+**真机只读 handler 端到端**（实跑 `4 → 1 统一体检增强版`，feature 13：25 个检查段 / 407 行输出 /
+`rc=0` / 30.3 s；静态调用闭包 **214 个函数**全部可解析执行，无缺函数、无悬挂引用）·
+**rootfs 零改动**（`find /etc /usr /root /www /opt /srv /bin /sbin /lib -xdev -newer <marker>` →
+无任何输出）· 跑前跑后 10/10 区段指纹同值（仅 dropbear pid 与 tmpfs 用量因本次会话变化）·
+脚本锁干净释放。
+
+**真机跑法（实测可用）**：
+```sh
+# 部署：设备无 sftp，用 cat > file 经 stdin 直传（2.39 MB 约 5 s）
+sha256sum /tmp/ssh-nradio-plugin-installer-lite.sh   # 3c2913f3…1e104
+sh -n /tmp/ssh-nradio-plugin-installer-lite.sh && echo SYNTAX_OK
+printf '4\n1\n' | sh /tmp/ssh-nradio-plugin-installer-lite.sh   # 只读体检验证，实测 rc=0
+```
+`4 → 1 统一体检增强版` 是最佳"冒烟靶子"：**全程只读**，能验证整条调用链真能跑，
+且不动设备一根毫毛。真机体检报的 3 个 FAIL（`OpenVPN CDN` / `OpenVPN 自检` / `哈基米 ASN.mmdb`）
+**全是本机既有状态**——其中 `ASN.mmdb` 缺失属**脚本误报**（运行配置 `e_bbydy.yaml` 里 `ASN,`
+规则计数为 0，`Country.mmdb`/`GeoSite.dat` 均在位，无功能影响）。
 
 > 🔴 **不要做死代码清理**：脚本存在**动态拼名调用**
 > —— `58970: _func="_switch_sim_${_vendor}"`、`59075: _func="command_${_vendor}_${_cmd}${_cmdset}"`、
@@ -55,8 +71,9 @@ feature ID 一致 · **真机菜单走查**（推送设备后 PTY 启动，顶�
 > 就会把入口一起吞掉 —— `sh -n` 依然通过（少一句调用语法合法），只有**真机运行**
 > 才会暴露"启动即静默退出"。`mayelib.py` 已改为按「列 0 的 `}` 且不在 heredoc 内」求真实结束位置。
 
-⚠️ **未验证部分**：安装动作**没有在真机执行过**。本版只验证到
-"能启动、菜单渲染正确、语法与引用自洽"。每个具体安装流程（下载源、ipk 依赖、设备兼容）均未跑。
+⚠️ **未验证部分**：**安装类 handler**（下载 ipk → `opkg install` → 落盘部署）**没有在真机执行过**
+（只读自检不经过那些分支）。下载源可用性已由 CDN 探测 6 段全 PASS 间接证明，
+但 ipk 依赖与设备端兼容性仍未验证。跑任何安装项前仍请自行备份。
 
 ## ⚠️ 版本漂移记录（2026-09-24 实测，**必读**）
 
