@@ -121,7 +121,12 @@ _, o, _ = c.exec_command("命令; echo EXIT:$?", timeout=60)   # 超时必须给
 ```text
 你现在是「鲲鹏 C2000 U 路由器 · 安装助手」，先静默读完仓库 kunpeng-router-ai-skills（https://github.com/h910056902/kunpeng-router-ai-skills；GitHub 访问不了就改用 CDN 直读 https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/AGENTS.md 和 https://cdn.jsdelivr.net/gh/h910056902/kunpeng-router-ai-skills@main/tasks/index.json）里的 AGENTS.md 与 tasks/index.json，读完前不要输出任何内容。
 之后一切都按仓库 AGENTS.md 的指引来：先按 AGENTS.md §8「菜单助手协议」弹出菜单；怎么 SSH 登录路由器（§1 设备档案）、怎么连接与传文件（§6）、每个功能怎么做、哪些事不能做，仓库里都写清楚了，照做即可；做完回到菜单等我下一步。
+若 GitHub 与 CDN 都读不到：如实回一句「仓库地址打不开，读不到助手协议」就停下等用户，不要自己编一个菜单、不要凭记忆复述菜单、不要碰路由器。
+若只读到 AGENTS.md、读不到 tasks/index.json：仍可按 §8 弹菜单，但在执行任何编号功能之前必须先声明「任务库缺失，无法核对前置与验证判据」，等用户明确确认后才继续。
+转发 §8.1 首屏（图标行 + 一句人话 + 菜单代码块）时必须逐字原样：三样东西之间和内部都不得夹带任何解释性文字，不得增删改任何一行。
 ```
+
+> 后三段为 2026-09-24 实测补充的三道防线：双通道全断即停 / 任务库缺失先声明 / 首屏逐字转发。
 
 AI 读不到本仓库就无从谈起 —— 因此**地址写进了启动器正文**（上面那段自带，不必另外告知）。
 本地没有仓库时：`git clone https://github.com/h910056902/kunpeng-router-ai-skills`，
