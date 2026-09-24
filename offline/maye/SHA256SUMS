@@ -1,0 +1,13 @@
+# maye 助手 · 哈希登记（2026-09-24）
+#
+# 上游原版（滚动单文件，同 URL 已变版）—— 必须锁 commit 才能取回本版
+#   取法: https://raw.githubusercontent.com/561410590/ssh-nradio-plugin-installer/2daa69d8b4/00-current/ssh-nradio-plugin-installer.sh
+#   官方: 与上游仓库根目录 CHECKSUMS.txt 登记值一致（抬头仍为 "# NRadio V3.2.0 release checksums"）
+62f248a924e7b05ccb5c1053ddc800835e075f3697d9221196eac1a0993c8ed8  2878882  00-current/ssh-nradio-plugin-installer.sh   # V3.2.0 / 2026-09-14
+
+# 上游当前 latest（未登记版本：无官方哈希、无 CHANGELOG 条目，不得裸跑）
+67e5757647f9ad6ab9dfa97a0d347b7c4ba6d9d5fce6ea7f0b4b73c6b4b84403  2893017  00-current/ssh-nradio-plugin-installer.sh   # V3.2.1 / 2026-09-23
+
+# 本仓库产物：裁剪衍生版（不是上游原版，勿与原版互校）
+#   生成: SRC=maye-v320.sh DST=maye-lite.sh python scripts/maye_trim/trim_maye.py
+3c2913f32056afb64042198058d4880ac5b9c7daca96b3286d68b1313131e104  2388837  offline/maye/ssh-nradio-plugin-installer-lite.sh   # 60,590 行

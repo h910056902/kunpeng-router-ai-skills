@@ -1,9 +1,18 @@
+# 本文件自身也以 LF 入库（避免 core.autocrlf=true 下自身被改写）
+.gitattributes text eol=lf
+
 # 路由器端 shell / lua 源码必须以 LF 入库，否则 shebang 失效
 *.sh  text eol=lf
 dpctl text eol=lf
 *.lua text eol=lf
 *.htm text eol=lf
 *.md  text eol=lf
+
+# 校验清单：必须保持 LF，否则设备上 `sha256sum -c` 会因行尾 \r 全部失配
+SHA256SUMS text eol=lf
+
+# Python 工具链：统一 LF，避免在 Linux/设备侧执行时出现 ^M
+*.py  text eol=lf
 
 # 二进制资产：禁止任何换行符转换（ipk / 内核镜像，转换即毁）
 *.ipk -text

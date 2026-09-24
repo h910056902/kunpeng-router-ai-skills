@@ -11,6 +11,34 @@
 
 ---
 
+## 0.0 🧊 想彻底绕开红线？直接跑精简版（maye-lite）
+
+本仓库已落库一份**裁剪衍生版**，把下面 §0 的三条红线功能**物理删除**，
+不再依赖"操作时别点它"的纪律：
+
+```sh
+# 推送到设备（仓库内离线产物）
+#   offline/maye/ssh-nradio-plugin-installer-lite.sh
+# 设备侧执行
+sh /tmp/ssh-nradio-plugin-installer-lite.sh
+```
+
+| 项 | 值 |
+|---|---|
+| 产物 | [`offline/maye/ssh-nradio-plugin-installer-lite.sh`](../offline/maye/ssh-nradio-plugin-installer-lite.sh) |
+| 体积 | 2,388,837 B / 60,590 行（原版 −17.1%） |
+| 已删 | 140 函数 / 11,841 行：装 OpenClash(哈基米)、AGH、MosDNS、Docker 安装、还原应用商店、奇游/雷神、硬件加速、路由表向导、哈基米分流/依赖修复 |
+| 菜单 | 顶层 5 类 → 4 类；分类 1 `[0-10]`→`[0-6]`；分类 2 `[0-7]`→`[0-4]` |
+| 来源/规则/验证 | [`offline/maye/PROVENANCE.md`](../offline/maye/PROVENANCE.md) |
+| 裁剪工具 | [`scripts/maye_trim/trim_maye.py`](../scripts/maye_trim/trim_maye.py) |
+
+- ✅ 已验证：`sh -n`（PC+设备）、**0 悬挂引用**、feature ID 一致、**真机菜单走查全部正确渲染**、跑前跑后零副作用。
+- ⚠️ **未验证**：安装动作没在真机跑过；下载源可用性、ipk 依赖、设备兼容性均未验证。
+- ⚠️ 本版**不是**上游原版，上游 `CHECKSUMS.txt` 的哈希对本文件不适用。
+- 仍建议按下面的流程走：**先备份 → 再跑 → 跑完 `check` 校验补丁**。
+
+---
+
 ## 0. 三条置顶红线（先看这个，再看别的）
 
 > ⚠️ 以下三条都是**实测**结论，不是推测。踩中任一条都不好收场。
