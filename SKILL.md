@@ -99,7 +99,7 @@ agent_created: true
 | T2 | ocspeed 安装 | `tasks/02-ocspeed-install.md` | `offline/ocspeed/`（五件套 + `kp-ocspeed.sh`） |
 | T3 | Docker + 1Panel 安装 | `tasks/03-docker-1panel-install.md` | `offline/panel/`（nros-panel 安装链） |
 | T4 | 清空 Docker 环境与容器；加 `--panel-reset` 可连 1Panel 环境一起复位（重装前置） | `tasks/04-docker-purge.md` | `scripts/payload/kp-docker-purge.sh`（dry-run 默认） |
-| T5 | 跑第三方 NROS 插件安装器（maye 助手）；红线：它不产生任何备份、别选卸载 Docker、别装 AGH·mosdns、别装奇游·雷神。**想要彻底绕开红线 → 跑 `offline/maye/ssh-nradio-plugin-installer-lite.sh`（精简版，140 函数/11,841 行已删，见 `offline/maye/PROVENANCE.md`）** | `tasks/05-nros-plugin-installer.md` | 跑前自行备份 + `scripts/adapt_maye_assistant.py`（snapshot / check）；精简版可复现：`scripts/maye_trim/trim_maye.py` |
+| T5 | 跑第三方 NROS 插件安装器（maye 助手）；红线：它不产生任何备份、别选卸载 Docker、别装 AGH·mosdns、别装奇游·雷神。**🧊 想彻底绕开红线 → 直接跑本仓精简版** `offline/maye/ssh-nradio-plugin-installer-lite.sh`（2,388,837 B / 60,590 行，11 个红线选项已从源码里删掉，不是靠"别按"），sha256 `3c2913f3…1e104`，见 `offline/maye/PROVENANCE.md`。**真机已跑通**：菜单走查 + 只读体检 handler 端到端（`4→1 统一体检增强版`，25 段/`rc=0`），`find -newer` 实测 rootfs 零改动；**安装类 handler 仍未真机验证** | `tasks/05-nros-plugin-installer.md` | 跑前自行备份 + `scripts/adapt_maye_assistant.py`（snapshot / check）；精简版复现工具链 `scripts/maye_trim/` |
 | T5-a | 分类一 · 常用插件安装（换 swap / OpenList / DDNS-GO / Open-Box）；红线：上游「哈基米」＝装 OpenClash、AGH·MosDNS 抢 53、ttyd 默认免登录 | `tasks/06-nros-plugins-common.md` | 同 T5；`nros.plugins-common` |
 | T5-b | 分类二 · VPN / 组网 / 路由向导（ZeroTier · EasyTier · OpenVPN）；**destructive**：写 `ip rule`，本机全网出口靠 OpenClash，走错即断网 | `tasks/07-nros-network-route.md` | 同 T5 + 网络基线快照；`nros.network-route` |
 | T5-c | 分类三 · 游戏加速器（奇游 · 雷神）；**destructive**：明文 HTTP 下发 root 脚本、无校验和 | `tasks/08-nros-game-accel.md` | 同 T5 + 人工替代路径（自己取源码再审）；`nros.game-accel` |
@@ -111,6 +111,9 @@ agent_created: true
 > 跑法与 T5 相同（AI 做前置与校验，菜单由用户自己按），但**每个分类有各自的红线与验证判据**，
 > 不要只读 `tasks/05` 就去跑 `5)~9)`。上游脚本真源：`ssh-nradio-plugin-installer.sh` V3.2.0（约 7 万行），
 > 各分册内含「上游菜单号 → feature → 函数 → 行号」对照表，便于下次复核。
+> ⚠️ **跑精简版时别照搬上面这些编号**：精简版顶层由 5 类变 4 类（`[0-4]`），
+> 分类一 `[0-10]→[0-6]`、分类二 `[0-7]→[0-4]`、分类四改为运行时计数器自动连续编号（1–7）；
+> 各分册的对照表是按**原版**编的。
 >
 > **T6 不属于上面这个交互式脚本**：它是本仓自研的纯只读自检（`device.selftest`），非交互、四关照跑，
 > 不需要「停下等使用者按键」，也不套 §8.6 的两关拆解。
@@ -132,7 +135,8 @@ agent_created: true
 | G | DNS 不通/被劫持排查 | 查链路四段：53 是否 AGH 在听 → AGH 上游 → OpenClash 7874 → dnsmasq 5354 | `references/adguard-setup.md` |
 | H | NAS 升级（挂盘/共享/下载机/媒体） | 先 `scripts/probe_nas.py` 探硬件 → 按 U 盘格式选挂载方案（exFAT 挂不了！）→ ksmbd 共享 → aria2/minidlna 原生服务 | `references/nas-upgrade.md` |
 | I | 技能包/仓库同步 | 公开仓库 `kunpeng-router-ai-skills` 由构建脚本从私有技能包生成（脱敏）；私有仓库 `kunpeng-router-tuning` 承载完整档案（memory/、src/、HANDOFF/PROGRESS） | `AGENTS.md` |
-| J | maye 插件助手兼容 | 跑社区脚本 `nradio.mayebano.shop/ssh-nradio-plugin-installer.sh` 前后：snapshot → 用户跑脚本 → check → 丢补丁 check --fix 重放；**禁在其菜单装 AGH/mosdns（native:554 与我们 Docker AGH:53 冲突）** | `references/maye-assistant.md` |
+| J | maye 插件助手兼容 | 跑社区脚本 `nradio.mayebano.shop/ssh-nradio-plugin-installer.sh` 前后：snapshot → 用户跑脚本 → check → 丢补丁 check --fix 重放；**禁在其菜单装 AGH/mosdns（native:554 与我们 Docker AGH:53 冲突）**。**🧊 想从源码层面根除红线 → 用本仓精简版**（同上，11 个红线选项已物理删除） | `references/maye-assistant.md` |
+| J2 | **给 maye 助手（或任何巨型单文件 shell）做源码裁剪** | 两条硬约束，违反必翻车：① **禁止"死代码清理"** —— 该源码有**动态拼名调用**（`_func="_switch_sim_${_vendor}"` / `command_${_vendor}_${_cmd}${_cmdset}` / `command_generic_${_cmd}` / `_command_atcmd_${_vendor%%_*}`），`command_huawei_*` 这类"无人引用"的函数**全是活函数**；判据只能是「被删函数在**存活全文**中零静态引用」，且**必须不动点迭代**（撤删→重物化→重算引用，实测 15→10→2→0 四轮收敛）。② **文件末尾顶层入口不可吞** —— 72,458 行里 **67% 是 heredoc**，必须**heredoc 感知**解析（`^name() {` 朴素 grep 得 1,255 个定义，真实顶层只有 **803** 个）；函数真实结束位置要取「列 0 的 `}` 且不在 heredoc 内」，否则会把末尾 `main_menu "$@"` 一起切掉 → **真机启动即静默退出 EXIT=127，而 `sh -n` 不报错**。重编号菜单前必须**先摘掉 AK68-798/C8-788 机型分支**（与普通分支 case 同号异义）。工具链：`scripts/maye_trim/{mayelib,trim_maye,verify_lite}.py`。③ **验证套路**（2026-09-24 实战成形）：静态审查之后，务必在真机挑一个**只读 handler**跑到底 —— 例如 maye 的「设备维护 → 1 统一体检增强版」（feature 13），它能把「菜单分派 → handler → 深层子函数」整条链（实测 214 个函数闭包）真实走一遍；再配 `touch /tmp/marker` + `find /etc /usr /root /www /opt /srv -xdev -newer /tmp/marker` **实测**零副作用。**语法通过 + 引用自洽都证明不了"能跑"** —— 本项目已两次被 `sh -n` 放过（入口被吞、只读验证不足） | `references/maye-assistant.md` + `offline/maye/PROVENANCE.md` |
 | K | 装 iStore 商店 / 1Panel | iStore 框架可装（手动解包 ipk），与鲲鹏商店并存；**1Panel 已原生装成（v1.10.34-lts，端口 10090，官方包自带 procd init，二进制静态链接可跑 musl）** | `references/istore-integration.md` + `references/c2000u-1panel.md` |
 | K2 | **让 1Panel 应用"默认"走 host 网络（无 veth 内核必做）** | 1Panel 模板一律引用 bridge 外部网络 `1panel-network` → 本机装必挂在 veth pair。**正路是换 `/usr/bin/docker-compose` 为 wrapper**（真件改名 `.real`），调用前把 `-f` 的 compose 幂等 host 化 → 面板/商店/手工全生效，且容器由 1Panel 自己 up（会进「已安装应用」）。配套转换器 `kp-compose-host`（含 Redis 5.4 内核兼容参数）。⚠️ **转换器必须缩进无关**：面板 v1.10 落盘的 compose 是 **4 空格缩进 + 多一个 `deploy` 段**，商店 tarball 是 2 空格 —— 写死缩进会让面板装应用报 `Service "x" uses an undefined network`（2026-09-19 真机事故）。回归自测：`kp-compose-selftest.sh` + `fixtures/` | `references/1panel-hostnet-default.md`（§九·补 必读） |
 | K3 | **测「1Panel 能不能装容器」** | 一条命令跑完 `probe→pull→control→[授权]→hostnet-install→install→panel→panelcheck→verify`：拉 alist 真镜像、无 wrapper 对照组复现 veth 错、装 wrapper、复刻 1Panel 调用形态装起来并验 HTTP 5244。面板 API 自动化不可靠（v1.10 登录要 RSA+AES 加密）→ 会降级成"你在浏览器点一次 + 脚本自动收尾取证"，证据源是 `/tmp/kp-compose.log` | `scripts/kp-1panel-install-test.py` + `scripts/payload/kp-1panel-test.sh` + `references/1panel-hostnet-default.md` §七~九 |

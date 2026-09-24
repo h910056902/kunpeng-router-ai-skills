@@ -32,10 +32,36 @@ sh /tmp/ssh-nradio-plugin-installer-lite.sh
 | 来源/规则/验证 | [`offline/maye/PROVENANCE.md`](../offline/maye/PROVENANCE.md) |
 | 裁剪工具 | [`scripts/maye_trim/trim_maye.py`](../scripts/maye_trim/trim_maye.py) |
 
-- ✅ 已验证：`sh -n`（PC+设备）、**0 悬挂引用**、feature ID 一致、**真机菜单走查全部正确渲染**、跑前跑后零副作用。
-- ⚠️ **未验证**：安装动作没在真机跑过；下载源可用性、ipk 依赖、设备兼容性均未验证。
+- ✅ 已验证：`sh -n`（PC+设备）、**0 悬挂引用**、feature ID 一致、**真机菜单走查全部正确渲染**、
+  **真机只读 handler 端到端跑通**（`4 → 1 统一体检增强版`，25 个检查段 / 407 行 / `rc=0` / 30.3 s，
+  静态调用闭包 214 个函数全部可解析执行）、**rootfs 零改动**（`find -newer` 实测无任何文件变化）、
+  脚本锁干净释放。
+- ⚠️ **未验证**：**安装类 handler**（下载 ipk → `opkg install` → 落盘部署）没在真机跑过；
+  只读自检不经过那些分支。下载源可用性已由 CDN 探测 6 段全 PASS 间接证明，
+  但 ipk 依赖与设备端兼容性仍未验证。
 - ⚠️ 本版**不是**上游原版，上游 `CHECKSUMS.txt` 的哈希对本文件不适用。
 - 仍建议按下面的流程走：**先备份 → 再跑 → 跑完 `check` 校验补丁**。
+- 📋 跑精简版时的真机靶子选择：`4 设备维护 → 1 统一体检增强版` 是**全程只读**的，
+  适合用来确认精简版"能真跑起来"，不会改动设备（实测零副作用）。
+
+### 0.1 真机跑法（2026-09-24 实测可用）
+
+```sh
+# ① 部署（设备无 sftp；用 cat > file 经 stdin 直传，2.39 MB 约 5 s）
+#    PC 侧：paramiko open_session() -> exec_command('cat > /tmp/xxx.sh') -> sendall(bytes)
+sha256sum /tmp/ssh-nradio-plugin-installer-lite.sh
+#   期望 3c2913f32056afb64042198058d4880ac5b9c7daca96b3286d68b1313131e104
+sh -n /tmp/ssh-nradio-plugin-installer-lite.sh && echo SYNTAX_OK
+
+# ② 真终端跑（人工按键）；或管道喂编号做非交互验证
+printf '4\n1\n' | sh /tmp/ssh-nradio-plugin-installer-lite.sh    # 只读体检验证，实测 rc=0
+sh /tmp/ssh-nradio-plugin-installer-lite.sh                      # 正常交互使用
+#   ⚠️ 同样**不要带任何参数**（多带参数会被当成菜单编号 → ERROR: 无效编号）
+
+# ③ 副作用复核（跑前后各一次，或跑前 touch marker）
+find /etc /usr /root /www /opt /srv -xdev -newer /tmp/marker   # 期望：无输出
+```
+
 
 ---
 

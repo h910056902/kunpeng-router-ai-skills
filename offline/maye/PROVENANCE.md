@@ -35,6 +35,11 @@
 | 生成日期 | 2026-09-24 |
 | 生成工具 | [`scripts/maye_trim/trim_maye.py`](../../scripts/maye_trim/trim_maye.py) |
 
+> **验证状态（2026-09-24）**：语法（PC+设备）、0 悬挂引用、feature ID 一致性、
+> **真机菜单走查**、**真机只读 handler 端到端**（统一体检增强版 25 段全跑通）、
+> **rootfs 零改动**（`find -newer` 实测）均已通过 —— 详见 §7 / §7.1。
+> **仍未验证**：安装类 handler（下载 ipk → `opkg install` → 落盘），见 §9 第 1 条。
+
 ## 3. 裁剪目标：去掉"会动这台设备"的能力
 
 本仓库对 maye 助手的红线（见 `AGENTS.md` §8.6 / `references/maye-assistant.md`）针对的是
@@ -151,9 +156,54 @@
 | feature ID 一致性 | 分派表 ID vs 菜单引用 ID | ✅ 菜单引用的 ID 全部存在，无悬空 |
 | heredoc 解析 | 自建 heredoc 感知扫描器（49,202 行 = 67% 属 heredoc 内容） | ✅ |
 | 入口完整性 | 末行 `main_menu "$@"` | ✅（曾因边界推算吞掉入口，已修） |
-| **真机菜单走查** | 推送设备后用 PTY 启动，逐类进入后 Ctrl-C 中止，不选任何安装项 | ✅ 顶层 + 4 个子菜单全部按设计渲染 |
-| 跑前/跑后对照 | `pidof` clash/dockerd/dnsmasq、5 个文件 sha256、补丁 marker、`distfeeds` 行数 | ✅ 全部同值，零副作用 |
-| 上传完整性 | 本机 sha256 vs 设备 `sha256sum` | ✅ 一致 |
+| **真机菜单走查** | 推送设备后管道喂编号，逐类进入后返回（不选任何功能项） | ✅ 顶层 + 4 个子菜单全部按设计渲染，`rc=0` |
+| **真机 handler 端到端** | 实跑 `4 → 1 统一体检增强版`（feature 13，静态调用闭包 **214 个函数**） | ✅ 25 个检查段全跑通，407 行输出，`rc=0`，30.3 s（见 §7.1） |
+| 跑前/跑后对照 | 8 个关键文件 sha256、`pidof`、6 个补丁 marker、opkg 576 包整体哈希、`crontab`、`distfeeds`、`/root` 与 `/etc/kp_store` 清单 | ✅ **10/10 区段同值**；仅 dropbear pid 与 tmpfs 用量因本次会话变化 |
+| rootfs 改动侦测 | `find /etc /usr /root /www /opt /srv /bin /sbin /lib -xdev -newer <marker>` | ✅ **无任何改动**（运行期实测，非静态推断） |
+| 脚本锁释放 | `/var/run/nradio-plugin-assistant/` | ✅ 空目录，无残留锁 |
+| 上传完整性 | 本机 sha256 vs 设备 `sha256sum` | ✅ 一致（`3c2913f3…1e104`） |
+
+### 7.1 真机端到端验证详情（2026-09-24 · C2000 U）
+
+验证目的：**证明裁剪后的代码不只在语法层自洽，而是能真实跑通 handler**。
+选 `统一体检增强版`（feature 13）作为靶子，理由是它**全程只读** ——
+静态审查其调用闭包内没有任何持久化写入（`ensure_state_dir` 的目标目录已存在；
+`optimize_*_cdn_order` 只重排内存里的 URL 变量；`record_*__summary` /
+`set_last_selfcheck_status` 只写 shell 变量），唯一落盘处是 tmpfs 的
+`WORKDIR=/var/run/nradio-plugin-assistant/work.$$`。
+
+```
+$ printf '4\n1\n' | sh /tmp/ssh-nradio-plugin-installer-lite.sh
+rc=0     耗时 30.3 s     输出 407 行
+
+overall:  安装阶段 = PASS / 系统体检 = PASS / 时间与证书 = PASS
+          NROS 出口 = WARN / 网络出口 = PASS / 大包风险 = PASS
+          安装前预检 = WARN / 哈基米 安装就绪 = WARN / feed 索引 = PASS
+          运行负载 = PASS / 内核存储日志 = PASS / 插件矩阵 = WARN
+          应用商店一致性 = WARN / 端口冲突 = PASS / 哈基米 规则 = WARN
+          脱敏摘要 = PASS / CDN 六连（哈基米·AGH·OpenList·ZeroTier·EasyTier）= PASS
+          OpenVPN CDN = FAIL / 哈基米 = FAIL / OpenVPN = FAIL
+          overall: FAIL (pass=17 warn=6 fail=3 skip=9)
+```
+
+**3 个 FAIL 全部是设备既有状态，与裁剪无关**，逐条已核实：
+
+| FAIL 段 | 原因 | 是否裁剪引入 |
+|---|---|---|
+| `OpenVPN CDN` | `luci-app-openvpn` 无法从当前软件源（阿里云 21.02.7）解析 | ❌ 本机未装 OpenVPN |
+| `OpenVPN` 自检 | 核心/服务/配置文件全缺（errors=5 warnings=6） | ❌ 本机未装 OpenVPN |
+| `哈基米` 自检 | `/etc/openclash/ASN.mmdb` 缺失（errors=1 warnings=2） | ❌ **且为误报**：运行中配置 `e_bbydy.yaml` 里 `ASN,` 规则计数 = **0**，`Country.mmdb` 与 `GeoSite.dat` 均在位 → 无功能影响 |
+
+另有 9 个 SKIP 段（AdGuardHome / ttyd / OpenList / ZeroTier / EasyTier /
+eMMC 两段 / LuCI 温度与运营商显示）都是「可选插件未安装」的正常跳过。
+
+**这一轮验证覆盖到的**：菜单分派 → `run_menu_feature` → handler → 深层子函数
+（下载辅助、网络探测、opkg 查询、服务状态检查、日志解析）全链路真实执行，
+无函数缺失、无 `command not found`、无悬挂引用报错。
+
+**这一轮仍未覆盖的**：**安装类 handler**（下载 ipk → `opkg install` → 落盘部署）。
+只读自检不经过那些分支，所以"具体安装流程在真机上跑通"仍**未**被证伪也**未**被证实 ——
+见 §9。
 
 ## 8. 复现步骤
 
@@ -175,17 +225,25 @@ SRC=maye-v320.sh LITE=maye-lite.sh python verify_lite.py
 
 ## 9. ⚠️ 未验证与已知限制
 
-1. **没有执行过任何安装动作**。本版只验证到"能启动、菜单渲染正确、语法与引用自洽"。
-   每个具体安装流程（下载源可用性、ipk 依赖、设备端兼容性）**均未在真机跑过** ——
-   跑它们会真实改动设备，越出了只读验证的边界。
-2. **依赖上游函数名稳定**。若上游改了函数命名，`FAMILY` 归属需同步调整。
-3. **机型分支已移除**：AK68-798 / NRadio_C8-788 的专用菜单分支被删，统一走单一菜单；
+1. **安装类 handler 没有在真机跑过**。2026-09-24 已把验证推进到「只读 handler 端到端」
+   （菜单分派 → `run_menu_feature` → 统一体检增强版，25 段全跑通，见 §7.1），
+   但**下载 ipk → `opkg install` → 落盘部署**这一段仍**未在真机执行**
+   —— 跑它就会真实改动设备，越出只读验证的边界。
+   所以本版能保证的是「能启动、菜单正确、调用链自洽、只读功能可执行」；
+   各具体安装流程的**下载源可用性、ipk 依赖、设备端兼容性**仍需自行判断。
+   （注：CDN 探测 6 段全 PASS 已间接证明 URL 解析与下载辅助函数可用。）
+2. **仍不产生任何备份**（与上游一致）。跑任何安装项之前，自己备份
+   `appcenter.lua` / `appcenter.htm` / `/etc/config/appcenter` / `/etc/opkg/distfeeds.conf`。
+3. **依赖上游函数名稳定**。若上游改了函数命名，`FAMILY` 归属需同步调整。
+4. **机型分支已移除**：AK68-798 / NRadio_C8-788 的专用菜单分支被删，统一走单一菜单；
    机型级功能门禁仍在，不支持的功能照样会被 `die` 拦下。
-4. **动态拼名家族未做任何裁剪**（modem/AT 的 `command_*` 等 81 个函数原样保留），
+5. **动态拼名家族未做任何裁剪**（modem/AT 的 `command_*` 等 81 个函数原样保留），
    因此本版仍完整保留 5G/模组相关的 AT 操作能力。
-5. **`install_*` 类流程的卸载脚本素材仍包含 AGH/Docker 片段**（见 §6 末注），
+6. **`install_*` 类流程的卸载脚本素材仍包含 AGH/Docker 片段**（见 §6 末注），
    属落盘文本而非本进程执行。
-6. 本版**不是**上游产物，被上游收录的哈希校验对本文件无意义。
+7. **会残留一个空的 tmpfs 目录** `/var/run/nradio-plugin-assistant/`（`WORKDIR` 的父目录），
+   重启即消失，且**上游同样如此**（非裁剪引入）；锁文件本身会正常释放。
+8. 本版**不是**上游产物，被上游收录的哈希校验对本文件无意义。
 
 ## 10. 授权与声明
 
