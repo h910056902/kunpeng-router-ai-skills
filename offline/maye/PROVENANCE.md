@@ -34,6 +34,7 @@
 | 哈希 | 见 [`SHA256SUMS`](SHA256SUMS) |
 | 生成日期 | 2026-09-24 |
 | 生成工具 | [`scripts/maye_trim/trim_maye.py`](../../scripts/maye_trim/trim_maye.py) |
+| 配套工具 | [`scripts/maye_trim/reach.py`](../../scripts/maye_trim/reach.py) —— 静态调用闭包 + 写盘扫描，用来判定某个 handler 是否「只读」（真机冒烟靶子的筛选依据） |
 
 > **验证状态（2026-09-24）**：语法（PC+设备）、0 悬挂引用、feature ID 一致性、
 > **真机菜单走查**、**真机只读 handler 端到端**（统一体检增强版 25 段全跑通）、
@@ -219,9 +220,25 @@ SRC=maye-v320.sh DST=maye-lite.sh python trim_maye.py
 
 # 3) 硬校验（语法 + 悬挂引用 + ID 一致性 + 家族残留）
 SRC=maye-v320.sh LITE=maye-lite.sh python verify_lite.py
+
+# 4) 【真机冒烟前必做】静态调用闭包 + 写盘扫描：判断想跑的那个 handler 是不是"只读"
+#    从入口出发沿静态调用图 BFS，列出闭包内所有写盘/删除/服务控制操作及行号
+python reach.py maye-lite.sh run_unified_test_mode
+#    命中 ≠ 有害（`> /dev/null`、tmpfs 上的 mkdir 都会被命中），要逐条读原行；
+#    选出只读 handler 后，真机跑 + 配 find -newer 实测零副作用，才算验证完成
 ```
 
 `trim_maye.py` 内的 `DENY_IDS` / `FAMILY` 即为裁剪策略，改这两处即可调整口径。
+
+**真机验证的两步法**（2026-09-24 实战成形，别跳第一步）：
+```sh
+# ① 纯静态：reach.py 扫闭包 → 挑一个「只读 handler」当冒烟靶子
+# ② 纯运行期：设备侧
+touch /tmp/marker
+printf '4\n1\n' | sh /tmp/ssh-nradio-plugin-installer-lite.sh   # 跑只读 handler
+find /etc /usr /root /www /opt /srv /bin /sbin /lib -xdev -newer /tmp/marker
+#    期望：无输出。这比"静态看着没问题"硬得多 —— 语法通过 + 引用自洽都证明不了"能跑"。
+```
 
 ## 9. ⚠️ 未验证与已知限制
 
